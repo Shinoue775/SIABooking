@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Page-turn flip slideshow styles */
+.page-flip-wrapper {
+  perspective: 1200px;
+}
+.page-flip-wrapper .flipper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 700ms ease-in-out;
+  transform-origin: left center;
+}
+.page-flip-wrapper.flipping .flipper {
+  transform: rotateY(-180deg);
+}
+.page-flip-wrapper.flipping.flip-back .flipper {
+  transform: rotateY(180deg);
+}
+.page-flip-wrapper .face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+.page-flip-wrapper .face.back {
+  transform: rotateY(180deg);
+}
+
+/* small shadow during flip */
+.page-flip-wrapper .flipper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 30px 80px rgba(0,0,0,0.15);
+  opacity: 0;
+  transition: opacity 350ms ease-in-out;
+  pointer-events: none;
+}
+.page-flip-wrapper.flipping .flipper::after {
+  opacity: 1;
+}
