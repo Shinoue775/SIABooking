@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 
 const ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://localhost:3001',
+`https://sia-backup.vercel.app `,
 ];
 
 export function corsHeaders(origin?: string | null): Record<string, string> {
