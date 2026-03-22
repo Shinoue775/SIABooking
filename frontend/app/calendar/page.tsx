@@ -13,7 +13,7 @@ const cormorant = Cormorant({ subsets: ["latin"], weight: ["300", "400", "600"] 
 const inter = Inter({ subsets: ["latin"] });
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["700"] });
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://sia-backup.vercel.app';
+const BACKEND_URL = '';
 
 export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(4);
