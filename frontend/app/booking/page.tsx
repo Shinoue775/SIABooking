@@ -14,7 +14,7 @@ const inter = Inter({ subsets: ["latin"] });
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["700"] });
 
 export default function BookingPage() {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://sia-backup.vercel.app';
+  const BACKEND_URL = '';
   const [selectedDate, setSelectedDate] = useState(4);
   const [currentMonth, setCurrentMonth] = useState("February");
   const [currentYear, setCurrentYear] = useState(2026);
@@ -189,7 +189,7 @@ export default function BookingPage() {
         return;
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings`, {
+      const res = await fetch(`/api/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
