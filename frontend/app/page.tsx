@@ -9,6 +9,7 @@ import HomePage from "./home/page";
 import chtmlogo from './images/chtmlogo.png';
 import gcllgo from './images/gcllgo.jpg';
 import loginchtmbg from './images/loginchtmbg.jpg';
+import gcbuildingbg from './images/gcbuildingbg.jpg';
 
 const cormorant = Cormorant({ subsets: ["latin"], weight: ["300", "400", "600"] });
 const inter = Inter({ subsets: ["latin"] });
@@ -43,8 +44,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className={`bg-white ${inter.className}`}>
-      
+    <div className={`bg-white ${inter.className}`}>  
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white shadow-md h-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
@@ -99,7 +99,7 @@ export default function LandingPage() {
         {/* Background Image - Right Side */}
         <div className="absolute top-0 right-0 h-full" style={{ width: '52%', position: 'relative' }}>
           <Image 
-            src={loginchtmbg}
+            src={gcbuildingbg}
             alt="Resort" 
             className="object-cover"
             fill
@@ -327,7 +327,7 @@ export default function LandingPage() {
 
       {/* Testimonial Section */}
       <section className="py-24" style={{ background: '#FFFAF5' }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center"> 
           {/* Stars */}
           <div className="flex gap-2 justify-center mb-12">
             {[...Array(5)].map((_, i) => (
