@@ -40,8 +40,8 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen">
-      {/* Left Side - Branding with Image (Now visible on all screen sizes) */}
-      <div className="relative lg:w-1/2 min-h-[300px] sm:min-h-[350px] lg:min-h-screen">
+      {/* Left Side - Branding with Image */}
+      <div className="relative lg:w-1/2 min-h-[400px] sm:min-h-[450px] lg:min-h-screen">
         {/* Background Image */}
         <div className="absolute inset-0">
           <Image
@@ -55,8 +55,8 @@ export default function LoginPage() {
         </div>
 
         {/* Content Overlay */}
-        <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-6 sm:p-8 md:p-10 lg:p-12 text-white min-h-[300px] sm:min-h-[350px] lg:min-h-screen">
-          {/* Logo Row - Responsive sizing */}
+        <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-6 sm:p-8 md:p-10 lg:p-12 text-white">
+          {/* Logo Row */}
           <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
             <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-white rounded-full flex items-center justify-center p-2 shadow-lg">
               <Image src={chtmlogo} alt="CHTM Logo" width={96} height={96} className="object-contain" />
@@ -76,35 +76,36 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Quote Text - Responsive */}
-          <p 
-            className={`text-center lg:text-left flex items-center mt-4 sm:mt-6 lg:mt-8 ${inter.className}`}
-            style={{
-              maxWidth: 'min(90%, 500px)',
-              width: '100%',
-              fontWeight: 500,
-              fontSize: 'clamp(13px, 3vw, 17px)',
-              lineHeight: 'clamp(22px, 4vw, 32px)',
-              textShadow: '0px 2px 4px rgba(0, 0, 0, 0.3)'
-            }}
-          >
-            "Enhancing service excellence through the College of Hospitality and Tourism Management"
-          </p>
-          
-          {/* Pink divider - Centered on mobile, left aligned on desktop */}
-          <div className="w-32 sm:w-40 md:w-48 h-1 bg-pink-600 mt-4 mx-auto lg:mx-0"></div>
-          
-          {/* Department label */}
-          <p className="mt-5 sm:mt-6 text-white text-xs sm:text-sm font-semibold text-center lg:text-left w-full lg:pl-0">
-            CHTM Department
-          </p>
+          {/* Quote Container - For proper alignment */}
+          <div className="w-full max-w-[500px] mx-auto lg:mx-0">
+            {/* Quote Text */}
+            <p 
+              className={`text-center lg:text-left ${inter.className}`}
+              style={{
+                fontWeight: 500,
+                fontSize: 'clamp(13px, 3vw, 17px)',
+                lineHeight: 'clamp(22px, 4vw, 32px)',
+                textShadow: '0px 2px 4px rgba(0, 0, 0, 0.3)'
+              }}
+            >
+              "Enhancing service excellence through the College of Hospitality and Tourism Management"
+            </p>
+            
+            {/* Pink divider - Full width match to quote */}
+            <div className="w-full h-1 bg-pink-600 mt-4"></div>
+            
+            {/* Department label - Directly below pink line */}
+            <p className="mt-4 text-white text-xs sm:text-sm font-semibold text-center lg:text-left">
+              CHTM Department
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Right Side - Login Form */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-white">
         <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl px-4 sm:px-6 md:px-8 py-8 sm:py-12">
-          {/* Welcome Section - Responsive typography */}
+          {/* Welcome Section */}
           <div className="mb-8 sm:mb-10 md:mb-12 text-center lg:text-left">
             <h2 
               className={`font-light mb-3 sm:mb-4 md:mb-5 ${cormorant.className}`} 
@@ -147,7 +148,7 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Footer Copyright - Responsive */}
+          {/* Footer Copyright */}
           <div className="mt-8 sm:mt-10 text-center">
             <p className="text-gray-400 text-xs sm:text-sm">
               © 2025 GCATTEND. All Rights Reserved.
