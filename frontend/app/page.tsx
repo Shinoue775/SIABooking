@@ -17,6 +17,7 @@ const montserrat = Montserrat({ subsets: ["latin"], weight: ["700"] });
 
 export default function LandingPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const syncSession = async () => {
@@ -37,7 +38,10 @@ export default function LandingPage() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    setIsMenuOpen(false);
   };
+
+  const closeMenu = () => setIsMenuOpen(false);
 
   if (isLoggedIn) {
     return <HomePage />;
@@ -45,11 +49,11 @@ export default function LandingPage() {
 
   return (
     <div className={`bg-white ${inter.className}`}>
-      {/* Navbar - Improved Responsiveness */}
+      {/* Navbar with Hamburger Menu */}
       <nav className="sticky top-0 z-50 bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-3 sm:py-4 md:py-5">
-            {/* Logo Section - Better spacing for mobile */}
+            {/* Logo Section */}
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 shrink-0">
                 <Image src={chtmlogo} alt="CHTM" width={48} height={48} className="w-full h-full object-contain" />
@@ -73,36 +77,105 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Nav Links - Better touch targets for mobile */}
-            <div className="flex gap-3 sm:gap-5 md:gap-8 items-center">
-              <Link href="/" className="relative py-2" style={{ color: '#3D5A4C', fontSize: 'clamp(11px, 3vw, 14px)', fontWeight: 500 }}>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex gap-5 lg:gap-8 items-center">
+              <Link href="/" className="relative py-2" style={{ color: '#3D5A4C', fontSize: '14px', fontWeight: 500 }}>
                 Home
                 <span className="absolute left-0 bottom-0 w-full" style={{ height: '1px', background: '#FFB5C5' }}></span>
               </Link>
-              <Link href="/booking" className="py-2" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: 'clamp(11px, 3vw, 14px)' }}>
+              <Link href="/booking" className="py-2" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '14px' }}>
                 Booking
               </Link>
               {isLoggedIn ? (
                 <button
                   onClick={handleLogout}
                   className="py-2"
-                  style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: 'clamp(11px, 3vw, 14px)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                  style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '14px', background: 'transparent', border: 'none', cursor: 'pointer' }}
                 >
                   Logout
                 </button>
               ) : (
-                <Link href="/login" className="py-2" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: 'clamp(11px, 3vw, 14px)' }}>
+                <Link href="/login" className="py-2" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '14px' }}>
                   Login
                 </Link>
               )}
             </div>
+
+            {/* Hamburger Menu Button - Mobile */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg focus:outline-none"
+              aria-label="Toggle menu"
+            >
+              <div className="relative w-6 h-5">
+                <span 
+                  className={`absolute left-0 w-full h-0.5 bg-[#3D5A4C] transition-all duration-300 ease-in-out ${
+                    isMenuOpen ? 'rotate-45 top-2' : 'top-0'
+                  }`}
+                />
+                <span 
+                  className={`absolute left-0 w-full h-0.5 bg-[#3D5A4C] top-2 transition-opacity duration-300 ease-in-out ${
+                    isMenuOpen ? 'opacity-0' : 'opacity-100'
+                  }`}
+                />
+                <span 
+                  className={`absolute left-0 w-full h-0.5 bg-[#3D5A4C] transition-all duration-300 ease-in-out ${
+                    isMenuOpen ? '-rotate-45 top-2' : 'top-4'
+                  }`}
+                />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu Dropdown */}
+        <div 
+          className={`md:hidden bg-white border-t border-gray-100 overflow-hidden transition-all duration-300 ease-in-out ${
+            isMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="flex flex-col px-4 py-3 space-y-2">
+            <Link 
+              href="/" 
+              onClick={closeMenu}
+              className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+              style={{ color: '#3D5A4C', fontSize: '16px', fontWeight: 500 }}
+            >
+              Home
+            </Link>
+            <Link 
+              href="/booking" 
+              onClick={closeMenu}
+              className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+              style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '16px' }}
+            >
+              Booking
+            </Link>
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors text-left"
+                style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '16px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+              >
+                Logout
+              </button>
+            ) : (
+              <Link 
+                href="/login" 
+                onClick={closeMenu}
+                className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+                style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '16px' }}
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* Hero Section - Improved mobile layout */}
+      {/* Hero Section */}
       <section className="relative flex items-center justify-center lg:justify-start" style={{ minHeight: 'calc(100vh - 64px)', background: '#FFFAF5' }}>
-        {/* Background Image - Better mobile overlay */}
+        {/* Background Image */}
         <div className="absolute inset-0 lg:left-auto lg:right-0 lg:w-[52%] h-full z-0">
           <Image 
             src={gcbuildingbg}
@@ -114,9 +187,8 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-black/50 lg:bg-black/40"></div>
         </div>
 
-        {/* Content Container - Better padding for mobile */}
+        {/* Content Container */}
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-0">
-          {/* Floating Card - Full width on mobile */}
           <div 
             className="bg-white/95 backdrop-blur-sm shadow-2xl p-6 sm:p-8 md:p-10 lg:p-12 mx-auto lg:mx-0 lg:ml-[8%] w-full"
             style={{ maxWidth: 'min(90%, 580px)', borderLeft: '4px solid #FF0080' }}
@@ -150,7 +222,6 @@ export default function LandingPage() {
               Discover real-time availability, personalized options, and a seamless reservation experience designed to make every trip effortless.
             </p>
 
-            {/* Buttons - Stack on mobile */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4" style={{ marginTop: 'clamp(24px, 6vw, 32px)' }}>
               <Link 
                 href="/login"
@@ -184,7 +255,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section - Better grid for mobile */}
+      {/* Features Section */}
       <section className="py-12 sm:py-16 md:py-24" style={{ background: '#FFFAF5' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-12">
@@ -237,11 +308,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Experience Section - Better mobile stacking */}
+      {/* Experience Section */}
       <section className="py-12 sm:py-16 md:py-24 lg:py-32" style={{ background: '#3D5A4C' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row gap-8 md:gap-10 lg:gap-16 items-center">
-            {/* Image - Better mobile sizing */}
             <div className="w-full lg:w-1/2 order-2 lg:order-1">
               <div className="relative h-[250px] sm:h-[350px] md:h-[450px] lg:h-[550px] rounded-sm overflow-hidden shadow-2xl">
                 <Image 
@@ -253,7 +323,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Content - Better mobile text sizing */}
             <div className="w-full lg:w-1/2 order-1 lg:order-2 text-center lg:text-left">
               <p style={{ fontSize: 'clamp(11px, 3vw, 12px)', color: '#FFB5C5', letterSpacing: '1px' }}>
                 THE EXPERIENCE
@@ -285,7 +354,6 @@ export default function LandingPage() {
                 Experience the perfect harmony of sophisticated design and genuine hospitality. Tailored for those who appreciate the finer details, our accommodations offer a tranquil escape equipped with premium amenities.
               </p>
 
-              {/* Stats - Better mobile spacing */}
               <div 
                 className="flex flex-row justify-center lg:justify-start gap-8 sm:gap-12"
                 style={{
@@ -322,7 +390,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonial Section - Better mobile padding */}
+      {/* Testimonial Section */}
       <section className="py-12 sm:py-16 md:py-20 lg:py-24" style={{ background: '#FFFAF5' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex gap-2 justify-center mb-6 sm:mb-8 md:mb-10">
@@ -358,11 +426,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer - Better mobile grid */}
+      {/* Footer */}
       <footer className="py-10 sm:py-12 md:py-16" style={{ background: 'rgba(255, 181, 197, 0.29)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
-            {/* Logo Section - Center on mobile */}
             <div className="col-span-1 sm:col-span-2 lg:col-span-1 text-center sm:text-left">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-4">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 shrink-0">
@@ -383,7 +450,6 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Quick Links - Center on mobile */}
             <div className="text-center sm:text-left">
               <h4 style={{ fontSize: 'clamp(18px, 4vw, 24px)', fontWeight: 700, color: '#000' }}>
                 Quick Links
@@ -396,7 +462,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Contact - Center on mobile */}
             <div className="text-center sm:text-left">
               <h4 style={{ fontSize: 'clamp(18px, 4vw, 24px)', fontWeight: 700, color: '#000' }}>
                 Contact Us
@@ -410,7 +475,6 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Social - Center on mobile */}
             <div className="text-center sm:text-left">
               <h4 style={{ fontSize: 'clamp(18px, 4vw, 24px)', fontWeight: 700, color: '#000' }}>
                 Follow us
@@ -430,7 +494,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Copyright - Better mobile stacking */}
           <div className="mt-8 sm:mt-10 pt-6 border-t border-gray-300">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center">
               <p style={{ fontSize: 'clamp(11px, 3vw, 12px)', color: 'rgba(0, 0, 0, 0.6)' }}>
