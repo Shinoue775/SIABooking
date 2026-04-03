@@ -304,8 +304,9 @@ export default function LandingPage() {
               </div>
 
               {/* Button */}
-              <button 
-                className="px-10 py-4 mt-12"
+              <Link 
+                href="/login"
+                className="px-10 py-4 mt-12 inline-block"
                 style={{
                   border: '1px solid #FFFAF5',
                   color: '#FFFAF5',
@@ -317,7 +318,7 @@ export default function LandingPage() {
                 }}
               >
                 Explore Our Rooms
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -452,6 +453,5 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 }
