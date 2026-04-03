@@ -74,9 +74,6 @@ export default function LandingPage() {
               <Link href="/booking" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '11.9px', lineHeight: '20px' }}>
                 Booking
               </Link>
-              <Link href="/calendar" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '11.9px', lineHeight: '20px' }}>
-                Calendar
-              </Link>
               {isLoggedIn ? (
                 <button
                   onClick={handleLogout}
@@ -97,7 +94,7 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative" style={{ minHeight: 'calc(100vh - 80px)', background: '#FFFAF5' }}>
         {/* Background Image - Right Side */}
-        <div className="absolute top-0 right-0 h-full" style={{ width: '52%', position: 'relative' }}>
+        <div className="absolute top-0 right-0 h-full" style={{ width: '52%' }}>
           <Image 
             src= {gcbuildingbg}
             alt="Building" 
@@ -150,8 +147,9 @@ export default function LandingPage() {
 
               {/* Buttons */}
               <div className="flex gap-4 flex-wrap justify-center" style={{ marginTop: '40px' }}>
-                <button 
-                  className="px-12 py-4"
+                <Link 
+                  href="/login"
+                  className="px-12 py-4 flex items-center justify-center"
                   style={{
                     background: '#3D5A4C',
                     boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
@@ -163,9 +161,10 @@ export default function LandingPage() {
                   }}
                 >
                   Book Your Stay
-                </button>
-                <button 
-                  className="px-12 py-4"
+                </Link>
+                <Link 
+                  href="/login"
+                  className="px-12 py-4 flex items-center justify-center"
                   style={{
                     border: '1px solid #3D5A4C',
                     background: 'white',
@@ -177,7 +176,7 @@ export default function LandingPage() {
                   }}
                 >
                   Check Availability
-                </button>
+                </Link>
               </div>
             </div>
           </div>
