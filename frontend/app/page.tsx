@@ -281,7 +281,7 @@ export default function LandingPage() {
                   color: 'rgba(255, 250, 245, 0.7)'
                 }}
               >
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eu dolor eu felis finibus tristique. Mauris dignissim ipsum tempus velit commodo, ut ornare purus ornare. Nulla felis lacus, porttitor nec eros ac, tincidunt vestibulum lectus. Donec id eros nec tellus ultrices commodo. Mauris sagittis sagittis odio a tincidunt.
+                Experience the perfect harmony of sophisticated design and genuine hospitality. Tailored for those who appreciate the finer details, our accommodations offer a tranquil escape equipped with premium amenities. Elevate your journey and indulge in a standard of comfort that truly feels like a home away from home.
               </p>
 
               {/* Stats */}
