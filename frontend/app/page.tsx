@@ -128,9 +128,8 @@ export default function LandingPage() {
                   color: '#3D5A4C'
                 }}
               >
-                LOGO AND<br />WEB NAME
+                ROOM RESERVATION
               </h1>
-
               {/* Paragraph */}
               <p 
                 style={{
