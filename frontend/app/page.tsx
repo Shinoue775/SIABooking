@@ -99,7 +99,7 @@ export default function LandingPage() {
         {/* Background Image - Right Side */}
         <div className="absolute top-0 right-0 h-full" style={{ width: '52%', position: 'relative' }}>
           <Image 
-            src={gcbuildingbg}
+            src= gcbuildingbg.jpg
             alt="Resort" 
             className="object-cover"
             fill
