@@ -92,10 +92,10 @@ export default function LoginPage() {
           </p>
           
           {/* Pink divider - Centered on mobile, left aligned on desktop */}
-          <div className="w-32 sm:w-40 md:w-48 h-1 bg-pink-600 mt-4 mx-auto lg:mx-0" style={{ marginLeft: 'auto', marginRight: 'auto', lg: { marginLeft: 0 } }}></div>
+          <div className="w-32 sm:w-40 md:w-48 h-1 bg-pink-600 mt-4 mx-auto lg:mx-0"></div>
           
           {/* Department label */}
-          <p className="mt-5 sm:mt-6 text-white text-xs sm:text-sm font-semibold text-center lg:text-left">
+          <p className="mt-5 sm:mt-6 text-white text-xs sm:text-sm font-semibold text-center lg:text-left w-full lg:pl-0">
             CHTM Department
           </p>
         </div>
