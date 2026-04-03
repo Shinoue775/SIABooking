@@ -101,7 +101,7 @@ export default function LandingPage() {
             className="object-cover"
             fill
           />
-          <div className="absolute inset-0" style={{ background: 'rgba(61, 90, 76, 0.2)' }}></div>
+          <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
         {/* Content Container */}
