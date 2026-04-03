@@ -1,8 +1,6 @@
 'use client'
 
-import React from 'react'
-
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -24,8 +22,18 @@ import {
   Calendar, Menu, Search, Star, Users, 
   BookOpen, MapPin, Phone, Facebook, Twitter, Instagram, 
   ChevronRight, Wifi, Coffee, Bath, Tv,
-  ChevronLeft, Sparkles, Award, Clock, Building2
+  ChevronLeft, Sparkles, Award, Clock, Building2, X
 } from 'lucide-react'
+
+// Define the room details structure
+interface RoomDetails {
+  id: string;
+  title: string;
+  type: string;
+  description: string;
+  amenities: string[];
+  images: any[];
+}
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -41,6 +49,29 @@ export default function HomePage() {
   const roomBImages = [img6, img7, img8, img9, img10]
   const [roomBIndex, setRoomBIndex] = useState(0)
   const [roomBImageLoaded, setRoomBImageLoaded] = useState(true)
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedRoom, setSelectedRoom] = useState<RoomDetails | null>(null)
+
+  const roomData: Record<string, RoomDetails> = {
+    A: {
+      id: 'A',
+      title: 'Room A',
+      type: 'Standard',
+      description: 'A spacious, premium room designed for relaxation and productivity — modern finishes, warm lighting, and thoughtful touches for an elevated stay.',
+      amenities: ['Full Air Condition', 'Smart TV', 'Fast Wi-Fi', 'Coffee Maker', 'Private Bathroom'],
+      images: roomAImages
+    },
+    B: {
+      id: 'B',
+      title: 'Room B',
+      type: 'Standard',
+      description: 'A comfortable, well-appointed standard room that covers all essentials with clean, efficient layout and reliable comforts for a restful stay.',
+      amenities: ['Basic Amenities', 'Fast Wi-Fi', 'Cable TV', 'Private Bathroom'],
+      images: roomBImages
+    }
+  }
 
   // Auto-advance slideshows
   useEffect(() => {
@@ -103,6 +134,11 @@ export default function HomePage() {
       setRoomBIndex(newIndex)
       setRoomBImageLoaded(true)
     }, 300)
+  }
+
+  const openRoomModal = (roomKey: string) => {
+    setSelectedRoom(roomData[roomKey])
+    setIsModalOpen(true)
   }
 
   return (
@@ -319,24 +355,24 @@ export default function HomePage() {
               {/* Details Section */}
               <div className="p-8">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-3xl font-bold text-green-800">Room A</h3>
+                  <h3 className="text-3xl font-bold text-green-800">{roomData.A.title}</h3>
                   <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
-                    Standard
+                    {roomData.A.type}
                   </span>
                 </div>
 
-                {/* Rating */}
-                
                 {/* Review */}
                 <div className="bg-gray-50 rounded-lg p-4 mb-6">
                   <p className="text-gray-600 italic text-sm">
-                    "A spacious, premium room designed for relaxation and productivity — modern finishes, warm lighting, and thoughtful touches for an elevated stay."
+                    "{roomData.A.description}"
                   </p>
-                  
                 </div>
 
                 {/* Button */}
-                <button className="w-full bg-green-700 hover:bg-green-800 text-white py-3 rounded-lg transition font-medium flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => openRoomModal('A')}
+                  className="w-full bg-green-700 hover:bg-green-800 text-white py-3 rounded-lg transition font-medium flex items-center justify-center gap-2"
+                >
                   View Room Details
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -404,23 +440,24 @@ export default function HomePage() {
               {/* Details Section */}
               <div className="p-8 md:order-1">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-3xl font-bold text-green-800">Room B</h3>
+                  <h3 className="text-3xl font-bold text-green-800">{roomData.B.title}</h3>
                   <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
-                    Standard
+                    {roomData.B.type}
                   </span>
                 </div>
 
-                {/* Rating */}
-                
                 {/* Review */}
                 <div className="bg-gray-50 rounded-lg p-4 mb-6">
                   <p className="text-gray-600 italic text-sm">
-                    "A comfortable, well-appointed standard room that covers all essentials with clean, efficient layout and reliable comforts for a restful stay."
+                    "{roomData.B.description}"
                   </p>
                 </div>
 
                 {/* Button */}
-                <button className="w-full bg-green-700 hover:bg-green-800 text-white py-3 rounded-lg transition font-medium flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => openRoomModal('B')}
+                  className="w-full bg-green-700 hover:bg-green-800 text-white py-3 rounded-lg transition font-medium flex items-center justify-center gap-2"
+                >
                   View Room Details
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -429,6 +466,74 @@ export default function HomePage() {
           </div>
         </div>
       </main>
+
+      {/* Floating Card (Modal) for Room Details */}
+      {isModalOpen && selectedRoom && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity duration-300">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 scale-100">
+            {/* Close button */}
+            <button 
+              onClick={() => setIsModalOpen(false)} 
+              className="absolute top-4 right-4 z-10 bg-white/90 p-2 rounded-full hover:bg-gray-100 transition shadow-sm"
+              aria-label="Close modal"
+            >
+              <X className="w-5 h-5 text-gray-800" />
+            </button>
+            
+            {/* Modal Header/Image */}
+            <div className="relative h-64 w-full bg-gray-900">
+              <Image 
+                src={selectedRoom.images[0]} 
+                alt={selectedRoom.title} 
+                fill 
+                className="object-cover" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+              <div className="absolute bottom-6 left-6 text-white">
+                <h2 className="text-3xl font-bold mb-2">{selectedRoom.title}</h2>
+                <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-sm font-medium">
+                  {selectedRoom.type} Room
+                </span>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-8">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Room Overview</h3>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                {selectedRoom.description}
+              </p>
+
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Amenities Included</h3>
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                {selectedRoom.amenities.map((amenity, idx) => (
+                  <div key={idx} className="flex items-center gap-3 text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <Sparkles className="w-4 h-4 text-green-600" />
+                    <span className="font-medium text-sm">{amenity}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end gap-4 border-t border-gray-100 pt-6">
+                <button 
+                  onClick={() => setIsModalOpen(false)} 
+                  className="px-6 py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition"
+                >
+                  Close
+                </button>
+                <Link 
+                  href="/booking" 
+                  className="bg-green-700 hover:bg-green-800 text-white px-8 py-2.5 rounded-lg font-medium transition flex items-center gap-2"
+                >
+                  Book This Room
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer - Simplified */}
       <footer style={{ backgroundColor: '#e8cae4' }} className="text-gray-800 mt-16">
@@ -452,7 +557,7 @@ export default function HomePage() {
               <div className="space-y-3 text-sm text-black-400">
                 <p className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 shrink-0 mt-0.5" />
-                  <span>Ephraim Oak Sports Complex, Dagon St., East Tampack, Orangepe, Philippines, 2200</span>
+                  <span>Ephraim Oak Sports Complex, Dagon St., East Tampack, Olongapo, Philippines, 2200</span>
                 </p>
                 <p className="flex items-center gap-3">
                   <Phone className="w-5 h-5" />
