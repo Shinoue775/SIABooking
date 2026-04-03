@@ -21,8 +21,11 @@ export default function BookingPage() {
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const [guests, setGuests] = useState(2);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("11:00");
+  
+  // Updated variable names
+  const [checkInTime, setCheckInTime] = useState("09:00");
+  const [checkOutTime, setCheckOutTime] = useState("11:00");
+  
   const availableAmenities = [
     { id: 1, name: "Full Air Condition" },
     { id: 2, name: "Basic" },
@@ -180,11 +183,13 @@ export default function BookingPage() {
       }
 
       const dateStr = `${currentYear}-${String(monthIndex + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
-      const start_at = `${dateStr}T${startTime}:00`;
-      const end_at = `${dateStr}T${endTime}:00`;
+      
+      // Updated formatting to use checkInTime and checkOutTime
+      const start_at = `${dateStr}T${checkInTime}:00`;
+      const end_at = `${dateStr}T${checkOutTime}:00`;
 
       if (new Date(end_at) <= new Date(start_at)) {
-        setError("End time must be later than start time.");
+        setError("Check-out time must be later than check-in time.");
         setLoading(false);
         return;
       }
@@ -523,13 +528,14 @@ export default function BookingPage() {
               </p>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <div style={{ flex: '1 1 auto', minWidth: '140px' }}>
+                  {/* Updated Label */}
                   <label style={{ fontSize: '10px', color: 'rgba(61, 90, 76, 0.6)', fontFamily: 'Inter', display: 'block', marginBottom: '4px' }}>
-                    Start Time
+                    Check-in Time
                   </label>
                   <input
                     type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
+                    value={checkInTime}
+                    onChange={(e) => setCheckInTime(e.target.value)}
                     style={{
                       width: '100%',
                       fontSize: '14px',
@@ -542,13 +548,14 @@ export default function BookingPage() {
                   />
                 </div>
                 <div style={{ flex: '1 1 auto', minWidth: '140px' }}>
+                  {/* Updated Label */}
                   <label style={{ fontSize: '10px', color: 'rgba(61, 90, 76, 0.6)', fontFamily: 'Inter', display: 'block', marginBottom: '4px' }}>
-                    End Time
+                    Check-out Time
                   </label>
                   <input
                     type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
+                    value={checkOutTime}
+                    onChange={(e) => setCheckOutTime(e.target.value)}
                     style={{
                       width: '100%',
                       fontSize: '14px',
@@ -597,7 +604,7 @@ export default function BookingPage() {
               <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
                 <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Time</span>
                 <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter', textAlign: 'right' }}>
-                  {startTime} - {endTime}
+                  {checkInTime} - {checkOutTime}
                 </span>
               </div>
               <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
