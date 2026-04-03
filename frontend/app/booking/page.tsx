@@ -21,6 +21,7 @@ export default function BookingPage() {
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const [guests, setGuests] = useState(2);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const [checkInTime, setCheckInTime] = useState("09:00");
   const [checkOutTime, setCheckOutTime] = useState("11:00");
@@ -61,7 +62,7 @@ export default function BookingPage() {
           width: '100%',
           minHeight: '52px',
           padding: '14px 44px 14px 16px',
-          fontSize: '16px',
+          fontSize: 'clamp(14px, 4vw, 16px)',
           fontWeight: 400,
           lineHeight: '24px',
           color: '#3D5A4C',
@@ -224,7 +225,10 @@ export default function BookingPage() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setSuccess("Logged out successfully.");
+    setIsMenuOpen(false);
   };
+
+  const closeMenu = () => setIsMenuOpen(false);
 
   useEffect(() => {
     if (rooms.length === 0) {
@@ -273,84 +277,155 @@ export default function BookingPage() {
 
   return (
     <div className={`min-h-screen ${inter.className}`} style={{ background: '#FFFAF5' }}>
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 h-20" style={{ background: 'rgba(254, 253, 253, 0.91)', boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)' }}>
-        <div className="max-w-7xl mx-auto px-12 h-full">
-          <div className="flex justify-between items-center h-full">
+      {/* Navbar with Hamburger Menu */}
+      <nav className="sticky top-0 z-50" style={{ background: 'rgba(254, 253, 253, 0.95)', boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-3 sm:py-4">
             {/* Logo Section */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8">
-                <Image src={chtmlogo} alt="CHTM" width={32} height={32} className="w-full h-full object-contain" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 shrink-0">
+                <Image src={chtmlogo} alt="CHTM" width={40} height={40} className="w-full h-full object-contain" />
               </div>
-              <div className="flex flex-col items-center">
-                <h1 className={`font-bold ${montserrat.className}`} style={{ color: '#FF0080', fontSize: '24px', lineHeight: '26px', fontFamily: 'Montserrat, serif' }}>
+              <div className="flex flex-col">
+                <h1 className={`font-bold leading-tight ${montserrat.className}`} style={{ color: '#FF0080', fontSize: 'clamp(14px, 4vw, 20px)' }}>
                   CHTM-RRS
                 </h1>
-                <p className={inter.className} style={{ color: '#3D5A4C', fontSize: '7px', fontWeight: 700, lineHeight: '9px', letterSpacing: '0.3px', fontFamily: 'Inter, serif' }}>ROOM RESERVATION SYSTEM</p>
+                <p className={`hidden xs:block ${inter.className}`} style={{ color: '#3D5A4C', fontSize: 'clamp(6px, 2vw, 7px)', fontWeight: 700, letterSpacing: '0.3px' }}>
+                  ROOM RESERVATION SYSTEM
+                </p>
               </div>
-              <div className="w-8 h-8">
-                <Image src={gcllgo} alt="GC" width={32} height={32} className="w-full h-full object-contain" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 shrink-0">
+                <Image src={gcllgo} alt="GC" width={40} height={40} className="w-full h-full object-contain" />
               </div>
             </div>
 
-            {/* Nav Links */}
-            <div className="flex gap-12">
-              <Link href="/" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '11.9px', fontWeight: 400, lineHeight: '20px' }}>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex gap-6 lg:gap-12 items-center">
+              <Link href="/" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: 'clamp(11px, 2vw, 12px)', fontWeight: 400 }}>
                 Home
               </Link>
-              <Link href="/booking" className="relative" style={{ color: '#3D5A4C', fontSize: '11.9px', fontWeight: 500, lineHeight: '20px' }}>
+              <Link href="/booking" className="relative" style={{ color: '#3D5A4C', fontSize: 'clamp(11px, 2vw, 12px)', fontWeight: 500 }}>
                 Booking
                 <span className="absolute left-0 bottom-0 w-full" style={{ height: '0.99px', background: '#FFB5C5' }}></span>
               </Link>
               {isLoggedIn ? (
                 <button
                   onClick={handleLogout}
-                  style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                  style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: 'clamp(11px, 2vw, 12px)', fontWeight: 500, background: 'transparent', border: 'none', cursor: 'pointer' }}
                 >
                   Logout
                 </button>
               ) : (
-                <Link href="/login" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '11.9px', fontWeight: 400, lineHeight: '20px' }}>
+                <Link href="/login" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: 'clamp(11px, 2vw, 12px)', fontWeight: 400 }}>
                   Login
                 </Link>
               )}
             </div>
+
+            {/* Hamburger Menu Button - Mobile */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg focus:outline-none"
+              aria-label="Toggle menu"
+            >
+              <div className="relative w-6 h-5">
+                <span 
+                  className={`absolute left-0 w-full h-0.5 bg-[#3D5A4C] transition-all duration-300 ease-in-out ${
+                    isMenuOpen ? 'rotate-45 top-2' : 'top-0'
+                  }`}
+                />
+                <span 
+                  className={`absolute left-0 w-full h-0.5 bg-[#3D5A4C] top-2 transition-opacity duration-300 ease-in-out ${
+                    isMenuOpen ? 'opacity-0' : 'opacity-100'
+                  }`}
+                />
+                <span 
+                  className={`absolute left-0 w-full h-0.5 bg-[#3D5A4C] transition-all duration-300 ease-in-out ${
+                    isMenuOpen ? '-rotate-45 top-2' : 'top-4'
+                  }`}
+                />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu Dropdown */}
+        <div 
+          className={`md:hidden bg-white border-t border-gray-100 overflow-hidden transition-all duration-300 ease-in-out ${
+            isMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="flex flex-col px-4 py-3 space-y-2">
+            <Link 
+              href="/" 
+              onClick={closeMenu}
+              className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+              style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '16px' }}
+            >
+              Home
+            </Link>
+            <Link 
+              href="/booking" 
+              onClick={closeMenu}
+              className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+              style={{ color: '#3D5A4C', fontSize: '16px', fontWeight: 500 }}
+            >
+              Booking
+            </Link>
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors text-left"
+                style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '16px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+              >
+                Logout
+              </button>
+            ) : (
+              <Link 
+                href="/login" 
+                onClick={closeMenu}
+                className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+                style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '16px' }}
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <div className="px-12 py-16">
+      {/* Main Content - Responsive Padding */}
+      <div className="px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-12 md:py-16">
         {/* Header */}
-        <div className="text-center mb-16">
-          <p style={{ fontSize: '15px', fontWeight: 700, lineHeight: '16px', color: '#FFB5C5', fontFamily: 'Inter', letterSpacing: '0px', marginBottom: '8px' }}>
+        <div className="text-center mb-8 sm:mb-12 md:mb-16">
+          <p style={{ fontSize: 'clamp(12px, 3vw, 15px)', fontWeight: 700, color: '#FFB5C5', marginBottom: '8px' }}>
             RESERVATION
           </p>
           <h1
             className={cormorantInfant.className}
-            style={{ fontSize: '51px', fontWeight: 400, lineHeight: '60px', color: '#3D5A4C' }}
+            style={{ fontSize: 'clamp(32px, 8vw, 51px)', fontWeight: 400, lineHeight: '1.2', color: '#3D5A4C' }}
           >
             Secure Your Stay
           </h1>
         </div>
 
-        {/* Booking Form Grid */}
-        <div className="flex gap-8 max-w-7xl mx-auto">
+        {/* Booking Form Grid - Responsive Stacking */}
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-8 max-w-7xl mx-auto">
           {/* Left Column - Calendar */}
-          <div className="flex-1">
-            <h2 className={cormorantInfant.className} style={{ fontSize: '51px', fontWeight: 400, lineHeight: '60px', color: '#3D5A4C', marginBottom: '16px' }}>
+          <div className="w-full lg:flex-1">
+            <h2 className={cormorantInfant.className} style={{ fontSize: 'clamp(28px, 6vw, 51px)', fontWeight: 400, color: '#3D5A4C', marginBottom: '12px' }}>
               Calendar
             </h2>
-            <p style={{ fontSize: '10.2px', fontWeight: 500, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter', marginBottom: '32px' }}>
+            <p style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', fontWeight: 500, color: 'rgba(61, 90, 76, 0.7)', marginBottom: '20px' }}>
               Check-in Date
             </p>
 
-            <div className="group" style={{ background: '#FFFAF5', boxShadow: '0px 4px 12px rgba(61, 90, 76, 0.08)', borderRadius: '8px', padding: '32.9px', transition: 'all 0.3s ease', border: '1px solid rgba(61, 90, 76, 0.05)' }}>
+            <div style={{ background: '#FFFAF5', boxShadow: '0px 4px 12px rgba(61, 90, 76, 0.08)', borderRadius: '8px', padding: 'clamp(16px, 4vw, 32px)', border: '1px solid rgba(61, 90, 76, 0.05)' }}>
               {/* Month/Year Header */}
-              <div className="flex items-center justify-between" style={{ marginBottom: '32px' }}>
+              <div className="flex items-center justify-between mb-6 md:mb-8">
                 <button
                   className="hover:bg-gray-100 flex items-center justify-center transition-all duration-200"
-                  style={{ width: '35.99px', height: '35.99px', borderRadius: '9999px', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                  style={{ width: '36px', height: '36px', borderRadius: '9999px', border: 'none', background: 'transparent', cursor: 'pointer' }}
                   onClick={handlePreviousMonth}
                 >
                   <svg width="20" height="20" fill="none" stroke="#3D5A4C" viewBox="0 0 24 24" strokeWidth={2}>
@@ -358,21 +433,21 @@ export default function BookingPage() {
                   </svg>
                 </button>
 
-                <div className="flex items-center" style={{ gap: '1px' }}>
-                  <span style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#3D5A4C', fontFamily: 'Inter' }}>
+                <div className="flex items-center gap-1">
+                  <span style={{ fontSize: 'clamp(14px, 4vw, 17px)', color: '#3D5A4C' }}>
                     {currentMonth}
                   </span>
-                  <span style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#3D5A4C', fontFamily: 'Inter' }}>
+                  <span style={{ fontSize: 'clamp(14px, 4vw, 17px)', color: '#3D5A4C' }}>
                     ,
                   </span>
-                  <span style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#FFB5C5', fontFamily: 'Inter' }}>
+                  <span style={{ fontSize: 'clamp(14px, 4vw, 17px)', color: '#FFB5C5' }}>
                     {currentYear}
                   </span>
                 </div>
 
                 <button
                   className="hover:bg-gray-100 flex items-center justify-center transition-all duration-200"
-                  style={{ width: '35.99px', height: '35.99px', borderRadius: '9999px', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                  style={{ width: '36px', height: '36px', borderRadius: '9999px', border: 'none', background: 'transparent', cursor: 'pointer' }}
                   onClick={handleNextMonth}
                 >
                   <svg width="20" height="20" fill="none" stroke="#3D5A4C" viewBox="0 0 24 24" strokeWidth={2}>
@@ -381,28 +456,27 @@ export default function BookingPage() {
                 </button>
               </div>
 
-              {/* Calendar Grid */}
+              {/* Calendar Grid - Responsive */}
               <div>
                 {/* Day Headers */}
-                <div className="grid grid-cols-7" style={{ marginBottom: '16px' }}>
+                <div className="grid grid-cols-7 mb-4">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                     <div
                       key={day}
-                      className="text-center flex items-center justify-center"
-                      style={{ fontSize: '10.2px', fontWeight: 700, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.4)', fontFamily: 'Inter', height: '32px' }}
+                      className="text-center"
+                      style={{ fontSize: 'clamp(9px, 2.5vw, 12px)', fontWeight: 700, color: 'rgba(61, 90, 76, 0.4)', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
                       {day}
                     </div>
                   ))}
                 </div>
 
-                {/* Divider */}
                 <div style={{ height: '0.99px', background: 'rgba(201, 169, 98, 0.2)', marginBottom: '16px' }} />
 
-                {/* Calendar Days */}
-                <div className="grid grid-cols-7">
+                {/* Calendar Days - Responsive Grid */}
+                <div className="grid grid-cols-7 gap-1">
                   {Array.from({ length: firstDayOfWeek }).map((_, i) => (
-                    <div key={`empty-${i}`} style={{ height: '48px' }} />
+                    <div key={`empty-${i}`} style={{ height: 'clamp(40px, 8vw, 48px)' }} />
                   ))}
 
                   {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
@@ -413,18 +487,17 @@ export default function BookingPage() {
                         onClick={() => setSelectedDate(day)}
                         className="flex items-center justify-center transition-all duration-200 hover:scale-105"
                         style={{
-                          width: '38.71px',
-                          height: '48px',
+                          width: '100%',
+                          aspectRatio: '1/1',
+                          maxWidth: 'clamp(35px, 8vw, 48px)',
                           background: isSelected ? '#F0E0E0' : 'transparent',
                           borderRadius: '9999px',
                           color: isSelected ? '#3D5A4C' : 'rgba(61, 90, 76, 0.8)',
-                          fontSize: '11.9px',
+                          fontSize: 'clamp(11px, 3vw, 14px)',
                           fontWeight: 500,
-                          lineHeight: '20px',
-                          fontFamily: 'Inter',
                           cursor: 'pointer',
                           border: 'none',
-                          boxShadow: isSelected ? '0px 2px 8px rgba(240, 224, 224, 0.4)' : 'none'
+                          margin: '0 auto'
                         }}
                       >
                         {day}
@@ -434,51 +507,49 @@ export default function BookingPage() {
                 </div>
               </div>
               
-              {/* Calendar Legend */}
-              <div className="flex items-center gap-6 mt-6" style={{ paddingTop: '16px', borderTop: '0.99px solid rgba(201, 169, 98, 0.2)' }}>
+              {/* Calendar Legend - Responsive */}
+              <div className="flex flex-wrap items-center gap-4 mt-6 pt-4" style={{ borderTop: '0.99px solid rgba(201, 169, 98, 0.2)' }}>
                 <div className="flex items-center gap-2">
                   <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F0E0E0' }}></div>
-                  <span style={{ fontSize: '10.2px', fontWeight: 500, color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter' }}>Selected</span>
+                  <span style={{ fontSize: 'clamp(9px, 2.5vw, 12px)', color: 'rgba(61, 90, 76, 0.7)' }}>Selected</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10B981', border: 'none' }}></div>
-                  <span style={{ fontSize: '10.2px', fontWeight: 500, color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter' }}>Available</span>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10B981' }}></div>
+                  <span style={{ fontSize: 'clamp(9px, 2.5vw, 12px)', color: 'rgba(61, 90, 76, 0.7)' }}>Available</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {/* Added Unavailable Legend (Red) */}
-                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#EF4444', border: 'none' }}></div>
-                  <span style={{ fontSize: '10.2px', fontWeight: 500, color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter' }}>Unavailable</span>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#EF4444' }}></div>
+                  <span style={{ fontSize: 'clamp(9px, 2.5vw, 12px)', color: 'rgba(61, 90, 76, 0.7)' }}>Unavailable</span>
                 </div>
               </div>
-
             </div>
           </div>
 
           {/* Middle Column - Form Fields */}
-          <div className="flex-1 space-y-10">
+          <div className="w-full lg:flex-1 space-y-6 md:space-y-8">
             {/* Guests */}
             <div>
-              <h3 style={{ fontSize: '14px', fontWeight: 600, lineHeight: '20px', color: '#3D5A4C', display: 'block', marginBottom: '8px', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <h3 style={{ fontSize: 'clamp(12px, 3vw, 14px)', fontWeight: 600, color: '#3D5A4C', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Guests
               </h3>
-              <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '20px', fontFamily: 'Inter' }}>
+              <p style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '16px' }}>
                 Number of guests
               </p>
-              <div className="flex items-center justify-center" style={{ gap: '24px', padding: '16px', background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px' }}>
+              <div className="flex items-center justify-center gap-4 sm:gap-6 p-4" style={{ background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px' }}>
                 <button
                   onClick={() => setGuests(Math.max(1, guests - 1))}
                   className="hover:bg-gray-100 hover:scale-110 flex items-center justify-center transition-all duration-200"
-                  style={{ width: '40px', height: '40px', borderRadius: '9999px', fontSize: '13.6px', fontWeight: 400, lineHeight: '24px', color: '#3D5A4C', background: '#FFFAF5', border: '1px solid rgba(61, 90, 76, 0.2)', cursor: 'pointer', boxShadow: '0px 2px 4px rgba(61, 90, 76, 0.05)' }}
+                  style={{ width: '40px', height: '40px', borderRadius: '9999px', fontSize: 'clamp(13px, 3vw, 16px)', color: '#3D5A4C', background: '#FFFAF5', border: '1px solid rgba(61, 90, 76, 0.2)', cursor: 'pointer' }}
                 >
                   −
                 </button>
-                <span style={{ fontSize: '24px', fontWeight: 500, lineHeight: '32px', color: '#3D5A4C', minWidth: '50px', textAlign: 'center', fontFamily: 'Inter' }}>
+                <span style={{ fontSize: 'clamp(20px, 5vw, 24px)', fontWeight: 500, color: '#3D5A4C', minWidth: '50px', textAlign: 'center' }}>
                   {guests}
                 </span>
                 <button
                   onClick={() => setGuests(guests + 1)}
                   className="hover:bg-gray-100 hover:scale-110 flex items-center justify-center transition-all duration-200"
-                  style={{ width: '40px', height: '40px', borderRadius: '9999px', fontSize: '13.6px', fontWeight: 400, lineHeight: '24px', color: '#3D5A4C', background: '#FFFAF5', border: '1px solid rgba(61, 90, 76, 0.2)', cursor: 'pointer', boxShadow: '0px 2px 4px rgba(61, 90, 76, 0.05)' }}
+                  style={{ width: '40px', height: '40px', borderRadius: '9999px', fontSize: 'clamp(13px, 3vw, 16px)', color: '#3D5A4C', background: '#FFFAF5', border: '1px solid rgba(61, 90, 76, 0.2)', cursor: 'pointer' }}
                 >
                   +
                 </button>
@@ -487,10 +558,10 @@ export default function BookingPage() {
 
             {/* Room */}
             <div>
-              <h3 style={{ fontSize: '14px', fontWeight: 600, lineHeight: '20px', color: '#3D5A4C', display: 'block', marginBottom: '8px', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <h3 style={{ fontSize: 'clamp(12px, 3vw, 14px)', fontWeight: 600, color: '#3D5A4C', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Room
               </h3>
-              <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '20px', fontFamily: 'Inter' }}>
+              <p style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '16px' }}>
                 Select your preferred room
               </p>
               {renderSelect(
@@ -503,10 +574,10 @@ export default function BookingPage() {
 
             {/* Amenities */}
             <div>
-              <h3 style={{ fontSize: '14px', fontWeight: 600, lineHeight: '20px', color: '#3D5A4C', display: 'block', marginBottom: '8px', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <h3 style={{ fontSize: 'clamp(12px, 3vw, 14px)', fontWeight: 600, color: '#3D5A4C', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Amenities
               </h3>
-              <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '20px', fontFamily: 'Inter' }}>
+              <p style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '16px' }}>
                 Choose room amenities
               </p>
               {renderSelect(
@@ -523,15 +594,15 @@ export default function BookingPage() {
 
             {/* Date and Time */}
             <div>
-              <h3 style={{ fontSize: '14px', fontWeight: 600, lineHeight: '20px', color: '#3D5A4C', display: 'block', marginBottom: '8px', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <h3 style={{ fontSize: 'clamp(12px, 3vw, 14px)', fontWeight: 600, color: '#3D5A4C', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Date and Time
               </h3>
-              <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '20px', fontFamily: 'Inter' }}>
+              <p style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '16px' }}>
                 Select date and time slot
               </p>
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <div style={{ flex: '1 1 auto', minWidth: '140px' }}>
-                  <label style={{ fontSize: '10px', color: 'rgba(61, 90, 76, 0.6)', fontFamily: 'Inter', display: 'block', marginBottom: '4px' }}>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1">
+                  <label style={{ fontSize: '10px', color: 'rgba(61, 90, 76, 0.6)', display: 'block', marginBottom: '4px' }}>
                     Check-in Time
                   </label>
                   <input
@@ -540,17 +611,16 @@ export default function BookingPage() {
                     onChange={(e) => setCheckInTime(e.target.value)}
                     style={{
                       width: '100%',
-                      fontSize: '14px',
+                      fontSize: 'clamp(13px, 3vw, 14px)',
                       padding: '10px',
                       borderRadius: '4px',
                       border: '1px solid rgba(61, 90, 76, 0.2)',
-                      fontFamily: 'Inter',
-                      boxSizing: 'border-box'
+                      fontFamily: 'Inter'
                     }}
                   />
                 </div>
-                <div style={{ flex: '1 1 auto', minWidth: '140px' }}>
-                  <label style={{ fontSize: '10px', color: 'rgba(61, 90, 76, 0.6)', fontFamily: 'Inter', display: 'block', marginBottom: '4px' }}>
+                <div className="flex-1">
+                  <label style={{ fontSize: '10px', color: 'rgba(61, 90, 76, 0.6)', display: 'block', marginBottom: '4px' }}>
                     Check-out Time
                   </label>
                   <input
@@ -559,12 +629,11 @@ export default function BookingPage() {
                     onChange={(e) => setCheckOutTime(e.target.value)}
                     style={{
                       width: '100%',
-                      fontSize: '14px',
+                      fontSize: 'clamp(13px, 3vw, 14px)',
                       padding: '10px',
                       borderRadius: '4px',
                       border: '1px solid rgba(61, 90, 76, 0.2)',
-                      fontFamily: 'Inter',
-                      boxSizing: 'border-box'
+                      fontFamily: 'Inter'
                     }}
                   />
                 </div>
@@ -573,46 +642,46 @@ export default function BookingPage() {
           </div>
 
           {/* Right Column - Your Stay Summary */}
-          <div className="flex-1" style={{ background: '#3D5A4C', padding: '40px', borderRadius: '8px', boxShadow: '0px 8px 24px rgba(61, 90, 76, 0.2)' }}>
-            <h2 className={cormorantInfant.className} style={{ fontSize: '24px', fontWeight: 400, lineHeight: '32px', color: '#FFFAF5', marginBottom: '64px' }}>
+          <div className="w-full lg:flex-1" style={{ background: '#3D5A4C', padding: 'clamp(24px, 5vw, 40px)', borderRadius: '8px', boxShadow: '0px 8px 24px rgba(61, 90, 76, 0.2)' }}>
+            <h2 className={cormorantInfant.className} style={{ fontSize: 'clamp(20px, 5vw, 24px)', fontWeight: 400, color: '#FFFAF5', marginBottom: '32px' }}>
               Your Stay
             </h2>
 
             {/* Summary Details */}
-            <div className="space-y-0" style={{ marginBottom: '48px' }}>
-              <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
-                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Check-in</span>
-                <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>
+            <div className="mb-8">
+              <div className="flex justify-between items-center pb-4">
+                <span style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', color: '#FFFAF5' }}>Check-in</span>
+                <span style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', fontWeight: 500, color: '#FFFAF5' }}>
                   {currentMonth.slice(0, 3)} {selectedDate}, {currentYear}
                 </span>
               </div>
               <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
 
-              <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
-                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Guests</span>
-                <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>{guests}</span>
+              <div className="flex justify-between items-center pb-4">
+                <span style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', color: '#FFFAF5' }}>Guests</span>
+                <span style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', fontWeight: 500, color: '#FFFAF5' }}>{guests}</span>
               </div>
               <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
 
-              <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
-                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Room</span>
-                <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>
+              <div className="flex justify-between items-center pb-4">
+                <span style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', color: '#FFFAF5' }}>Room</span>
+                <span style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', fontWeight: 500, color: '#FFFAF5' }}>
                   {selectedRoomLabel}
                 </span>
               </div>
               <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
 
-              <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
-                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Time</span>
-                <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter', textAlign: 'right' }}>
+              <div className="flex justify-between items-center pb-4">
+                <span style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', color: '#FFFAF5' }}>Time</span>
+                <span style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', fontWeight: 500, color: '#FFFAF5', textAlign: 'right' }}>
                   {checkInTime} - {checkOutTime}
                 </span>
               </div>
               <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
 
-              <div className="flex justify-between items-center" style={{ paddingBottom: '0px' }}>
-                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Amenities</span>
-                <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter', textAlign: 'right' }}>
+              <div className="flex justify-between items-center">
+                <span style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', color: '#FFFAF5' }}>Amenities</span>
+                <span style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', fontWeight: 500, color: '#FFFAF5', textAlign: 'right' }}>
                   {selectedAmenities.length > 0 ? selectedAmenities.map(a => a.name).join(", ") : "None"}
                 </span>
               </div>
@@ -621,35 +690,34 @@ export default function BookingPage() {
 
             {/* Error/Success Messages */}
             {error && (
-              <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(239, 68, 68, 0.2)', borderRadius: '4px', textAlign: 'center' }}>
-                <p style={{ fontSize: '12px', color: '#FCA5A5', fontFamily: 'Inter' }}>{error}</p>
+              <div className="mb-4 p-3 rounded" style={{ background: 'rgba(239, 68, 68, 0.2)' }}>
+                <p style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', color: '#FCA5A5', textAlign: 'center' }}>{error}</p>
               </div>
             )}
             {success && (
-              <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(16, 185, 129, 0.2)', borderRadius: '4px', textAlign: 'center' }}>
-                <p style={{ fontSize: '12px', color: '#6EE7B7', fontFamily: 'Inter' }}>{success}</p>
+              <div className="mb-4 p-3 rounded" style={{ background: 'rgba(16, 185, 129, 0.2)' }}>
+                <p style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', color: '#6EE7B7', textAlign: 'center' }}>{success}</p>
               </div>
             )}
 
             {/* Confirm Button */}
-            <div style={{ marginBottom: '24px' }}>
+            <div className="mb-6">
               {isLoggedIn ? (
                 <button
                   onClick={handleConfirmBooking}
                   disabled={loading}
-                  className="group/btn hover:scale-105 transition-all duration-200"
+                  className="group/btn hover:scale-105 transition-all duration-200 w-full"
                   style={{
-                    width: '257px',
+                    maxWidth: '257px',
+                    width: '100%',
                     height: '48px',
                     background: loading ? '#ccc' : '#FFFAF5',
                     boxShadow: '0px 4px 12px rgba(255, 181, 197, 0.3)',
                     border: 'none',
                     borderRadius: '4px',
-                    fontSize: '11.9px',
+                    fontSize: 'clamp(11px, 2.5vw, 12px)',
                     fontWeight: 500,
-                    lineHeight: '20px',
                     color: '#3D5A4C',
-                    fontFamily: 'Inter',
                     cursor: loading ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -667,22 +735,21 @@ export default function BookingPage() {
                   {loading ? 'Processing...' : 'Confirm'}
                 </button>
               ) : (
-                <Link href="/login" style={{ textDecoration: 'none' }}>
+                <Link href="/login" className="block w-full" style={{ textDecoration: 'none' }}>
                   <button
                     type="button"
-                    className="group/btn hover:scale-105 transition-all duration-200"
+                    className="group/btn hover:scale-105 transition-all duration-200 w-full"
                     style={{
-                      width: '257px',
+                      maxWidth: '257px',
+                      width: '100%',
                       height: '48px',
                       background: '#FFFAF5',
                       boxShadow: '0px 4px 12px rgba(255, 181, 197, 0.3)',
                       border: 'none',
                       borderRadius: '4px',
-                      fontSize: '11.9px',
+                      fontSize: 'clamp(11px, 2.5vw, 12px)',
                       fontWeight: 500,
-                      lineHeight: '20px',
                       color: '#3D5A4C',
-                      fontFamily: 'Inter',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -703,7 +770,7 @@ export default function BookingPage() {
             </div>
 
             {/* Cancellation Policy */}
-            <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '19px', color: '#FFFAF5', textAlign: 'center', fontFamily: 'Inter', paddingLeft: '59px' }}>
+            <p style={{ fontSize: 'clamp(9px, 2.5vw, 11px)', color: '#FFFAF5', textAlign: 'center' }}>
               Cancellation is free up to 48 hours before check-in.
             </p>
           </div>
