@@ -441,9 +441,13 @@ export default function BookingPage() {
                   <span style={{ fontSize: '10.2px', fontWeight: 500, color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter' }}>Selected</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {/* Updated the background color to green (#10B981) */}
                   <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10B981', border: 'none' }}></div>
                   <span style={{ fontSize: '10.2px', fontWeight: 500, color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter' }}>Available</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/* Added Unavailable Legend (Red) */}
+                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#EF4444', border: 'none' }}></div>
+                  <span style={{ fontSize: '10.2px', fontWeight: 500, color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter' }}>Unavailable</span>
                 </div>
               </div>
 
