@@ -131,9 +131,6 @@ export default function HomePage() {
               <Link href="/booking" className="text-gray-600 hover:text-green-700 transition font-medium">
                 Booking
               </Link>
-              <Link href="/calendar" className="text-gray-600 hover:text-green-700 transition font-medium">
-                Calendar
-              </Link>
               {isLoggedIn ? (
                 <button
                   onClick={handleLogout}
@@ -167,9 +164,6 @@ export default function HomePage() {
                 </Link>
                 <Link href="/booking" className="text-gray-700 hover:text-green-700 hover:bg-gray-50 px-4 py-2 rounded-lg transition">
                   Booking
-                </Link>
-                <Link href="/calendar" className="text-gray-700 hover:text-green-700 hover:bg-gray-50 px-4 py-2 rounded-lg transition">
-                  Calendar
                 </Link>
                 {isLoggedIn ? (
                   <button
@@ -475,7 +469,7 @@ export default function HomePage() {
             <div>
               <h5 className="text-lg font-semibold mb-4">Quick Links</h5>
               <ul className="space-y-2 text-sm text-black-400">
-                {['Home', 'Bookings', 'Calendar', 'About Us', 'Contact'].map((item) => (
+                {['Home', 'Bookings', 'About Us', 'Contact'].map((item) => (
                   <li key={item}>
                     <a href="#" className="hover:text-white transition flex items-center gap-2">
                       <ChevronRight className="w-4 h-4" />
