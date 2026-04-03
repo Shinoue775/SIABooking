@@ -96,7 +96,7 @@ export default function LandingPage() {
         {/* Background Image - Right Side */}
         <div className="absolute top-0 right-0 h-full" style={{ width: '52%' }}>
           <Image 
-            src= {gcbuildingbg}
+            src={gcbuildingbg}
             alt="Building" 
             className="object-cover"
             fill
@@ -375,7 +375,7 @@ export default function LandingPage() {
             {/* Logo */}
             <div>
               <div className="flex items-start gap-4 mb-4">
-                <div className="w-23 h-23">
+                <div className="w-24 h-24">
                   <Image src={chtmlogo} alt="CHTM" width={92} height={92} className="w-full h-full object-contain" />
                 </div>
                 <div>
@@ -453,5 +453,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 }
