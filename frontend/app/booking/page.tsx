@@ -299,9 +299,6 @@ export default function BookingPage() {
                 Booking
                 <span className="absolute left-0 bottom-0 w-full" style={{ height: '0.99px', background: '#FFB5C5' }}></span>
               </Link>
-              <Link href="/calendar" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '11.9px', fontWeight: 400, lineHeight: '20px' }}>
-                Calendar
-              </Link>
               {isLoggedIn ? (
                 <button
                   onClick={handleLogout}
@@ -433,6 +430,19 @@ export default function BookingPage() {
                   })}
                 </div>
               </div>
+              
+              {/* Calendar Legend */}
+              <div className="flex items-center gap-6 mt-6" style={{ paddingTop: '16px', borderTop: '0.99px solid rgba(201, 169, 98, 0.2)' }}>
+                <div className="flex items-center gap-2">
+                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F0E0E0' }}></div>
+                  <span style={{ fontSize: '10.2px', fontWeight: 500, color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter' }}>Selected</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'transparent', border: '1px solid rgba(61, 90, 76, 0.2)' }}></div>
+                  <span style={{ fontSize: '10.2px', fontWeight: 500, color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter' }}>Available</span>
+                </div>
+              </div>
+
             </div>
           </div>
 
