@@ -488,7 +488,6 @@ export default function LandingPage() {
                 >
                   Bookings
                 </Link>
-                <Link href="/calendar" className="hover:text-black transition" style={{ fontSize: 'clamp(13px, 3.5vw, 14px)', color: 'rgba(0, 0, 0, 0.6)' }}>Calendar</Link>
                 <Link href="/login" className="hover:text-black transition" style={{ fontSize: 'clamp(13px, 3.5vw, 14px)', color: 'rgba(0, 0, 0, 0.6)' }}>Login</Link>
               </div>
             </div>
