@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import logo from '../images/logos1.png'
 import gordoncolllegelogo from '../images/chtmlogo.png'
+import gcbuildingbg from '../images/gcbuildingbg.jpg'
 import img1 from '../images/1.jpg'
 import img2 from '../images/2.jpg'
 import img3 from '../images/3.jpg'
@@ -195,7 +196,7 @@ export default function HomePage() {
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")',
+            backgroundImage: `url(${gcbuildingbg.src})`,
           }}
         >
           <div className="absolute inset-0 bg-black/60"></div>
@@ -332,7 +333,6 @@ export default function HomePage() {
 
                 {/* Rating */}
                 
-
                 {/* Review */}
                 <div className="bg-gray-50 rounded-lg p-4 mb-6">
                   <p className="text-gray-600 italic text-sm">
@@ -418,7 +418,6 @@ export default function HomePage() {
 
                 {/* Rating */}
                 
-
                 {/* Review */}
                 <div className="bg-gray-50 rounded-lg p-4 mb-6">
                   <p className="text-gray-600 italic text-sm">
