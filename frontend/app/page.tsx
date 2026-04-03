@@ -43,6 +43,14 @@ export default function LandingPage() {
 
   const closeMenu = () => setIsMenuOpen(false);
 
+  // Handle booking navigation - redirect to login if not logged in
+  const handleBookingClick = (e: React.MouseEvent) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      window.location.href = '/login';
+    }
+  };
+
   if (isLoggedIn) {
     return <HomePage />;
   }
@@ -83,7 +91,12 @@ export default function LandingPage() {
                 Home
                 <span className="absolute left-0 bottom-0 w-full" style={{ height: '1px', background: '#FFB5C5' }}></span>
               </Link>
-              <Link href="/booking" className="py-2" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '14px' }}>
+              <Link 
+                href={isLoggedIn ? "/booking" : "/login"} 
+                onClick={handleBookingClick}
+                className="py-2" 
+                style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '14px' }}
+              >
                 Booking
               </Link>
               {isLoggedIn ? (
@@ -144,8 +157,14 @@ export default function LandingPage() {
               Home
             </Link>
             <Link 
-              href="/booking" 
-              onClick={closeMenu}
+              href={isLoggedIn ? "/booking" : "/login"}
+              onClick={(e) => {
+                closeMenu();
+                if (!isLoggedIn) {
+                  e.preventDefault();
+                  window.location.href = '/login';
+                }
+              }}
               className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
               style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '16px' }}
             >
@@ -456,7 +475,19 @@ export default function LandingPage() {
               </h4>
               <div className="flex flex-col gap-2 mt-4">
                 <Link href="/" className="hover:text-black transition" style={{ fontSize: 'clamp(13px, 3.5vw, 14px)', color: 'rgba(0, 0, 0, 0.6)' }}>Home</Link>
-                <Link href="/booking" className="hover:text-black transition" style={{ fontSize: 'clamp(13px, 3.5vw, 14px)', color: 'rgba(0, 0, 0, 0.6)' }}>Bookings</Link>
+                <Link 
+                  href={isLoggedIn ? "/booking" : "/login"}
+                  onClick={(e) => {
+                    if (!isLoggedIn) {
+                      e.preventDefault();
+                      window.location.href = '/login';
+                    }
+                  }}
+                  className="hover:text-black transition" 
+                  style={{ fontSize: 'clamp(13px, 3.5vw, 14px)', color: 'rgba(0, 0, 0, 0.6)' }}
+                >
+                  Bookings
+                </Link>
                 <Link href="/calendar" className="hover:text-black transition" style={{ fontSize: 'clamp(13px, 3.5vw, 14px)', color: 'rgba(0, 0, 0, 0.6)' }}>Calendar</Link>
                 <Link href="/login" className="hover:text-black transition" style={{ fontSize: 'clamp(13px, 3.5vw, 14px)', color: 'rgba(0, 0, 0, 0.6)' }}>Login</Link>
               </div>
