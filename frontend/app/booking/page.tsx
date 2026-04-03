@@ -22,7 +22,6 @@ export default function BookingPage() {
   const [guests, setGuests] = useState(2);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
-  // Updated variable names
   const [checkInTime, setCheckInTime] = useState("09:00");
   const [checkOutTime, setCheckOutTime] = useState("11:00");
   
@@ -71,9 +70,9 @@ export default function BookingPage() {
           border: 'none',
           outline: 'none',
           cursor: 'pointer',
-          appearance: 'auto',
-          WebkitAppearance: 'menulist',
-          MozAppearance: 'menulist'
+          appearance: 'none',
+          WebkitAppearance: 'none',
+          MozAppearance: 'none'
         }}
       >
         {placeholder && <option value="">{placeholder}</option>}
@@ -184,7 +183,6 @@ export default function BookingPage() {
 
       const dateStr = `${currentYear}-${String(monthIndex + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
       
-      // Updated formatting to use checkInTime and checkOutTime
       const start_at = `${dateStr}T${checkInTime}:00`;
       const end_at = `${dateStr}T${checkOutTime}:00`;
 
@@ -528,7 +526,6 @@ export default function BookingPage() {
               </p>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <div style={{ flex: '1 1 auto', minWidth: '140px' }}>
-                  {/* Updated Label */}
                   <label style={{ fontSize: '10px', color: 'rgba(61, 90, 76, 0.6)', fontFamily: 'Inter', display: 'block', marginBottom: '4px' }}>
                     Check-in Time
                   </label>
@@ -548,7 +545,6 @@ export default function BookingPage() {
                   />
                 </div>
                 <div style={{ flex: '1 1 auto', minWidth: '140px' }}>
-                  {/* Updated Label */}
                   <label style={{ fontSize: '10px', color: 'rgba(61, 90, 76, 0.6)', fontFamily: 'Inter', display: 'block', marginBottom: '4px' }}>
                     Check-out Time
                   </label>
