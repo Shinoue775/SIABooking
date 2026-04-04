@@ -524,7 +524,7 @@ export default function HomePage() {
       {isModalOpen && selectedRoom && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity duration-300">
           <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto">
-            {/* Close button */}
+            {/* Close button (Top Right) */}
             <button 
               onClick={() => setIsModalOpen(false)} 
               className="absolute top-3 sm:top-4 right-3 sm:right-4 z-10 bg-white/90 p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition shadow-sm"
@@ -567,11 +567,11 @@ export default function HomePage() {
                 ))}
               </div>
 
-              {/* Modal Actions */}
-              <div className="flex flex-col sm:flex-row items-center justify-end gap-3 sm:gap-4 border-t border-gray-100 pt-5 sm:pt-6">
+              {/* Modal Actions - ALWAYS SIDE BY SIDE */}
+              <div className="flex flex-row items-center justify-end gap-3 border-t border-gray-100 pt-5 sm:pt-6 w-full">
                 <button 
                   onClick={() => setIsModalOpen(false)} 
-                  className="w-full sm:w-auto px-5 sm:px-6 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition text-sm sm:text-base"
+                  className="flex-1 sm:flex-none px-2 sm:px-6 py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition text-sm sm:text-base whitespace-nowrap text-center"
                 >
                   Close
                 </button>
@@ -584,10 +584,10 @@ export default function HomePage() {
                     }
                     setIsModalOpen(false);
                   }}
-                  className="w-full sm:w-auto bg-green-700 hover:bg-green-800 text-white px-6 sm:px-8 py-2 rounded-lg font-medium transition flex items-center justify-center gap-2 text-sm sm:text-base"
+                  className="flex-[2] sm:flex-none bg-green-700 hover:bg-green-800 text-white px-3 sm:px-8 py-2.5 rounded-lg font-medium transition flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base whitespace-nowrap"
                 >
                   Book This Room
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4 shrink-0" />
                 </Link>
               </div>
             </div>
