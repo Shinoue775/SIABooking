@@ -4,12 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { Cormorant, Inter, Montserrat } from "next/font/google";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import HomePage from "./home/page";
+
+// Images
 import chtmlogo from './images/chtmlogo.png';
 import gcllgo from './images/gcllgo.jpg';
 import loginchtmbg from './images/loginchtmbg.jpg';
 import gcbuildingbg from './images/gcbuildingbg.jpg';
+import logo from './images/logos1.png'; // Added Home Page logo
 
 const cormorant = Cormorant({ subsets: ["latin"], weight: ["300", "400", "600"] });
 const inter = Inter({ subsets: ["latin"] });
@@ -17,7 +21,8 @@ const montserrat = Montserrat({ subsets: ["latin"], weight: ["700"] });
 
 export default function LandingPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const syncSession = async () => {
@@ -38,16 +43,16 @@ export default function LandingPage() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setIsMenuOpen(false);
+    setMobileMenuOpen(false);
   };
 
-  const closeMenu = () => setIsMenuOpen(false);
+  const closeMenu = () => setMobileMenuOpen(false);
 
   // Handle booking navigation - redirect to login if not logged in
   const handleBookingClick = (e: React.MouseEvent) => {
     if (!isLoggedIn) {
       e.preventDefault();
-      window.location.href = '/login';
+      router.push('/login');
     }
   };
 
@@ -57,36 +62,24 @@ export default function LandingPage() {
 
   return (
     <div className={`bg-white ${inter.className}`}>
-      {/* Navbar with Hamburger Menu */}
+      {/* Navbar - Replaced with Home Page Navbar */}
       <nav className="sticky top-0 z-50 bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-3 sm:py-4 md:py-5">
+          <div className="flex justify-between items-center py-3 sm:py-4">
             {/* Logo Section */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 shrink-0">
-                <Image src={chtmlogo} alt="CHTM" width={48} height={48} className="w-full h-full object-contain" />
-              </div>
-              <div className="flex flex-col">
-                <h1 
-                  className={`font-bold leading-tight ${montserrat.className}`} 
-                  style={{ color: '#FF0080', fontSize: 'clamp(14px, 4vw, 22px)' }}
-                >
-                  CHTM-RRS
-                </h1>
-                <p 
-                  className={`hidden xs:block ${inter.className}`} 
-                  style={{ color: '#3D5A4C', fontSize: 'clamp(6px, 2vw, 8px)', fontWeight: 700, letterSpacing: '0.3px' }}
-                >
-                  ROOM RESERVATION SYSTEM
-                </p>
-              </div>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 shrink-0">
-                <Image src={gcllgo} alt="GC" width={48} height={48} className="w-full h-full object-contain" />
-              </div>
-            </div>
+            <Link href="/" className="flex items-center shrink-0">
+              <Image 
+                src={logo} 
+                alt="CHTM-RRS Logo"
+                width={140}
+                height={46}
+                className="object-contain h-10 sm:h-12 w-auto"
+                priority
+              />
+            </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex gap-5 lg:gap-8 items-center">
+            <div className="hidden md:flex items-center gap-6 lg:gap-8">
               <Link href="/" className="relative py-2" style={{ color: '#3D5A4C', fontSize: '14px', fontWeight: 500 }}>
                 Home
                 <span className="absolute left-0 bottom-0 w-full" style={{ height: '1px', background: '#FFB5C5' }}></span>
@@ -116,24 +109,24 @@ export default function LandingPage() {
 
             {/* Hamburger Menu Button - Mobile */}
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg focus:outline-none"
               aria-label="Toggle menu"
             >
               <div className="relative w-6 h-5">
                 <span 
                   className={`absolute left-0 w-full h-0.5 bg-[#3D5A4C] transition-all duration-300 ease-in-out ${
-                    isMenuOpen ? 'rotate-45 top-2' : 'top-0'
+                    mobileMenuOpen ? 'rotate-45 top-2' : 'top-0'
                   }`}
                 />
                 <span 
                   className={`absolute left-0 w-full h-0.5 bg-[#3D5A4C] top-2 transition-opacity duration-300 ease-in-out ${
-                    isMenuOpen ? 'opacity-0' : 'opacity-100'
+                    mobileMenuOpen ? 'opacity-0' : 'opacity-100'
                   }`}
                 />
                 <span 
                   className={`absolute left-0 w-full h-0.5 bg-[#3D5A4C] transition-all duration-300 ease-in-out ${
-                    isMenuOpen ? '-rotate-45 top-2' : 'top-4'
+                    mobileMenuOpen ? '-rotate-45 top-2' : 'top-4'
                   }`}
                 />
               </div>
@@ -144,7 +137,7 @@ export default function LandingPage() {
         {/* Mobile Menu Dropdown */}
         <div 
           className={`md:hidden bg-white border-t border-gray-100 overflow-hidden transition-all duration-300 ease-in-out ${
-            isMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+            mobileMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
           <div className="flex flex-col px-4 py-3 space-y-2">
@@ -162,7 +155,7 @@ export default function LandingPage() {
                 closeMenu();
                 if (!isLoggedIn) {
                   e.preventDefault();
-                  window.location.href = '/login';
+                  router.push('/login');
                 }
               }}
               className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
@@ -480,7 +473,7 @@ export default function LandingPage() {
                   onClick={(e) => {
                     if (!isLoggedIn) {
                       e.preventDefault();
-                      window.location.href = '/login';
+                      router.push('/login');
                     }
                   }}
                   className="hover:text-black transition" 
