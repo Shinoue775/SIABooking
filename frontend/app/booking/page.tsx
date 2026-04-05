@@ -4,9 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { Cormorant, Inter, Montserrat } from "next/font/google";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
 import chtmlogo from '../images/chtmlogo.png';
 import gcllgo from '../images/gcllgo.jpg';
+import logo from '../images/logos1.png'; // Added Home Page logo
 
 const cormorant = Cormorant({ subsets: ["latin"], weight: ["300", "400", "600"] });
 const cormorantInfant = Cormorant({ subsets: ["latin"], weight: ["400"] });
@@ -15,6 +17,7 @@ const montserrat = Montserrat({ subsets: ["latin"], weight: ["700"] });
 
 export default function BookingPage() {
   const BACKEND_URL = '';
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(4);
   const [currentMonth, setCurrentMonth] = useState("February");
   const [currentYear, setCurrentYear] = useState(2026);
@@ -230,6 +233,13 @@ export default function BookingPage() {
 
   const closeMenu = () => setIsMenuOpen(false);
 
+  const handleBookingClick = (e: React.MouseEvent) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      router.push('/login');
+    }
+  };
+
   useEffect(() => {
     if (rooms.length === 0) {
       return;
@@ -277,46 +287,46 @@ export default function BookingPage() {
 
   return (
     <div className={`min-h-screen ${inter.className}`} style={{ background: '#FFFAF5' }}>
-      {/* Navbar with Hamburger Menu */}
-      <nav className="sticky top-0 z-50" style={{ background: 'rgba(254, 253, 253, 0.95)', boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)' }}>
+      {/* Navbar - Matching Home Page with hamburger menu */}
+      <nav className="sticky top-0 z-50 bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-3 sm:py-4">
             {/* Logo Section */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 shrink-0">
-                <Image src={chtmlogo} alt="CHTM" width={40} height={40} className="w-full h-full object-contain" />
-              </div>
-              <div className="flex flex-col">
-                <h1 className={`font-bold leading-tight ${montserrat.className}`} style={{ color: '#FF0080', fontSize: 'clamp(14px, 4vw, 20px)' }}>
-                  CHTM-RRS
-                </h1>
-                <p className={`hidden xs:block ${inter.className}`} style={{ color: '#3D5A4C', fontSize: 'clamp(6px, 2vw, 7px)', fontWeight: 700, letterSpacing: '0.3px' }}>
-                  ROOM RESERVATION SYSTEM
-                </p>
-              </div>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 shrink-0">
-                <Image src={gcllgo} alt="GC" width={40} height={40} className="w-full h-full object-contain" />
-              </div>
-            </div>
+            <Link href="/" className="flex items-center shrink-0">
+              <Image 
+                src={logo} 
+                alt="CHTM-RRS Logo"
+                width={140}
+                height={46}
+                className="object-contain h-10 sm:h-12 w-auto"
+                priority
+              />
+            </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex gap-6 lg:gap-12 items-center">
-              <Link href="/" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: 'clamp(11px, 2vw, 12px)', fontWeight: 400 }}>
+            <div className="hidden md:flex items-center gap-6 lg:gap-8">
+              <Link href="/" className="relative py-2" style={{ color: '#3D5A4C', fontSize: '14px', fontWeight: 500 }}>
                 Home
               </Link>
-              <Link href="/booking" className="relative" style={{ color: '#3D5A4C', fontSize: 'clamp(11px, 2vw, 12px)', fontWeight: 500 }}>
+              <Link 
+                href={isLoggedIn ? "/booking" : "/login"} 
+                onClick={handleBookingClick}
+                className="relative py-2" 
+                style={{ color: '#3D5A4C', fontSize: '14px', fontWeight: 500 }}
+              >
                 Booking
-                <span className="absolute left-0 bottom-0 w-full" style={{ height: '0.99px', background: '#FFB5C5' }}></span>
+                <span className="absolute left-0 bottom-0 w-full" style={{ height: '1px', background: '#FFB5C5' }}></span>
               </Link>
               {isLoggedIn ? (
                 <button
                   onClick={handleLogout}
-                  style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: 'clamp(11px, 2vw, 12px)', fontWeight: 500, background: 'transparent', border: 'none', cursor: 'pointer' }}
+                  className="py-2"
+                  style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '14px', background: 'transparent', border: 'none', cursor: 'pointer' }}
                 >
                   Logout
                 </button>
               ) : (
-                <Link href="/login" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: 'clamp(11px, 2vw, 12px)', fontWeight: 400 }}>
+                <Link href="/login" className="py-2" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '14px' }}>
                   Login
                 </Link>
               )}
@@ -360,15 +370,21 @@ export default function BookingPage() {
               href="/" 
               onClick={closeMenu}
               className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
-              style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '16px' }}
+              style={{ color: '#3D5A4C', fontSize: '16px', fontWeight: 500 }}
             >
               Home
             </Link>
             <Link 
-              href="/booking" 
-              onClick={closeMenu}
+              href={isLoggedIn ? "/booking" : "/login"}
+              onClick={(e) => {
+                closeMenu();
+                if (!isLoggedIn) {
+                  e.preventDefault();
+                  router.push('/login');
+                }
+              }}
               className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
-              style={{ color: '#3D5A4C', fontSize: '16px', fontWeight: 500 }}
+              style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '16px' }}
             >
               Booking
             </Link>
