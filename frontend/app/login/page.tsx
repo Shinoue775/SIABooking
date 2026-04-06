@@ -151,7 +151,7 @@ export default function LoginPage() {
           {/* Footer Copyright */}
           <div className="mt-8 sm:mt-10 text-center">
             <p className="text-gray-400 text-xs sm:text-sm">
-              © 2025 GCATTEND. All Rights Reserved.
+              © 2026 CHTMRRS. All Rights Reserved.
             </p>
           </div>
         </div>
