@@ -3,55 +3,90 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Cormorant, Inter, Montserrat } from "next/font/google";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from '@/lib/supabaseClient';
 import logo from '../images/logos1.png';
-import chtmlogo from '../images/chtmlogo.png';
-import gcllgo from '../images/gcllgo.jpg';
 
 const cormorant = Cormorant({ subsets: ["latin"], weight: ["300", "400", "600"] });
 const cormorantInfant = Cormorant({ subsets: ["latin"], weight: ["400"] });
 const inter = Inter({ subsets: ["latin"] });
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["700"] });
 
+// Month names array
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
 export default function BookingPage() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [currentMonth, setCurrentMonth] = useState("February");
-  const [currentYear, setCurrentYear] = useState(2026);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [guests, setGuests] = useState(2);
   const [roomType, setRoomType] = useState("Standard Room B - ₱2,500");
-
-  const daysInMonth = 28; // February 2026
-  const firstDayOfWeek = 6; // February 1, 2026 is Sunday
-
-  // Get today's date for backdate prevention
-  const today = new Date();
-  const currentDay = today.getDate();
-  const currentMonthNum = today.getMonth() + 1; // 0-indexed
-  const currentYearNum = today.getFullYear();
-
-  // Simulated unavailable dates (example: 5, 6, 12, 13, 19, 20, 26, 27)
-  const unavailableDates = [5, 6, 12, 13, 19, 20, 26, 27];
   
-  // Available dates (excluding unavailable and past dates)
-  const isDateAvailable = (day: number): boolean => {
-    // Check if date is in the past
-    if (currentYearNum === 2026 && currentMonth === "February") {
-      if (day < currentDay) return false;
+  // Dynamic calendar state
+  const today = new Date();
+  const [currentDisplayMonth, setCurrentDisplayMonth] = useState(today.getMonth());
+  const [currentDisplayYear, setCurrentDisplayYear] = useState(today.getFullYear());
+
+  // Get current month details
+  const currentMonthName = monthNames[currentDisplayMonth];
+  const currentYearNum = currentDisplayYear;
+
+  // Calculate days in current month
+  const daysInMonth = new Date(currentDisplayYear, currentDisplayMonth + 1, 0).getDate();
+  
+  // Calculate first day of week (0 = Sunday, 1 = Monday, etc.)
+  const firstDayOfMonth = new Date(currentDisplayYear, currentDisplayMonth, 1).getDay();
+
+  // Get today's date for comparison
+  const todayDate = today.getDate();
+  const todayMonth = today.getMonth();
+  const todayYear = today.getFullYear();
+
+  // Simulated unavailable dates (example dates - you can replace with API data)
+  const unavailableDates = useMemo(() => {
+    // Generate some random unavailable dates for demo
+    // In production, this would come from your backend/database
+    const unavailable: number[] = [];
+    const currentMonth = currentDisplayMonth;
+    const currentYear = currentDisplayYear;
+    
+    // Example: Mark every weekend as unavailable, plus some random dates
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentYear, currentMonth, day);
+      const dayOfWeek = date.getDay();
+      
+      // Mark Saturdays (6) and Sundays (0) as unavailable
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        unavailable.push(day);
+      }
+      
+      // Add some random unavailable dates (for demo)
+      if (day === 5 || day === 12 || day === 19 || day === 26) {
+        if (!unavailable.includes(day)) {
+          unavailable.push(day);
+        }
+      }
     }
-    // Check if date is unavailable
-    return !unavailableDates.includes(day);
+    
+    return unavailable;
+  }, [currentDisplayMonth, currentDisplayYear, daysInMonth]);
+
+  // Check if a date is in the past
+  const isDatePast = (day: number): boolean => {
+    const checkDate = new Date(currentDisplayYear, currentDisplayMonth, day);
+    const todayStart = new Date(todayYear, todayMonth, todayDate);
+    return checkDate < todayStart;
   };
 
-  const isDatePast = (day: number): boolean => {
-    if (currentYearNum === 2026 && currentMonth === "February") {
-      return day < currentDay;
-    }
-    return false;
+  // Check if a date is available
+  const isDateAvailable = (day: number): boolean => {
+    if (isDatePast(day)) return false;
+    return !unavailableDates.includes(day);
   };
 
   const roomRates: Record<string, number> = {
@@ -108,7 +143,42 @@ export default function BookingPage() {
 
   const handleDateSelect = (day: number) => {
     if (isDateAvailable(day) && !isDatePast(day)) {
-      setSelectedDate(day);
+      const selectedDateTime = new Date(currentDisplayYear, currentDisplayMonth, day);
+      setSelectedDate(selectedDateTime);
+    }
+  };
+
+  const handlePreviousMonth = () => {
+    if (currentDisplayMonth === 0) {
+      setCurrentDisplayMonth(11);
+      setCurrentDisplayYear(currentDisplayYear - 1);
+    } else {
+      setCurrentDisplayMonth(currentDisplayMonth - 1);
+    }
+    setSelectedDate(null); // Clear selection when changing months
+  };
+
+  const handleNextMonth = () => {
+    // Prevent going too far into the future (optional - limit to 1 year ahead)
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() + 1);
+    
+    let newMonth = currentDisplayMonth;
+    let newYear = currentDisplayYear;
+    
+    if (currentDisplayMonth === 11) {
+      newMonth = 0;
+      newYear = currentDisplayYear + 1;
+    } else {
+      newMonth = currentDisplayMonth + 1;
+      newYear = currentDisplayYear;
+    }
+    
+    // Check if we're within allowed range
+    if (new Date(newYear, newMonth, 1) <= maxDate) {
+      setCurrentDisplayMonth(newMonth);
+      setCurrentDisplayYear(newYear);
+      setSelectedDate(null); // Clear selection when changing months
     }
   };
 
@@ -121,7 +191,8 @@ export default function BookingPage() {
         background: 'rgba(156, 163, 175, 0.1)',
         color: 'rgba(156, 163, 175, 0.5)',
         cursor: 'not-allowed',
-        boxShadow: 'none'
+        boxShadow: 'none',
+        border: 'none'
       };
     }
     
@@ -130,16 +201,29 @@ export default function BookingPage() {
         background: isSelected ? '#FEE2E2' : '#FEF2F2',
         color: isSelected ? '#DC2626' : '#EF4444',
         cursor: 'not-allowed',
-        boxShadow: isSelected ? '0px 2px 8px rgba(239, 68, 68, 0.2)' : 'none'
+        boxShadow: isSelected ? '0px 2px 8px rgba(239, 68, 68, 0.2)' : 'none',
+        border: isSelected ? '1px solid #DC2626' : 'none'
       };
     }
+    
+    // Check if this is today's date
+    const isToday = day === todayDate && 
+                    currentDisplayMonth === todayMonth && 
+                    currentDisplayYear === todayYear;
     
     return {
       background: isSelected ? '#DCFCE7' : 'transparent',
       color: isSelected ? '#16A34A' : '#3D5A4C',
       cursor: 'pointer',
-      boxShadow: isSelected ? '0px 2px 8px rgba(34, 197, 94, 0.2)' : 'none'
+      boxShadow: isSelected ? '0px 2px 8px rgba(34, 197, 94, 0.2)' : 'none',
+      border: isToday && !isSelected ? '2px solid #22C55E' : (isSelected ? '1px solid #16A34A' : 'none'),
+      fontWeight: isToday ? 700 : 500
     };
+  };
+
+  const formatSelectedDate = (date: Date | null): string => {
+    if (!date) return 'Not selected';
+    return `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   };
 
   return (
@@ -294,7 +378,7 @@ export default function BookingPage() {
             </p>
 
             {/* Calendar Legend */}
-            <div className="flex items-center gap-6 mb-6">
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-6">
               <div className="flex items-center gap-2">
                 <div style={{ width: '16px', height: '16px', background: '#DCFCE7', borderRadius: '4px', border: '1px solid #22C55E' }} />
                 <span style={{ fontSize: '11px', color: '#16A34A', fontFamily: 'Inter' }}>Available</span>
@@ -307,6 +391,10 @@ export default function BookingPage() {
                 <div style={{ width: '16px', height: '16px', background: 'rgba(156, 163, 175, 0.1)', borderRadius: '4px', border: '1px solid #9CA3AF' }} />
                 <span style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Past Date</span>
               </div>
+              <div className="flex items-center gap-2">
+                <div style={{ width: '16px', height: '16px', background: 'transparent', borderRadius: '4px', border: '2px solid #22C55E' }} />
+                <span style={{ fontSize: '11px', color: '#22C55E', fontFamily: 'Inter', fontWeight: 700 }}>Today</span>
+              </div>
             </div>
             
             <div className="group" style={{ background: '#FFFAF5', boxShadow: '0px 4px 12px rgba(61, 90, 76, 0.08)', borderRadius: '8px', padding: 'clamp(20px, 5vw, 32.9px)', transition: 'all 0.3s ease', border: '1px solid rgba(61, 90, 76, 0.05)' }}>
@@ -315,7 +403,7 @@ export default function BookingPage() {
                 <button 
                   className="hover:bg-gray-100 flex items-center justify-center transition-all duration-200"
                   style={{ width: '35.99px', height: '35.99px', borderRadius: '9999px', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                  onClick={() => {/* Previous month logic */}}
+                  onClick={handlePreviousMonth}
                 >
                   <svg width="20" height="20" fill="none" stroke="#3D5A4C" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -324,20 +412,20 @@ export default function BookingPage() {
                 
                 <div className="flex items-center" style={{ gap: '1px' }}>
                   <span style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#3D5A4C', fontFamily: 'Inter' }}>
-                    {currentMonth}
+                    {currentMonthName}
                   </span>
                   <span style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#3D5A4C', fontFamily: 'Inter' }}>
                     ,
                   </span>
                   <span style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#FFB5C5', fontFamily: 'Inter' }}>
-                    {currentYear}
+                    {currentYearNum}
                   </span>
                 </div>
 
                 <button 
                   className="hover:bg-gray-100 flex items-center justify-center transition-all duration-200"
                   style={{ width: '35.99px', height: '35.99px', borderRadius: '9999px', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                  onClick={() => {/* Next month logic */}}
+                  onClick={handleNextMonth}
                 >
                   <svg width="20" height="20" fill="none" stroke="#3D5A4C" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -366,15 +454,20 @@ export default function BookingPage() {
                 {/* Calendar Days */}
                 <div className="grid grid-cols-7 gap-y-1">
                   {/* Empty cells for days before month starts */}
-                  {Array.from({ length: firstDayOfWeek }).map((_, i) => (
+                  {Array.from({ length: firstDayOfMonth }).map((_, i) => (
                     <div key={`empty-${i}`} style={{ height: '48px' }} />
                   ))}
 
                   {/* Days of the month */}
                   {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-                    const isSelected = day === selectedDate;
+                    const isSelected = selectedDate?.getDate() === day && 
+                                      selectedDate?.getMonth() === currentDisplayMonth && 
+                                      selectedDate?.getFullYear() === currentDisplayYear;
                     const isPast = isDatePast(day);
                     const isAvailable = isDateAvailable(day);
+                    const isToday = day === todayDate && 
+                                   currentDisplayMonth === todayMonth && 
+                                   currentDisplayYear === todayYear;
                     const buttonStyle = getDateButtonStyle(day, isSelected);
 
                     return (
@@ -382,21 +475,33 @@ export default function BookingPage() {
                         key={day}
                         onClick={() => handleDateSelect(day)}
                         disabled={isPast || !isAvailable}
-                        className="flex items-center justify-center transition-all duration-200 mx-auto disabled:opacity-100"
+                        className="flex items-center justify-center transition-all duration-200 mx-auto disabled:opacity-100 relative"
                         style={{
                           width: 'clamp(32px, 8vw, 38.71px)',
                           height: '48px',
                           borderRadius: '9999px',
                           fontSize: '11.9px',
-                          fontWeight: 500,
+                          fontWeight: buttonStyle.fontWeight || 500,
                           lineHeight: '20px',
                           fontFamily: 'Inter',
-                          border: 'none',
+                          border: buttonStyle.border,
                           opacity: isPast ? 0.5 : 1,
                           ...buttonStyle
                         }}
                       >
                         {day}
+                        {isToday && !isSelected && (
+                          <span 
+                            style={{
+                              position: 'absolute',
+                              bottom: '4px',
+                              width: '4px',
+                              height: '4px',
+                              borderRadius: '50%',
+                              background: '#22C55E'
+                            }}
+                          />
+                        )}
                       </button>
                     );
                   })}
@@ -408,7 +513,7 @@ export default function BookingPage() {
             {selectedDate && (
               <div className="mt-4 p-3 rounded-lg" style={{ background: '#DCFCE7' }}>
                 <p style={{ fontSize: '12px', color: '#16A34A', fontFamily: 'Inter' }}>
-                  Selected Check-in: {currentMonth} {selectedDate}, {currentYear}
+                  Selected Check-in: {formatSelectedDate(selectedDate)}
                 </p>
               </div>
             )}
@@ -527,7 +632,7 @@ export default function BookingPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span style={{ marginLeft: '8px', fontSize: '12px', color: '#3D5A4C', fontFamily: 'Inter' }}>
-                      {selectedDate ? `${currentMonth} ${selectedDate}, ${currentYear}` : 'Select date'}
+                      {selectedDate ? formatSelectedDate(selectedDate).split(',')[0] : 'Select date'}
                     </span>
                   </div>
                   <div className="flex items-center justify-center flex-1">
@@ -552,7 +657,7 @@ export default function BookingPage() {
               <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
                 <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Check-in</span>
                 <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>
-                  {selectedDate ? `${currentMonth} ${selectedDate}, ${currentYear}` : 'Not selected'}
+                  {formatSelectedDate(selectedDate)}
                 </span>
               </div>
               <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
