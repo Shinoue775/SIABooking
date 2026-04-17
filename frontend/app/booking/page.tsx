@@ -3,7 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Cormorant, Inter, Montserrat } from "next/font/google";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from '@/lib/supabaseClient';
+import logo from '../images/logos1.png';
 import chtmlogo from '../images/chtmlogo.png';
 import gcllgo from '../images/gcllgo.jpg';
 
@@ -13,93 +16,212 @@ const inter = Inter({ subsets: ["latin"] });
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["700"] });
 
 export default function BookingPage() {
+  const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedDate, setSelectedDate] = useState(4);
   const [currentMonth, setCurrentMonth] = useState("February");
   const [currentYear, setCurrentYear] = useState(2026);
   const [guests, setGuests] = useState(2);
-  const [roomType, setRoomType] = useState("Standard Room - ₱2,500");
+  const [roomType, setRoomType] = useState("Standard Room B - ₱2,500");
   const [amenities, setAmenities] = useState("Air Conditioning");
 
   const daysInMonth = 28; // February 2026
   const firstDayOfWeek = 6; // February 1, 2026 is Sunday
 
   const roomRates: Record<string, number> = {
-    "Standard Room - ₱2,500": 2500,
-    "Deluxe Room - ₱4,500": 4500
+    "Standard Room B - ₱2,500": 2500,
+    "Deluxe Room A - ₱4,500": 4500
   };
   const subtotal = roomRates[roomType] ?? 2500;
   const taxes = 85.00;
   const total = subtotal + taxes;
 
+  useEffect(() => {
+    const syncSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setIsLoggedIn(!!session)
+    }
+
+    syncSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setIsLoggedIn(false)
+    setMobileMenuOpen(false)
+    router.replace('/')
+  }
+
+  const handleBookingClick = (e: React.MouseEvent) => {
+    if (!isLoggedIn) {
+      e.preventDefault()
+      router.push('/login')
+    }
+  }
+
+  const closeMenu = () => setMobileMenuOpen(false);
+
   return (
     <div className={`min-h-screen ${inter.className}`} style={{ background: '#FFFAF5' }}>
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 h-20" style={{ background: 'rgba(254, 253, 253, 0.91)', boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)' }}>
-        <div className="max-w-7xl mx-auto px-12 h-full">
-          <div className="flex justify-between items-center h-full">
+      {/* Navbar - Same as Homepage */}
+      <nav className="sticky top-0 z-50 bg-white shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-3 sm:py-4">
             {/* Logo Section */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8">
-                <Image src={chtmlogo} alt="CHTM" width={32} height={32} className="w-full h-full object-contain" />
-              </div>
-              <div className="flex flex-col items-center">
-                <h1 className={`font-bold ${montserrat.className}`} style={{ color: '#FF0080', fontSize: '24px', lineHeight: '26px', fontFamily: 'Montserrat, serif' }}>
-                  CHTM-RRS
-                </h1>
-                <p className={inter.className} style={{ color: '#3D5A4C', fontSize: '7px', fontWeight: 700, lineHeight: '9px', letterSpacing: '0.3px', fontFamily: 'Inter, serif' }}>ROOM RESERVATION SYSTEM</p>
-              </div>
-              <div className="w-8 h-8">
-                <Image src={gcllgo} alt="GC" width={32} height={32} className="w-full h-full object-contain" />
-              </div>
-            </div>
+            <Link href="/" className="flex items-center shrink-0">
+              <Image 
+                src={logo} 
+                alt="CHTM-RRS Logo"
+                width={140}
+                height={46}
+                className="object-contain h-10 sm:h-12 w-auto"
+                priority
+              />
+            </Link>
 
-            {/* Nav Links */}
-            <div className="flex gap-12">
-              <Link href="/" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '11.9px', fontWeight: 400, lineHeight: '20px' }}>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-6 lg:gap-8">
+              <Link href="/" className="py-2" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '14px' }}>
                 Home
               </Link>
-              <Link href="/booking" className="relative" style={{ color: '#3D5A4C', fontSize: '11.9px', fontWeight: 500, lineHeight: '20px' }}>
+              <Link 
+                href={isLoggedIn ? "/booking" : "/login"} 
+                onClick={handleBookingClick}
+                className="relative py-2" 
+                style={{ color: '#3D5A4C', fontSize: '14px', fontWeight: 500 }}
+              >
                 Booking
-                <span className="absolute left-0 bottom-0 w-full" style={{ height: '0.99px', background: '#FFB5C5' }}></span>
+                <span className="absolute left-0 bottom-0 w-full" style={{ height: '1px', background: '#FFB5C5' }}></span>
               </Link>
-              <Link href="/calendar" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '11.9px', fontWeight: 400, lineHeight: '20px' }}>
-                Calendar
-              </Link>
-              <Link href="/login" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '11.9px', fontWeight: 400, lineHeight: '20px' }}>
+              {isLoggedIn ? (
+                <button
+                  onClick={handleLogout}
+                  className="py-2"
+                  style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '14px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                >
+                  Logout
+                </button>
+              ) : (
+                <Link href="/login" className="py-2" style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '14px' }}>
+                  Login
+                </Link>
+              )}
+            </div>
+
+            {/* Hamburger Menu Button - Mobile */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg focus:outline-none"
+              aria-label="Toggle menu"
+            >
+              <div className="relative w-6 h-5">
+                <span 
+                  className={`absolute left-0 w-full h-0.5 bg-[#3D5A4C] transition-all duration-300 ease-in-out ${
+                    mobileMenuOpen ? 'rotate-45 top-2' : 'top-0'
+                  }`}
+                />
+                <span 
+                  className={`absolute left-0 w-full h-0.5 bg-[#3D5A4C] top-2 transition-opacity duration-300 ease-in-out ${
+                    mobileMenuOpen ? 'opacity-0' : 'opacity-100'
+                  }`}
+                />
+                <span 
+                  className={`absolute left-0 w-full h-0.5 bg-[#3D5A4C] transition-all duration-300 ease-in-out ${
+                    mobileMenuOpen ? '-rotate-45 top-2' : 'top-4'
+                  }`}
+                />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu Dropdown */}
+        <div 
+          className={`md:hidden bg-white border-t border-gray-100 overflow-hidden transition-all duration-300 ease-in-out ${
+            mobileMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="flex flex-col px-4 py-3 space-y-2">
+            <Link 
+              href="/" 
+              onClick={closeMenu}
+              className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+              style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '16px' }}
+            >
+              Home
+            </Link>
+            <Link 
+              href={isLoggedIn ? "/booking" : "/login"}
+              onClick={(e) => {
+                closeMenu();
+                if (!isLoggedIn) {
+                  e.preventDefault();
+                  router.push('/login');
+                }
+              }}
+              className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+              style={{ color: '#3D5A4C', fontSize: '16px', fontWeight: 500 }}
+            >
+              Booking
+            </Link>
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors text-left"
+                style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '16px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+              >
+                Logout
+              </button>
+            ) : (
+              <Link 
+                href="/login" 
+                onClick={closeMenu}
+                className="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+                style={{ color: 'rgba(61, 90, 76, 0.7)', fontSize: '16px' }}
+              >
                 Login
               </Link>
-            </div>
+            )}
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <div className="px-12 py-16">
+      <div className="px-4 sm:px-6 lg:px-12 py-8 sm:py-12 md:py-16">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-8 sm:mb-12 md:mb-16">
           <p style={{ fontSize: '15px', fontWeight: 700, lineHeight: '16px', color: '#FFB5C5', fontFamily: 'Inter', letterSpacing: '0px', marginBottom: '8px' }}>
             RESERVATION
           </p>
           <h1 
             className={cormorantInfant.className}
-            style={{ fontSize: '51px', fontWeight: 400, lineHeight: '60px', color: '#3D5A4C' }}
+            style={{ fontSize: 'clamp(32px, 8vw, 51px)', fontWeight: 400, lineHeight: '1.2', color: '#3D5A4C' }}
           >
             Secure Your Stay
           </h1>
         </div>
 
         {/* Booking Form Grid */}
-        <div className="flex gap-8 max-w-7xl mx-auto">
+        <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto">
           {/* Left Column - Calendar */}
           <div className="flex-1">
-            <h2 className={cormorantInfant.className} style={{ fontSize: '51px', fontWeight: 400, lineHeight: '60px', color: '#3D5A4C', marginBottom: '16px' }}>
+            <h2 className={cormorantInfant.className} style={{ fontSize: 'clamp(32px, 6vw, 51px)', fontWeight: 400, lineHeight: '1.2', color: '#3D5A4C', marginBottom: '16px' }}>
               Calendar
             </h2>
             <p style={{ fontSize: '10.2px', fontWeight: 500, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter', marginBottom: '32px' }}>
               Check-in Date (Check-in: 3:00 PM | Check-out: 11:00 AM)
             </p>
             
-            <div className="group" style={{ background: '#FFFAF5', boxShadow: '0px 4px 12px rgba(61, 90, 76, 0.08)', borderRadius: '8px', padding: '32.9px', transition: 'all 0.3s ease', border: '1px solid rgba(61, 90, 76, 0.05)' }}>
+            <div className="group" style={{ background: '#FFFAF5', boxShadow: '0px 4px 12px rgba(61, 90, 76, 0.08)', borderRadius: '8px', padding: 'clamp(20px, 5vw, 32.9px)', transition: 'all 0.3s ease', border: '1px solid rgba(61, 90, 76, 0.05)' }}>
               {/* Month/Year Header */}
               <div className="flex items-center justify-between" style={{ marginBottom: '32px' }}>
                 <button 
@@ -154,7 +276,7 @@ export default function BookingPage() {
                 <div style={{ height: '0.99px', background: 'rgba(201, 169, 98, 0.2)', marginBottom: '16px' }} />
 
                 {/* Calendar Days */}
-                <div className="grid grid-cols-7">
+                <div className="grid grid-cols-7 gap-y-1">
                   {/* Empty cells for days before month starts */}
                   {Array.from({ length: firstDayOfWeek }).map((_, i) => (
                     <div key={`empty-${i}`} style={{ height: '48px' }} />
@@ -168,9 +290,9 @@ export default function BookingPage() {
                       <button
                         key={day}
                         onClick={() => setSelectedDate(day)}
-                        className="flex items-center justify-center transition-all duration-200 hover:scale-105"
+                        className="flex items-center justify-center transition-all duration-200 hover:scale-105 mx-auto"
                         style={{
-                          width: '38.71px',
+                          width: 'clamp(32px, 8vw, 38.71px)',
                           height: '48px',
                           background: isSelected ? '#F0E0E0' : 'transparent',
                           borderRadius: '9999px',
@@ -194,7 +316,7 @@ export default function BookingPage() {
           </div>
 
           {/* Middle Column - Form Fields */}
-          <div className="flex-1 space-y-10">
+          <div className="flex-1 space-y-8 sm:space-y-10">
             {/* Guests */}
             <div>
               <h3 style={{ fontSize: '14px', fontWeight: 600, lineHeight: '20px', color: '#3D5A4C', display: 'block', marginBottom: '8px', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -230,7 +352,7 @@ export default function BookingPage() {
                 Room Type
               </h3>
               <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '20px', fontFamily: 'Inter' }}>
-                Standard Room: ₱2,500 | Deluxe Room: ₱4,500
+                Standard Room B: ₱2,500 | Deluxe Room A: ₱4,500
               </p>
               <div className="flex justify-between items-center hover:border-opacity-80 hover:bg-gray-50 transition-all duration-200" style={{ padding: '16px', borderBottom: '2px solid rgba(61, 90, 76, 0.15)', background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px 8px 0 0' }}>
                 <select
@@ -239,7 +361,7 @@ export default function BookingPage() {
                   className="transition-colors duration-200"
                   style={{
                     width: '100%',
-                    fontSize: '18px',
+                    fontSize: 'clamp(14px, 3vw, 18px)',
                     fontWeight: 400,
                     lineHeight: '24px',
                     color: '#3D5A4C',
@@ -251,8 +373,8 @@ export default function BookingPage() {
                     appearance: 'none'
                   }}
                 >
-                  <option value="Standard Room - ₱2,500">Standard Room - ₱2,500</option>
-                  <option value="Deluxe Room - ₱4,500">Deluxe Room - ₱4,500</option>
+                  <option value="Standard Room B - ₱2,500">Standard Room B - ₱2,500</option>
+                  <option value="Deluxe Room A - ₱4,500">Deluxe Room A - ₱4,500</option>
                 </select>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3D5A4C" strokeWidth="1" className="transition-transform duration-200">
                   <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -266,7 +388,7 @@ export default function BookingPage() {
                 Amenities
               </h3>
               <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '20px', fontFamily: 'Inter' }}>
-                Air conditioning, breakfast, TV, lounge area
+                Air conditioning, TV, shower, bathtub (Deluxe only)
               </p>
               <div className="flex justify-between items-center hover:border-opacity-80 hover:bg-gray-50 transition-all duration-200" style={{ padding: '16px', borderBottom: '2px solid rgba(61, 90, 76, 0.15)', background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px 8px 0 0' }}>
                 <select
@@ -275,7 +397,7 @@ export default function BookingPage() {
                   className="transition-colors duration-200"
                   style={{
                     width: '100%',
-                    fontSize: '18px',
+                    fontSize: 'clamp(14px, 3vw, 18px)',
                     fontWeight: 400,
                     lineHeight: '24px',
                     color: '#3D5A4C',
@@ -288,9 +410,9 @@ export default function BookingPage() {
                   }}
                 >
                   <option value="Air Conditioning">Air Conditioning</option>
-                  <option value="Breakfast Included">Breakfast Included</option>
-                  <option value="Entertainment (TV)">Entertainment (TV)</option>
-                  <option value="Lounge Area">Lounge Area</option>
+                  <option value="TV & Entertainment">TV & Entertainment</option>
+                  <option value="Shower">Shower</option>
+                  <option value="Bathtub (Deluxe Only)">Bathtub (Deluxe Only)</option>
                 </select>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3D5A4C" strokeWidth="1" className="transition-transform duration-200">
                   <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -306,7 +428,7 @@ export default function BookingPage() {
               <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '20px', fontFamily: 'Inter' }}>
                 Check-in: 3:00 PM | Check-out: 11:00 AM
               </p>
-              <div className="relative hover:shadow-lg transition-all duration-200" style={{ width: '360px', height: '52px', background: 'rgba(255, 181, 197, 0.29)', borderRadius: '8px', border: '1px solid rgba(255, 181, 197, 0.3)' }}>
+              <div className="relative hover:shadow-lg transition-all duration-200" style={{ width: '100%', maxWidth: '360px', height: '52px', background: 'rgba(255, 181, 197, 0.29)', borderRadius: '8px', border: '1px solid rgba(255, 181, 197, 0.3)' }}>
                 <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '0', height: '24px', borderLeft: '1px solid rgba(0, 0, 0, 0.1)' }} />
                 <div className="flex h-full">
                   <button className="flex items-center justify-center hover:bg-black hover:bg-opacity-5 transition-all duration-200" style={{ flex: 1, background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: '5px 0 0 5px' }}>
@@ -325,8 +447,8 @@ export default function BookingPage() {
           </div>
 
           {/* Right Column - Your Stay Summary */}
-          <div className="flex-1" style={{ background: '#3D5A4C', padding: '40px', borderRadius: '8px', boxShadow: '0px 8px 24px rgba(61, 90, 76, 0.2)' }}>
-            <h2 className={cormorantInfant.className} style={{ fontSize: '24px', fontWeight: 400, lineHeight: '32px', color: '#FFFAF5', marginBottom: '64px' }}>
+          <div className="flex-1" style={{ background: '#3D5A4C', padding: 'clamp(24px, 5vw, 40px)', borderRadius: '8px', boxShadow: '0px 8px 24px rgba(61, 90, 76, 0.2)' }}>
+            <h2 className={cormorantInfant.className} style={{ fontSize: '24px', fontWeight: 400, lineHeight: '32px', color: '#FFFAF5', marginBottom: 'clamp(32px, 8vw, 64px)' }}>
               Your Stay
             </h2>
 
@@ -379,7 +501,8 @@ export default function BookingPage() {
               <button
                 className="group/btn hover:scale-105 transition-all duration-200"
                 style={{
-                  width: '257px',
+                  width: '100%',
+                  maxWidth: '257px',
                   height: '48px',
                   background: '#FFFAF5',
                   boxShadow: '0px 4px 12px rgba(255, 181, 197, 0.3)',
@@ -403,12 +526,12 @@ export default function BookingPage() {
                   e.currentTarget.style.background = '#FFFAF5';
                 }}
               >
-                Confirm
+                Confirm Booking
               </button>
             </div>
 
             {/* Policies and Information */}
-            <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '19px', color: '#FFFAF5', textAlign: 'center', fontFamily: 'Inter', paddingLeft: '59px' }}>
+            <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '19px', color: '#FFFAF5', textAlign: 'left', fontFamily: 'Inter' }}>
               - Rates may vary depending on selected amenities.<br />
               - Extra mattress charge: ₱700.<br />
               - Maximum of 4 persons per room.<br />
