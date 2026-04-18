@@ -19,6 +19,16 @@ const monthNames = [
   "July", "August", "September", "October", "November", "December"
 ];
 
+// Booking policy: check-in at 3 PM, check-out at 11 AM next day
+const CHECK_IN_HOUR = 15;
+const CHECK_OUT_HOUR = 11;
+
+// Room type → database room name mapping keywords
+const ROOM_A_KEYWORDS = ['room a', 'deluxe'];
+const ROOM_B_KEYWORDS = ['room b', 'standard'];
+const ROOM_A_NUMBER = '1';
+const ROOM_B_NUMBER = '2';
+
 export default function BookingPage() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -26,6 +36,12 @@ export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [guests, setGuests] = useState(2);
   const [roomType, setRoomType] = useState("Standard Room B - ₱2,500");
+
+  // Booking submission state
+  const [rooms, setRooms] = useState<Array<{ id: number; name?: string; room_number?: string }>>([]);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
   
   // Dynamic calendar state
   const today = new Date();
@@ -125,12 +141,103 @@ export default function BookingPage() {
     }
   }, [])
 
+  // Fetch available rooms on mount to get real room IDs
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const res = await fetch('/api/rooms');
+        if (res.ok) {
+          const data = await res.json();
+          setRooms(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch rooms:', err);
+      }
+    };
+    fetchRooms();
+  }, []);
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setIsLoggedIn(false)
     setMobileMenuOpen(false)
     router.replace('/')
   }
+
+  const getSelectedRoomId = (): number | null => {
+    if (rooms.length === 0) return null;
+    const isDeluxe = roomType.includes('Deluxe') || roomType.includes('Room A');
+    const matched = rooms.find((r) => {
+      const name = String(r.name || r.room_number || '').toLowerCase();
+      if (isDeluxe) {
+        return ROOM_A_KEYWORDS.some((kw) => name.includes(kw)) || r.room_number === ROOM_A_NUMBER;
+      }
+      return ROOM_B_KEYWORDS.some((kw) => name.includes(kw)) || r.room_number === ROOM_B_NUMBER;
+    });
+    return matched ? matched.id : (rooms[0]?.id ?? null);
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!selectedDate) return;
+
+    if (!isLoggedIn) {
+      router.push('/login');
+      return;
+    }
+
+    setBookingLoading(true);
+    setBookingError(null);
+    setBookingSuccess(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/login');
+        return;
+      }
+
+      const room_id = getSelectedRoomId();
+      if (!room_id) {
+        setBookingError('Could not determine room. Please try again.');
+        setBookingLoading(false);
+        return;
+      }
+
+      // Check-in at 3:00 PM on selected date, check-out at 11:00 AM next day
+      const checkIn = new Date(selectedDate);
+      checkIn.setHours(CHECK_IN_HOUR, 0, 0, 0);
+      const checkOut = new Date(selectedDate);
+      checkOut.setDate(checkOut.getDate() + 1);
+      checkOut.setHours(CHECK_OUT_HOUR, 0, 0, 0);
+
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          room_id,
+          start_at: checkIn.toISOString(),
+          end_at: checkOut.toISOString(),
+          guests,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setBookingError(data.error || 'Failed to create booking. Please try again.');
+      } else {
+        setBookingSuccess('Booking confirmed! Admin will contact you at 3:00 PM for confirmation.');
+        setSelectedDate(null);
+      }
+    } catch (err: any) {
+      setBookingError(err.message || 'An unexpected error occurred. Please try again.');
+    } finally {
+      setBookingLoading(false);
+    }
+  };
 
   const handleBookingClick = (e: React.MouseEvent) => {
     if (!isLoggedIn) {
@@ -484,7 +591,6 @@ export default function BookingPage() {
                           fontWeight: buttonStyle.fontWeight || 500,
                           lineHeight: '20px',
                           fontFamily: 'Inter',
-                          border: buttonStyle.border,
                           opacity: isPast ? 0.5 : 1,
                           ...buttonStyle
                         }}
@@ -709,11 +815,24 @@ export default function BookingPage() {
               </div>
             </div>
 
+            {/* Booking feedback messages */}
+            {bookingError && (
+              <div style={{ marginBottom: '12px', padding: '10px 14px', background: 'rgba(239,68,68,0.15)', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.4)' }}>
+                <p style={{ fontSize: '11px', color: '#FCA5A5', fontFamily: 'Inter' }}>{bookingError}</p>
+              </div>
+            )}
+            {bookingSuccess && (
+              <div style={{ marginBottom: '12px', padding: '10px 14px', background: 'rgba(34,197,94,0.15)', borderRadius: '4px', border: '1px solid rgba(34,197,94,0.4)' }}>
+                <p style={{ fontSize: '11px', color: '#86EFAC', fontFamily: 'Inter' }}>{bookingSuccess}</p>
+              </div>
+            )}
+
             {/* Confirm Button */}
             <div style={{ marginBottom: '24px' }}>
               <button
                 className="group/btn hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                disabled={!selectedDate}
+                disabled={!selectedDate || bookingLoading}
+                onClick={handleConfirmBooking}
                 style={{
                   width: '100%',
                   maxWidth: '257px',
@@ -727,24 +846,24 @@ export default function BookingPage() {
                   lineHeight: '20px',
                   color: '#3D5A4C',
                   fontFamily: 'Inter',
-                  cursor: selectedDate ? 'pointer' : 'not-allowed',
+                  cursor: selectedDate && !bookingLoading ? 'pointer' : 'not-allowed',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto'
                 }}
                 onMouseEnter={(e) => {
-                  if (selectedDate) {
+                  if (selectedDate && !bookingLoading) {
                     e.currentTarget.style.background = '#FFB5C5';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (selectedDate) {
+                  if (selectedDate && !bookingLoading) {
                     e.currentTarget.style.background = '#FFFAF5';
                   }
                 }}
               >
-                {selectedDate ? 'Confirm Booking' : 'Select a Date'}
+                {bookingLoading ? 'Processing...' : selectedDate ? 'Confirm Booking' : 'Select a Date'}
               </button>
             </div>
 

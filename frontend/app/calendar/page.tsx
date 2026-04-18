@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Cormorant, Inter, Montserrat } from "next/font/google";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
 import chtmlogo from '../images/chtmlogo.png';
 import gcllgo from '../images/gcllgo.jpg';
@@ -13,22 +14,26 @@ const cormorant = Cormorant({ subsets: ["latin"], weight: ["300", "400", "600"] 
 const inter = Inter({ subsets: ["latin"] });
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["700"] });
 
-const BACKEND_URL = '';
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export default function CalendarPage() {
-  const [selectedDate, setSelectedDate] = useState(4);
-  const [currentMonth, setCurrentMonth] = useState("February");
-  const [currentYear, setCurrentYear] = useState(2026);
+  const today = new Date();
+  const router = useRouter();
+  const [selectedDate, setSelectedDate] = useState(today.getDate());
+  const [currentMonth, setCurrentMonth] = useState(MONTHS[today.getMonth()]);
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  const monthIndex = MONTHS.indexOf(currentMonth);
+
   const getDayName = (day: number) => {
-    const monthIndex = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].indexOf(currentMonth);
     const date = new Date(currentYear, monthIndex, day);
     return date.toLocaleDateString('en-US', { weekday: 'long' });
   };
 
-  const daysInMonth = 28; // February 2026
-  const firstDayOfWeek = 6; // February 1, 2026 is Sunday (index 0)
+  // Calculate days in current month and first day of week dynamically
+  const daysInMonth = new Date(currentYear, monthIndex + 1, 0).getDate();
+  const firstDayOfWeek = new Date(currentYear, monthIndex, 1).getDay();
 
   const [rooms, setRooms] = useState<Array<{ id?: string | number; name: string; floor: string; available: boolean }>>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
@@ -54,15 +59,36 @@ export default function CalendarPage() {
     await supabase.auth.signOut();
   };
 
+  const handlePrevMonth = () => {
+    const idx = MONTHS.indexOf(currentMonth);
+    if (idx === 0) {
+      setCurrentMonth(MONTHS[11]);
+      setCurrentYear((y) => y - 1);
+    } else {
+      setCurrentMonth(MONTHS[idx - 1]);
+    }
+    setSelectedDate(1);
+  };
+
+  const handleNextMonth = () => {
+    const idx = MONTHS.indexOf(currentMonth);
+    if (idx === 11) {
+      setCurrentMonth(MONTHS[0]);
+      setCurrentYear((y) => y + 1);
+    } else {
+      setCurrentMonth(MONTHS[idx + 1]);
+    }
+    setSelectedDate(1);
+  };
+
   // Fetch availability when date changes
   useEffect(() => {
     const fetchAvailability = async () => {
       setLoadingRooms(true);
       try {
-        const monthIndex = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].indexOf(currentMonth);
         const dateStr = `${currentYear}-${String(monthIndex + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
 
-        const res = await fetch(`${BACKEND_URL}/api/rooms/availability?date=${dateStr}`);
+        const res = await fetch(`/api/rooms/availability?date=${dateStr}`);
         const data = await res.json();
 
         if (res.ok && data.rooms) {
@@ -173,7 +199,7 @@ export default function CalendarPage() {
                 <button
                   className="hover:bg-gray-100 flex items-center justify-center"
                   style={{ width: '36px', height: '36px', borderRadius: '9999px' }}
-                  onClick={() => {/* Previous month logic */ }}
+                  onClick={handlePrevMonth}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="#3D5A4C" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -192,7 +218,7 @@ export default function CalendarPage() {
                 <button
                   className="hover:bg-gray-100 flex items-center justify-center"
                   style={{ width: '36px', height: '36px', borderRadius: '9999px' }}
-                  onClick={() => {/* Next month logic */ }}
+                  onClick={handleNextMonth}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="#3D5A4C" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -321,12 +347,15 @@ export default function CalendarPage() {
               {/* Continue Button */}
               <button
                 className="w-full py-4 rounded"
+                onClick={() => router.push('/booking')}
                 style={{
                   background: '#3D5A4C',
                   color: '#FFFAF5',
                   fontSize: '14px',
                   fontWeight: 600,
-                  fontFamily: 'Inter'
+                  fontFamily: 'Inter',
+                  cursor: 'pointer',
+                  border: 'none'
                 }}
               >
                 Continue to Booking
