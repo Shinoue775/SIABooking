@@ -591,7 +591,6 @@ export default function BookingPage() {
                           fontWeight: buttonStyle.fontWeight || 500,
                           lineHeight: '20px',
                           fontFamily: 'Inter',
-                          border: buttonStyle.border,
                           opacity: isPast ? 0.5 : 1,
                           ...buttonStyle
                         }}
