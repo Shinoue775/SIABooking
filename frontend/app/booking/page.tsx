@@ -19,6 +19,16 @@ const monthNames = [
   "July", "August", "September", "October", "November", "December"
 ];
 
+// Booking policy: check-in at 3 PM, check-out at 11 AM next day
+const CHECK_IN_HOUR = 15;
+const CHECK_OUT_HOUR = 11;
+
+// Room type → database room name mapping keywords
+const ROOM_A_KEYWORDS = ['room a', 'deluxe'];
+const ROOM_B_KEYWORDS = ['room b', 'standard'];
+const ROOM_A_NUMBER = '1';
+const ROOM_B_NUMBER = '2';
+
 export default function BookingPage() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -160,9 +170,9 @@ export default function BookingPage() {
     const matched = rooms.find((r) => {
       const name = String(r.name || r.room_number || '').toLowerCase();
       if (isDeluxe) {
-        return name.includes('room a') || name.includes('deluxe') || r.room_number === '1';
+        return ROOM_A_KEYWORDS.some((kw) => name.includes(kw)) || r.room_number === ROOM_A_NUMBER;
       }
-      return name.includes('room b') || name.includes('standard') || r.room_number === '2';
+      return ROOM_B_KEYWORDS.some((kw) => name.includes(kw)) || r.room_number === ROOM_B_NUMBER;
     });
     return matched ? matched.id : (rooms[0]?.id ?? null);
   };
@@ -195,10 +205,10 @@ export default function BookingPage() {
 
       // Check-in at 3:00 PM on selected date, check-out at 11:00 AM next day
       const checkIn = new Date(selectedDate);
-      checkIn.setHours(15, 0, 0, 0);
+      checkIn.setHours(CHECK_IN_HOUR, 0, 0, 0);
       const checkOut = new Date(selectedDate);
       checkOut.setDate(checkOut.getDate() + 1);
-      checkOut.setHours(11, 0, 0, 0);
+      checkOut.setHours(CHECK_OUT_HOUR, 0, 0, 0);
 
       const res = await fetch('/api/bookings', {
         method: 'POST',

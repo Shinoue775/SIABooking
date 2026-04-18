@@ -1,7 +1,26 @@
 import createServerSideClient from '@/lib/server';
 import { handleCors, jsonWithCors } from '@/lib/cors';
+import { SupabaseClient, User } from '@supabase/supabase-js';
 
 type Params = Promise<{ id: string }>;
+
+const VALID_STATUSES = ['pending', 'confirmed', 'rejected', 'cancelled'] as const;
+
+async function authenticate(
+  request: Request
+): Promise<{ user: User; supabase: SupabaseClient } | { error: Response }> {
+  const supabase = createServerSideClient();
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { error: jsonWithCors({ error: 'Authorization header required' }, { status: 401 }, request) };
+  }
+  const token = authHeader.replace('Bearer ', '');
+  const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+  if (authErr || !user) {
+    return { error: jsonWithCors({ error: 'Invalid or expired token' }, { status: 401 }, request) };
+  }
+  return { user, supabase };
+}
 
 export async function OPTIONS(request: Request) {
   return handleCors(request);
@@ -13,27 +32,20 @@ export async function PATCH(
   { params }: { params: Params }
 ) {
   const { id } = await params;
-  const supabase = createServerSideClient();
-
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return jsonWithCors({ error: 'Authorization header required' }, { status: 401 }, request);
-  }
-
-  const token = authHeader.replace('Bearer ', '');
-  const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
-
-  if (authErr || !user) {
-    return jsonWithCors({ error: 'Invalid or expired token' }, { status: 401 }, request);
-  }
+  const auth = await authenticate(request);
+  if ('error' in auth) return auth.error;
+  const { user, supabase } = auth;
 
   try {
     const body = await request.json();
     const { status } = body;
 
-    const validStatuses = ['pending', 'confirmed', 'rejected', 'cancelled'];
-    if (!status || !validStatuses.includes(status)) {
-      return jsonWithCors({ error: 'Invalid status. Must be one of: pending, confirmed, rejected, cancelled' }, { status: 400 }, request);
+    if (!status || !VALID_STATUSES.includes(status)) {
+      return jsonWithCors(
+        { error: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}` },
+        { status: 400 },
+        request
+      );
     }
 
     const { data: booking, error: fetchErr } = await supabase
@@ -87,19 +99,9 @@ export async function DELETE(
   { params }: { params: Params }
 ) {
   const { id } = await params;
-  const supabase = createServerSideClient();
-
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return jsonWithCors({ error: 'Authorization header required' }, { status: 401 }, request);
-  }
-
-  const token = authHeader.replace('Bearer ', '');
-  const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
-
-  if (authErr || !user) {
-    return jsonWithCors({ error: 'Invalid or expired token' }, { status: 401 }, request);
-  }
+  const auth = await authenticate(request);
+  if ('error' in auth) return auth.error;
+  const { user, supabase } = auth;
 
   try {
     const { data: booking, error: fetchErr } = await supabase
