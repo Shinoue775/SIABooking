@@ -8,11 +8,12 @@ export async function GET() {
     try {
         const [roomsResult, guestsResult] = await Promise.all([
             supabase.from('rooms').select('id', { count: 'exact', head: true }),
-            supabase.from('bookings').select('user_id', { count: 'exact', head: true }),
+            supabase.from('bookings').select('user_id'),
         ]);
 
         const roomCount = roomsResult.count ?? 0;
-        const guestCount = guestsResult.count ?? 0;
+        const uniqueGuestIds = new Set((guestsResult.data ?? []).map((b: any) => b.user_id));
+        const guestCount = uniqueGuestIds.size;
 
         return NextResponse.json({ roomCount, guestCount }, { status: 200 });
     } catch (err: any) {

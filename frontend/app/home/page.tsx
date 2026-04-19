@@ -144,7 +144,8 @@ export default function HomePage() {
           setRoomCount(data.roomCount)
           setGuestCount(data.guestCount)
         }
-      } catch {
+      } catch (err) {
+        console.error('Failed to fetch stats:', err)
         // silently keep null values on error
       }
     }
