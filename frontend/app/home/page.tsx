@@ -41,6 +41,8 @@ export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const router = useRouter()
+  const [roomCount, setRoomCount] = useState<number | null>(null)
+  const [guestCount, setGuestCount] = useState<number | null>(null)
 
   // Room A slideshow with smooth fade transition
   const roomAImages = [img1, img2, img3, img4, img5]
@@ -131,6 +133,22 @@ export default function HomePage() {
     return () => {
       subscription.unsubscribe()
     }
+  }, [])
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/stats')
+        if (res.ok) {
+          const data = await res.json()
+          setRoomCount(data.roomCount)
+          setGuestCount(data.guestCount)
+        }
+      } catch {
+        // silently keep null values on error
+      }
+    }
+    fetchStats()
   }, [])
 
   const handleLogout = async () => {
@@ -347,8 +365,8 @@ export default function HomePage() {
           {/* Stats - Responsive grid */}
           <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 mb-6 sm:mb-8">
             {[
-              { number: '50+', label: 'Rooms', icon: Building2 },
-              { number: '1000+', label: 'Guests', icon: Users },
+              { number: roomCount !== null ? String(roomCount) : '…', label: 'Rooms', icon: Building2 },
+              { number: guestCount !== null ? String(guestCount) : '…', label: 'Guests', icon: Users },
               { number: '24/7', label: 'Support', icon: Clock },
               { number: '4.8', label: 'Rating', icon: Star }
             ].map((stat, idx) => {
