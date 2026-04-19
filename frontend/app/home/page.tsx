@@ -369,7 +369,6 @@ export default function HomePage() {
               { number: roomCount !== null ? String(roomCount) : '…', label: 'Rooms', icon: Building2 },
               { number: guestCount !== null ? String(guestCount) : '…', label: 'Guests', icon: Users },
               { number: '24/7', label: 'Support', icon: Clock },
-              { number: '4.8', label: 'Rating', icon: Star }
             ].map((stat, idx) => {
               const Icon = stat.icon
               return (
