@@ -121,7 +121,7 @@ export async function POST(request: Request) {
 
     if (bookingResult.error && notesStr) {
       // Fallback: insert without notes if column doesn't exist
-      const { notes: _n, ...basePayload } = insertPayload;
+      const { notes: _unusedNotes, ...basePayload } = insertPayload;
       bookingResult = await supabase
         .from('bookings')
         .insert(basePayload)

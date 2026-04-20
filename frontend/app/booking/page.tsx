@@ -130,18 +130,24 @@ export default function BookingPage() {
     }
   };
 
+  const MAX_TOTAL_GUESTS = 4;
+  const DISCOUNT_RATE = 0.20;
+  const EXTRA_BED_PRICE = 700;
+
   const baseRate = roomRates[roomType] ?? 2500;
-  const extraBedsFee = extraBeds * 700;
+  const extraBedsFee = extraBeds * EXTRA_BED_PRICE;
   const subtotalBeforeDiscount = baseRate + extraBedsFee;
   const hasDiscount = hasPwd || hasSenior;
-  const discountAmount = hasDiscount ? Math.round(subtotalBeforeDiscount * 0.20) : 0;
+  const discountAmount = hasDiscount ? Math.round(subtotalBeforeDiscount * DISCOUNT_RATE) : 0;
   const discountedSubtotal = subtotalBeforeDiscount - discountAmount;
   const taxes = 85.00;
   const total = discountedSubtotal + taxes;
   const amenitiesList = getAmenitiesForRoom(roomType);
 
-  // Total guests: adults + child 3+ (capped at 4)
-  const totalGuests = Math.min(guests + (hasChildren && childAgeGroup === 'over2' ? 1 : 0), 4);
+  // Total guests: adults + child 3+ (capped at max)
+  const totalGuests = Math.min(guests + (hasChildren && childAgeGroup === 'over2' ? 1 : 0), MAX_TOTAL_GUESTS);
+  // Max adults allowed when a child 3+ is present
+  const maxAdultGuests = hasChildren && childAgeGroup === 'over2' ? MAX_TOTAL_GUESTS - 1 : MAX_TOTAL_GUESTS;
 
   useEffect(() => {
     const syncSession = async () => {
@@ -669,7 +675,7 @@ export default function BookingPage() {
                   {guests}
                 </span>
                 <button
-                  onClick={() => setGuests(Math.min(hasChildren && childAgeGroup === 'over2' ? 3 : 4, guests + 1))}
+                  onClick={() => setGuests(Math.min(maxAdultGuests, guests + 1))}
                   className="hover:bg-gray-100 hover:scale-110 flex items-center justify-center transition-all duration-200"
                   style={{ width: '40px', height: '40px', borderRadius: '9999px', fontSize: '13.6px', fontWeight: 400, lineHeight: '24px', color: '#3D5A4C', background: '#FFFAF5', border: '1px solid rgba(61, 90, 76, 0.2)', cursor: 'pointer', boxShadow: '0px 2px 4px rgba(61, 90, 76, 0.05)' }}
                 >
@@ -738,7 +744,7 @@ export default function BookingPage() {
                         onChange={() => {
                           setChildAgeGroup('over2');
                           // Ensure adult guests don't exceed 3 (to leave room for the child)
-                          if (guests > 3) setGuests(3);
+                          if (guests > MAX_TOTAL_GUESTS - 1) setGuests(MAX_TOTAL_GUESTS - 1);
                         }}
                         style={{ marginTop: '2px', accentColor: '#3D5A4C', cursor: 'pointer' }}
                       />
