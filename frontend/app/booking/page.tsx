@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Cormorant, Inter, Montserrat } from "next/font/google";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from '@/lib/supabaseClient';
 import logo from '../images/logos1.png';
@@ -53,6 +53,10 @@ export default function BookingPage() {
 
   // Extra beds state (0, 1, or 2)
   const [extraBeds, setExtraBeds] = useState(0);
+
+  // Real availability state
+  const [bookedDays, setBookedDays] = useState<number[]>([]);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   
   // Dynamic calendar state
   const today = new Date();
@@ -74,35 +78,6 @@ export default function BookingPage() {
   const todayMonth = today.getMonth();
   const todayYear = today.getFullYear();
 
-  // Simulated unavailable dates (example dates - you can replace with API data)
-  const unavailableDates = useMemo(() => {
-    // Generate some random unavailable dates for demo
-    // In production, this would come from your backend/database
-    const unavailable: number[] = [];
-    const currentMonth = currentDisplayMonth;
-    const currentYear = currentDisplayYear;
-    
-    // Example: Mark every weekend as unavailable, plus some random dates
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentYear, currentMonth, day);
-      const dayOfWeek = date.getDay();
-      
-      // Mark Saturdays (6) and Sundays (0) as unavailable
-      if (dayOfWeek === 0 || dayOfWeek === 6) {
-        unavailable.push(day);
-      }
-      
-      // Add some random unavailable dates (for demo)
-      if (day === 5 || day === 12 || day === 19 || day === 26) {
-        if (!unavailable.includes(day)) {
-          unavailable.push(day);
-        }
-      }
-    }
-    
-    return unavailable;
-  }, [currentDisplayMonth, currentDisplayYear, daysInMonth]);
-
   // Check if a date is in the past
   const isDatePast = (day: number): boolean => {
     const checkDate = new Date(currentDisplayYear, currentDisplayMonth, day);
@@ -113,7 +88,7 @@ export default function BookingPage() {
   // Check if a date is available
   const isDateAvailable = (day: number): boolean => {
     if (isDatePast(day)) return false;
-    return !unavailableDates.includes(day);
+    return !bookedDays.includes(day);
   };
 
   const roomRates: Record<string, number> = {
@@ -182,6 +157,42 @@ export default function BookingPage() {
     fetchRooms();
   }, []);
 
+  // Fetch real room availability from the database whenever the displayed month,
+  // displayed year, or selected room type changes.
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      if (rooms.length === 0) return;
+
+      // Resolve the room ID for the currently selected room type
+      const isDeluxe = roomType.includes('Deluxe') || roomType.includes('Room A');
+      const matched = rooms.find((r) => {
+        const name = String(r.name || r.room_number || '').toLowerCase();
+        if (isDeluxe) {
+          return ROOM_A_KEYWORDS.some((kw) => name.includes(kw)) || r.room_number === ROOM_A_NUMBER;
+        }
+        return ROOM_B_KEYWORDS.some((kw) => name.includes(kw)) || r.room_number === ROOM_B_NUMBER;
+      });
+      const room_id = matched ? matched.id : (rooms[0]?.id ?? null);
+      if (!room_id) return;
+
+      setAvailabilityLoading(true);
+      try {
+        const res = await fetch(
+          `/api/rooms/availability/month?year=${currentDisplayYear}&month=${currentDisplayMonth + 1}&room_id=${room_id}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setBookedDays(data.unavailableDays || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch availability:', err);
+      } finally {
+        setAvailabilityLoading(false);
+      }
+    };
+    fetchAvailability();
+  }, [currentDisplayMonth, currentDisplayYear, rooms, roomType]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setIsLoggedIn(false)
@@ -247,7 +258,10 @@ export default function BookingPage() {
           end_at: checkOut.toISOString(),
           guests: totalGuests,
           extra_beds: extraBeds,
-          discount_type: hasPwd ? 'pwd' : hasSenior ? 'senior' : 'none',
+          has_pwd: hasPwd,
+          has_senior: hasSenior,
+          has_child: hasChildren,
+          child_age_group: hasChildren ? childAgeGroup : null,
           total_price: total,
         }),
       });
@@ -555,6 +569,11 @@ export default function BookingPage() {
                   <span style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#FFB5C5', fontFamily: 'Inter' }}>
                     {currentYearNum}
                   </span>
+                  {availabilityLoading && (
+                    <span style={{ fontSize: '11px', color: 'rgba(61, 90, 76, 0.5)', fontFamily: 'Inter', marginLeft: '8px' }}>
+                      Loading…
+                    </span>
+                  )}
                 </div>
 
                 <button 
@@ -777,7 +796,6 @@ export default function BookingPage() {
                     checked={hasPwd}
                     onChange={(e) => {
                       setHasPwd(e.target.checked);
-                      if (e.target.checked) setHasSenior(false);
                     }}
                     style={{ width: '16px', height: '16px', accentColor: '#3D5A4C', cursor: 'pointer' }}
                   />
@@ -798,7 +816,6 @@ export default function BookingPage() {
                     checked={hasSenior}
                     onChange={(e) => {
                       setHasSenior(e.target.checked);
-                      if (e.target.checked) setHasPwd(false);
                     }}
                     style={{ width: '16px', height: '16px', accentColor: '#3D5A4C', cursor: 'pointer' }}
                   />
@@ -991,7 +1008,7 @@ export default function BookingPage() {
                   <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
                     <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Discount</span>
                     <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#86EFAC', fontFamily: 'Inter' }}>
-                      {hasPwd ? 'PWD' : 'Senior Citizen'} (20%)
+                      {hasPwd && hasSenior ? 'PWD & Senior Citizen' : hasPwd ? 'PWD' : 'Senior Citizen'} (20%)
                     </span>
                   </div>
                   <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
@@ -1045,7 +1062,7 @@ export default function BookingPage() {
               {hasDiscount && (
                 <div className="flex justify-between items-center">
                   <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#86EFAC', fontFamily: 'Inter' }}>
-                    {hasPwd ? 'PWD' : 'Senior Citizen'} Discount (20%)
+                    {hasPwd && hasSenior ? 'PWD & Senior Citizen' : hasPwd ? 'PWD' : 'Senior Citizen'} Discount (20%)
                   </span>
                   <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#86EFAC', fontFamily: 'Inter' }}>−₱{discountAmount.toFixed(2)}</span>
                 </div>
