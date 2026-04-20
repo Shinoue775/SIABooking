@@ -135,7 +135,7 @@ export async function POST(request: Request) {
       .single();
 
     if (bookingResult.error && notesStr) {
-      const { notes: _unusedNotes, ...basePayload } = insertPayload;
+      const { notes: _, ...basePayload } = insertPayload;
       bookingResult = await supabase
         .from('bookings')
         .insert(basePayload)
