@@ -42,6 +42,17 @@ export default function BookingPage() {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
+
+  // Child guest state
+  const [hasChildren, setHasChildren] = useState(false);
+  const [childAgeGroup, setChildAgeGroup] = useState<'under2' | 'over2' | null>(null);
+
+  // PWD / Senior Citizen discount state
+  const [hasPwd, setHasPwd] = useState(false);
+  const [hasSenior, setHasSenior] = useState(false);
+
+  // Extra beds state (0, 1, or 2)
+  const [extraBeds, setExtraBeds] = useState(0);
   
   // Dynamic calendar state
   const today = new Date();
@@ -119,10 +130,24 @@ export default function BookingPage() {
     }
   };
 
-  const subtotal = roomRates[roomType] ?? 2500;
+  const MAX_TOTAL_GUESTS = 4;
+  const DISCOUNT_RATE = 0.20;
+  const EXTRA_BED_PRICE = 700;
+
+  const baseRate = roomRates[roomType] ?? 2500;
+  const extraBedsFee = extraBeds * EXTRA_BED_PRICE;
+  const subtotalBeforeDiscount = baseRate + extraBedsFee;
+  const hasDiscount = hasPwd || hasSenior;
+  const discountAmount = hasDiscount ? Math.round(subtotalBeforeDiscount * DISCOUNT_RATE) : 0;
+  const discountedSubtotal = subtotalBeforeDiscount - discountAmount;
   const taxes = 85.00;
-  const total = subtotal + taxes;
+  const total = discountedSubtotal + taxes;
   const amenitiesList = getAmenitiesForRoom(roomType);
+
+  // Total guests: adults + child 3+ (capped at max)
+  const totalGuests = Math.min(guests + (hasChildren && childAgeGroup === 'over2' ? 1 : 0), MAX_TOTAL_GUESTS);
+  // Max adults allowed when a child 3+ is present
+  const maxAdultGuests = hasChildren && childAgeGroup === 'over2' ? MAX_TOTAL_GUESTS - 1 : MAX_TOTAL_GUESTS;
 
   useEffect(() => {
     const syncSession = async () => {
@@ -220,7 +245,10 @@ export default function BookingPage() {
           room_id,
           start_at: checkIn.toISOString(),
           end_at: checkOut.toISOString(),
-          guests,
+          guests: totalGuests,
+          extra_beds: extraBeds,
+          discount_type: hasPwd ? 'pwd' : hasSenior ? 'senior' : 'none',
+          total_price: total,
         }),
       });
 
@@ -647,12 +675,144 @@ export default function BookingPage() {
                   {guests}
                 </span>
                 <button
-                  onClick={() => setGuests(Math.min(4, guests + 1))}
+                  onClick={() => setGuests(Math.min(maxAdultGuests, guests + 1))}
                   className="hover:bg-gray-100 hover:scale-110 flex items-center justify-center transition-all duration-200"
                   style={{ width: '40px', height: '40px', borderRadius: '9999px', fontSize: '13.6px', fontWeight: 400, lineHeight: '24px', color: '#3D5A4C', background: '#FFFAF5', border: '1px solid rgba(61, 90, 76, 0.2)', cursor: 'pointer', boxShadow: '0px 2px 4px rgba(61, 90, 76, 0.05)' }}
                 >
                   +
                 </button>
+              </div>
+              {hasChildren && childAgeGroup === 'over2' && (
+                <p style={{ fontSize: '10.2px', color: '#FFB5C5', fontFamily: 'Inter', marginTop: '8px', textAlign: 'center' }}>
+                  +1 child guest (3+ years) · Total: {totalGuests} persons
+                </p>
+              )}
+            </div>
+
+            {/* Children Guest Section */}
+            <div>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, lineHeight: '20px', color: '#3D5A4C', display: 'block', marginBottom: '8px', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Children
+              </h3>
+              <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '16px', fontFamily: 'Inter' }}>
+                Children 2 years old and below stay for free · Children 3 years old and above count as a guest
+              </p>
+              <div style={{ padding: '16px', background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px' }}>
+                <label className="flex items-center gap-3 cursor-pointer" style={{ marginBottom: hasChildren ? '16px' : '0' }}>
+                  <input
+                    type="checkbox"
+                    checked={hasChildren}
+                    onChange={(e) => {
+                      setHasChildren(e.target.checked);
+                      if (!e.target.checked) setChildAgeGroup(null);
+                    }}
+                    style={{ width: '16px', height: '16px', accentColor: '#3D5A4C', cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: '12px', fontWeight: 500, color: '#3D5A4C', fontFamily: 'Inter' }}>
+                    My party includes a child
+                  </span>
+                </label>
+                {hasChildren && (
+                  <div className="space-y-3">
+                    <p style={{ fontSize: '11px', color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter', marginBottom: '8px' }}>
+                      Select child age group:
+                    </p>
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg transition-all duration-200" style={{ background: childAgeGroup === 'under2' ? 'rgba(34,197,94,0.1)' : 'rgba(61,90,76,0.03)', border: `1px solid ${childAgeGroup === 'under2' ? '#22C55E' : 'rgba(61,90,76,0.1)'}` }}>
+                      <input
+                        type="radio"
+                        name="childAge"
+                        value="under2"
+                        checked={childAgeGroup === 'under2'}
+                        onChange={() => setChildAgeGroup('under2')}
+                        style={{ marginTop: '2px', accentColor: '#3D5A4C', cursor: 'pointer' }}
+                      />
+                      <div>
+                        <span style={{ fontSize: '12px', fontWeight: 500, color: '#3D5A4C', fontFamily: 'Inter', display: 'block' }}>
+                          2 years old and below
+                        </span>
+                        <span style={{ fontSize: '10px', color: '#22C55E', fontFamily: 'Inter' }}>
+                          ✓ Stays for free · Does not count as a guest
+                        </span>
+                      </div>
+                    </label>
+                    <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg transition-all duration-200" style={{ background: childAgeGroup === 'over2' ? 'rgba(255,181,197,0.2)' : 'rgba(61,90,76,0.03)', border: `1px solid ${childAgeGroup === 'over2' ? '#FFB5C5' : 'rgba(61,90,76,0.1)'}` }}>
+                      <input
+                        type="radio"
+                        name="childAge"
+                        value="over2"
+                        checked={childAgeGroup === 'over2'}
+                        onChange={() => {
+                          setChildAgeGroup('over2');
+                          // Ensure adult guests don't exceed 3 (to leave room for the child)
+                          if (guests > MAX_TOTAL_GUESTS - 1) setGuests(MAX_TOTAL_GUESTS - 1);
+                        }}
+                        style={{ marginTop: '2px', accentColor: '#3D5A4C', cursor: 'pointer' }}
+                      />
+                      <div>
+                        <span style={{ fontSize: '12px', fontWeight: 500, color: '#3D5A4C', fontFamily: 'Inter', display: 'block' }}>
+                          3 years old and above
+                        </span>
+                        <span style={{ fontSize: '10px', color: '#FFB5C5', fontFamily: 'Inter' }}>
+                          Counts as an additional guest
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* PWD / Senior Citizen Discount */}
+            <div>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, lineHeight: '20px', color: '#3D5A4C', display: 'block', marginBottom: '8px', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Discount Eligibility
+              </h3>
+              <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '16px', fontFamily: 'Inter' }}>
+                20% discount for PWD or Senior Citizen · Required documents verified at check-in
+              </p>
+              <div style={{ padding: '16px', background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px' }} className="space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-all duration-200" style={{ background: hasPwd ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${hasPwd ? '#22C55E' : 'transparent'}` }}>
+                  <input
+                    type="checkbox"
+                    checked={hasPwd}
+                    onChange={(e) => {
+                      setHasPwd(e.target.checked);
+                      if (e.target.checked) setHasSenior(false);
+                    }}
+                    style={{ width: '16px', height: '16px', accentColor: '#3D5A4C', cursor: 'pointer' }}
+                  />
+                  <div>
+                    <span style={{ fontSize: '12px', fontWeight: 500, color: '#3D5A4C', fontFamily: 'Inter', display: 'block' }}>
+                      Person with Disability (PWD)
+                    </span>
+                    {hasPwd && (
+                      <span style={{ fontSize: '10px', color: '#22C55E', fontFamily: 'Inter' }}>
+                        ✓ 20% discount applied
+                      </span>
+                    )}
+                  </div>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-all duration-200" style={{ background: hasSenior ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${hasSenior ? '#22C55E' : 'transparent'}` }}>
+                  <input
+                    type="checkbox"
+                    checked={hasSenior}
+                    onChange={(e) => {
+                      setHasSenior(e.target.checked);
+                      if (e.target.checked) setHasPwd(false);
+                    }}
+                    style={{ width: '16px', height: '16px', accentColor: '#3D5A4C', cursor: 'pointer' }}
+                  />
+                  <div>
+                    <span style={{ fontSize: '12px', fontWeight: 500, color: '#3D5A4C', fontFamily: 'Inter', display: 'block' }}>
+                      Senior Citizen (60 years old and above)
+                    </span>
+                    {hasSenior && (
+                      <span style={{ fontSize: '10px', color: '#22C55E', fontFamily: 'Inter' }}>
+                        ✓ 20% discount applied
+                      </span>
+                    )}
+                  </div>
+                </label>
               </div>
             </div>
 
@@ -692,13 +852,13 @@ export default function BookingPage() {
               </div>
             </div>
 
-            {/* Included Amenities - Read Only Display */}
+            {/* Included Amenities - With Availability Indicators */}
             <div>
               <h3 style={{ fontSize: '14px', fontWeight: 600, lineHeight: '20px', color: '#3D5A4C', display: 'block', marginBottom: '8px', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Included Amenities
               </h3>
               <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '16px', fontFamily: 'Inter' }}>
-                All amenities are included with your room selection
+                All amenities below are available for your selected room
               </p>
               <div style={{ padding: '16px', background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px' }}>
                 <div className="flex flex-wrap gap-2">
@@ -708,17 +868,61 @@ export default function BookingPage() {
                       style={{
                         fontSize: '11px',
                         fontWeight: 500,
-                        color: '#3D5A4C',
-                        background: 'rgba(61, 90, 76, 0.08)',
+                        color: '#16A34A',
+                        background: 'rgba(34, 197, 94, 0.1)',
                         padding: '6px 12px',
                         borderRadius: '20px',
-                        fontFamily: 'Inter'
+                        fontFamily: 'Inter',
+                        border: '1px solid rgba(34, 197, 94, 0.3)'
                       }}
                     >
-                      ✓ {amenity}
+                      ✓ {amenity} · Available
                     </span>
                   ))}
                 </div>
+              </div>
+            </div>
+
+            {/* Extra Beds Request */}
+            <div>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, lineHeight: '20px', color: '#3D5A4C', display: 'block', marginBottom: '8px', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Additional Request
+              </h3>
+              <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '16px', fontFamily: 'Inter' }}>
+                Extra beds available upon request · ₱700 per extra bed
+              </p>
+              <div style={{ padding: '16px', background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px' }} className="space-y-3">
+                {[
+                  { value: 0, label: 'No extra bed', sublabel: null },
+                  { value: 1, label: '1 Extra Bed', sublabel: '+₱700' },
+                  { value: 2, label: '2 Extra Beds', sublabel: '+₱1,400' },
+                ].map((option) => (
+                  <label
+                    key={option.value}
+                    className="flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-all duration-200"
+                    style={{
+                      background: extraBeds === option.value ? 'rgba(61,90,76,0.08)' : 'transparent',
+                      border: `1px solid ${extraBeds === option.value ? 'rgba(61,90,76,0.3)' : 'transparent'}`
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="extraBeds"
+                      value={option.value}
+                      checked={extraBeds === option.value}
+                      onChange={() => setExtraBeds(option.value)}
+                      style={{ accentColor: '#3D5A4C', cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '12px', fontWeight: 500, color: '#3D5A4C', fontFamily: 'Inter' }}>
+                      {option.label}
+                    </span>
+                    {option.sublabel && (
+                      <span style={{ fontSize: '11px', color: '#FFB5C5', fontFamily: 'Inter', marginLeft: 'auto' }}>
+                        {option.sublabel}
+                      </span>
+                    )}
+                  </label>
+                ))}
               </div>
             </div>
 
@@ -770,7 +974,9 @@ export default function BookingPage() {
               
               <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
                 <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Guests</span>
-                <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>{guests}</span>
+                <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>
+                  {totalGuests}{hasChildren && childAgeGroup === 'under2' ? ' + 1 infant (free)' : ''}
+                </span>
               </div>
               <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
               
@@ -779,6 +985,30 @@ export default function BookingPage() {
                 <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>{roomType}</span>
               </div>
               <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
+
+              {(hasPwd || hasSenior) && (
+                <>
+                  <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
+                    <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Discount</span>
+                    <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#86EFAC', fontFamily: 'Inter' }}>
+                      {hasPwd ? 'PWD' : 'Senior Citizen'} (20%)
+                    </span>
+                  </div>
+                  <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
+                </>
+              )}
+
+              {extraBeds > 0 && (
+                <>
+                  <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
+                    <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Extra Beds</span>
+                    <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>
+                      {extraBeds} bed{extraBeds > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
+                </>
+              )}
               
               <div style={{ paddingBottom: '0px' }}>
                 <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter', display: 'block', marginBottom: '8px' }}>Included Amenities</span>
@@ -802,8 +1032,24 @@ export default function BookingPage() {
             <div className="space-y-3" style={{ marginBottom: '32px' }}>
               <div className="flex justify-between items-center">
                 <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Base Room Rate</span>
-                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>₱{subtotal.toFixed(2)}</span>
+                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>₱{baseRate.toFixed(2)}</span>
               </div>
+              {extraBeds > 0 && (
+                <div className="flex justify-between items-center">
+                  <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>
+                    Extra Bed{extraBeds > 1 ? 's' : ''} (×{extraBeds})
+                  </span>
+                  <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>₱{extraBedsFee.toFixed(2)}</span>
+                </div>
+              )}
+              {hasDiscount && (
+                <div className="flex justify-between items-center">
+                  <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#86EFAC', fontFamily: 'Inter' }}>
+                    {hasPwd ? 'PWD' : 'Senior Citizen'} Discount (20%)
+                  </span>
+                  <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#86EFAC', fontFamily: 'Inter' }}>−₱{discountAmount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
                 <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Service Charges*</span>
                 <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>₱{taxes.toFixed(2)}</span>

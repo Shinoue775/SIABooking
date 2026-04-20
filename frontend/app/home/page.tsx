@@ -19,7 +19,7 @@ import img8 from '../images/8.jpg'
 import img9 from '../images/9.jpg'
 import img10 from '../images/10.jpg'
 import { 
-  Calendar, Menu, Search, Star, Users, 
+  Calendar, Menu, Star, Users, 
   BookOpen, MapPin, Phone, Facebook, Twitter, Instagram, 
   ChevronRight, Wifi, Coffee, Bath, Tv,
   ChevronLeft, Sparkles, Award, Clock, Building2, X,
@@ -383,24 +383,7 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* Search Bar - Responsive */}
-          <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg p-3 sm:p-4 mx-4">
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <select className="flex-1 p-2.5 sm:p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 text-sm">
-                <option>Select room type</option>
-                <option>Standard Room - ₱2,500</option>
-                <option>Deluxe Room - ₱4,500</option>
-              </select>
-              <input 
-                type="date" 
-                className="flex-1 p-2.5 sm:p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 text-sm"
-              />
-              <button className="bg-green-700 hover:bg-green-800 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg transition font-medium flex items-center justify-center gap-2 text-sm">
-                <Search className="w-4 h-4" />
-                Search
-              </button>
-            </div>
-          </div>
+
         </div>
       </div>
 

@@ -8,6 +8,9 @@ const bookingSchema = z.object({
   end_at: z.string().min(1, 'end_at is required'),
   guests: z.number().int().positive().optional(),
   amenities: z.array(z.string()).optional(),
+  extra_beds: z.number().int().min(0).max(2).optional(),
+  discount_type: z.enum(['none', 'pwd', 'senior']).optional(),
+  total_price: z.number().positive().optional(),
 });
 
 // Allow both camelCase and snake_case payloads coming from the frontend
@@ -18,6 +21,9 @@ function normalizeBookingPayload(body: any) {
   const endAt = body.end_at ?? body.endAt;
   const guestsRaw = body.guests;
   const amenitiesRaw = body.amenities;
+  const extraBedsRaw = body.extra_beds ?? body.extraBeds;
+  const discountType = body.discount_type ?? body.discountType;
+  const totalPriceRaw = body.total_price ?? body.totalPrice;
 
   return {
     room_id:
@@ -33,6 +39,15 @@ function normalizeBookingPayload(body: any) {
     amenities: Array.isArray(amenitiesRaw)
       ? amenitiesRaw.map((a) => String(a))
       : undefined,
+    extra_beds:
+      typeof extraBedsRaw === 'string'
+        ? parseInt(extraBedsRaw, 10)
+        : extraBedsRaw,
+    discount_type: discountType,
+    total_price:
+      typeof totalPriceRaw === 'string'
+        ? parseFloat(totalPriceRaw)
+        : totalPriceRaw,
   };
 }
 
@@ -63,7 +78,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { room_id, start_at, end_at, guests = 1, amenities } = result.data;
+    const { room_id, start_at, end_at, guests = 1, amenities, extra_beds, discount_type, total_price } = result.data;
     const { data: conflicts, error: confErr } = await supabase
       .from('bookings')
       .select('id')
@@ -80,18 +95,41 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Room is not available for the selected time' }, { status: 409 });
     }
 
-    const { data: booking, error: bookingError } = await supabase
+    // Build booking notes from extra details
+    const notesObj: Record<string, any> = {};
+    if (extra_beds && extra_beds > 0) notesObj.extra_beds = extra_beds;
+    if (discount_type && discount_type !== 'none') notesObj.discount_type = discount_type;
+    if (total_price) notesObj.total_price = total_price;
+    const notesStr = Object.keys(notesObj).length > 0 ? JSON.stringify(notesObj) : undefined;
+
+    const insertPayload: Record<string, any> = {
+      user_id: user.id,
+      room_id,
+      start_at,
+      end_at,
+      guests,
+      status: 'pending',
+    };
+    if (notesStr) insertPayload.notes = notesStr;
+
+    // Try insert with notes first; if notes column doesn't exist, retry without it
+    let bookingResult = await supabase
       .from('bookings')
-      .insert({
-        user_id: user.id,
-        room_id,
-        start_at,
-        end_at,
-        guests,
-        status: 'pending',
-      })
+      .insert(insertPayload)
       .select()
       .single();
+
+    if (bookingResult.error && notesStr) {
+      // Fallback: insert without notes if column doesn't exist
+      const { notes: _unusedNotes, ...basePayload } = insertPayload;
+      bookingResult = await supabase
+        .from('bookings')
+        .insert(basePayload)
+        .select()
+        .single();
+    }
+
+    const { data: booking, error: bookingError } = bookingResult;
 
     if (bookingError) {
       return NextResponse.json({ error: bookingError.message }, { status: 500 });
