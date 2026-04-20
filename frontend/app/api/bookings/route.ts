@@ -9,7 +9,10 @@ const bookingSchema = z.object({
   guests: z.number().int().positive().optional(),
   amenities: z.array(z.string()).optional(),
   extra_beds: z.number().int().min(0).max(2).optional(),
-  discount_type: z.enum(['none', 'pwd', 'senior']).optional(),
+  has_pwd: z.boolean().optional(),
+  has_senior: z.boolean().optional(),
+  has_child: z.boolean().optional(),
+  child_age_group: z.enum(['under2', 'over2']).nullable().optional(),
   total_price: z.number().positive().optional(),
 });
 
@@ -22,7 +25,6 @@ function normalizeBookingPayload(body: any) {
   const guestsRaw = body.guests;
   const amenitiesRaw = body.amenities;
   const extraBedsRaw = body.extra_beds ?? body.extraBeds;
-  const discountType = body.discount_type ?? body.discountType;
   const totalPriceRaw = body.total_price ?? body.totalPrice;
 
   return {
@@ -43,7 +45,10 @@ function normalizeBookingPayload(body: any) {
       typeof extraBedsRaw === 'string'
         ? parseInt(extraBedsRaw, 10)
         : extraBedsRaw,
-    discount_type: discountType,
+    has_pwd: body.has_pwd ?? body.hasPwd ?? undefined,
+    has_senior: body.has_senior ?? body.hasSenior ?? undefined,
+    has_child: body.has_child ?? body.hasChild ?? undefined,
+    child_age_group: body.child_age_group ?? body.childAgeGroup ?? undefined,
     total_price:
       typeof totalPriceRaw === 'string'
         ? parseFloat(totalPriceRaw)
@@ -78,7 +83,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { room_id, start_at, end_at, guests = 1, amenities, extra_beds, discount_type, total_price } = result.data;
+    const { room_id, start_at, end_at, guests = 1, amenities, extra_beds, has_pwd, has_senior, has_child, child_age_group, total_price } = result.data;
     const { data: conflicts, error: confErr } = await supabase
       .from('bookings')
       .select('id')
@@ -98,7 +103,12 @@ export async function POST(request: Request) {
     // Build booking notes from extra details
     const notesObj: Record<string, any> = {};
     if (extra_beds && extra_beds > 0) notesObj.extra_beds = extra_beds;
-    if (discount_type && discount_type !== 'none') notesObj.discount_type = discount_type;
+    if (has_pwd) notesObj.has_pwd = true;
+    if (has_senior) notesObj.has_senior = true;
+    if (has_child) {
+      notesObj.has_child = true;
+      if (child_age_group) notesObj.child_age_group = child_age_group;
+    }
     if (total_price) notesObj.total_price = total_price;
     const notesStr = Object.keys(notesObj).length > 0 ? JSON.stringify(notesObj) : undefined;
 

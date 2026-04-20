@@ -8,6 +8,12 @@ const bookingSchema = z.object({
   end_at: z.string().min(1, 'end_at is required'),
   guests: z.number().int().positive().optional(),
   amenities: z.array(z.string()).optional(),
+  has_pwd: z.boolean().optional(),
+  has_senior: z.boolean().optional(),
+  has_child: z.boolean().optional(),
+  child_age_group: z.enum(['under2', 'over2']).nullable().optional(),
+  extra_beds: z.number().int().min(0).max(2).optional(),
+  total_price: z.number().positive().optional(),
 });
 
 // Allow both camelCase and snake_case payloads coming from the frontend
@@ -18,6 +24,8 @@ function normalizeBookingPayload(body: any) {
   const endAt = body.end_at ?? body.endAt;
   const guestsRaw = body.guests;
   const amenitiesRaw = body.amenities;
+  const extraBedsRaw = body.extra_beds ?? body.extraBeds;
+  const totalPriceRaw = body.total_price ?? body.totalPrice;
 
   return {
     room_id:
@@ -33,6 +41,18 @@ function normalizeBookingPayload(body: any) {
     amenities: Array.isArray(amenitiesRaw)
       ? amenitiesRaw.map((a) => String(a))
       : undefined,
+    has_pwd: body.has_pwd ?? body.hasPwd ?? undefined,
+    has_senior: body.has_senior ?? body.hasSenior ?? undefined,
+    has_child: body.has_child ?? body.hasChild ?? undefined,
+    child_age_group: body.child_age_group ?? body.childAgeGroup ?? undefined,
+    extra_beds:
+      typeof extraBedsRaw === 'string'
+        ? parseInt(extraBedsRaw, 10)
+        : extraBedsRaw,
+    total_price:
+      typeof totalPriceRaw === 'string'
+        ? parseFloat(totalPriceRaw)
+        : totalPriceRaw,
   };
 }
 
@@ -68,7 +88,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { room_id, start_at, end_at, guests = 1, amenities } = result.data;
+    const { room_id, start_at, end_at, guests = 1, amenities, has_pwd, has_senior, has_child, child_age_group, extra_beds, total_price } = result.data;
     const { data: conflicts, error: confErr } = await supabase
       .from('bookings')
       .select('id')
@@ -85,19 +105,46 @@ export async function POST(request: Request) {
       return jsonWithCors({ error: 'Room is not available for the selected time' }, { status: 409 }, request);
     }
 
-    const { data: booking, error: bookingError } = await supabase
+    // Build notes JSON to store extra booking details
+    const notesObj: Record<string, any> = {};
+    if (extra_beds && extra_beds > 0) notesObj.extra_beds = extra_beds;
+    if (has_pwd) notesObj.has_pwd = true;
+    if (has_senior) notesObj.has_senior = true;
+    if (has_child) {
+      notesObj.has_child = true;
+      if (child_age_group) notesObj.child_age_group = child_age_group;
+    }
+    if (total_price) notesObj.total_price = total_price;
+    const notesStr = Object.keys(notesObj).length > 0 ? JSON.stringify(notesObj) : undefined;
+
+    const insertPayload: Record<string, any> = {
+      user_id: user.id,
+      room_id,
+      start_at,
+      end_at,
+      guests,
+      status: 'pending',
+    };
+    if (notesStr) insertPayload.notes = notesStr;
+
+    // Try insert with notes first; if notes column doesn't exist, retry without it
+    let bookingResult = await supabase
       .from('bookings')
-      .insert({
-        user_id: user.id,
-        room_id,
-        start_at,
-        end_at,
-        guests,
-        status: 'pending',
-      })
+      .insert(insertPayload)
       .select()
       .single();
-//amenities using str
+
+    if (bookingResult.error && notesStr) {
+      const { notes: _unusedNotes, ...basePayload } = insertPayload;
+      bookingResult = await supabase
+        .from('bookings')
+        .insert(basePayload)
+        .select()
+        .single();
+    }
+
+    const { data: booking, error: bookingError } = bookingResult;
+    //amenities using str
     if (bookingError) {
       return jsonWithCors({ error: bookingError.message }, { status: 500 }, request);
     }
