@@ -181,7 +181,7 @@ export async function POST(request: Request) {
       start_at,
       end_at,
       guests,
-      status: 'pending',
+      status: booking.status,
       extra_beds: extra_beds ?? 0,
       has_pwd: has_pwd ?? false,
       has_senior: has_senior ?? false,
