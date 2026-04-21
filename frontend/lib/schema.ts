@@ -35,6 +35,7 @@ export async function resolveBookingColumns(
       .eq('table_name', 'bookings');
 
     if (error || !data) {
+      console.error('[schema] Could not fetch bookings columns:', error?.message);
       columnCache = {};
       return columnCache;
     }
@@ -51,7 +52,8 @@ export async function resolveBookingColumns(
 
     columnCache = resolved;
     return resolved;
-  } catch {
+  } catch (err) {
+    console.error('[schema] Failed to resolve booking columns:', err);
     columnCache = {};
     return {};
   }

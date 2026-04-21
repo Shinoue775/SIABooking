@@ -38,6 +38,7 @@ export async function resolveBookingColumns(
 
     if (error || !data) {
       // Fall back to the names used in the codebase if the schema query fails.
+      console.error('[schema] Could not fetch bookings columns:', error?.message);
       columnCache = {};
       return columnCache;
     }
@@ -54,7 +55,8 @@ export async function resolveBookingColumns(
 
     columnCache = resolved;
     return resolved;
-  } catch {
+  } catch (err) {
+    console.error('[schema] Failed to resolve booking columns:', err);
     columnCache = {};
     return {};
   }
