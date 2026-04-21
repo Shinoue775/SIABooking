@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
         // Fetch all non-cancelled bookings whose check-in falls within this month.
         const { data: bookings, error: bookErr } = await supabase
-            .from('archived_bookings')
+            .from('bookings')
             .select('start_at')
             .eq('room_id', roomId)
             .neq('status', 'cancelled')

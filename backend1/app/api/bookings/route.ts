@@ -91,12 +91,11 @@ export async function POST(request: Request) {
     const { room_id, start_at, end_at, guests = 1, amenities, has_pwd, has_senior, has_child, child_age_group, extra_beds, total_price } = result.data;
 
     const { data: conflicts, error: confErr } = await supabase
-      .from('archived_bookings')
-      .select('original_booking_id')
+      .from('bookings')
+      .select('id')
       .eq('room_id', room_id)
       .neq('status', 'cancelled')
-      .lt('start_at', end_at)
-      .gt('end_at', start_at);
+      .eq('start_at', start_at);
 
     if (confErr) {
       return jsonWithCors({ error: confErr.message }, { status: 500 }, request);
@@ -106,50 +105,27 @@ export async function POST(request: Request) {
       return jsonWithCors({ error: 'Room is not available for the selected time' }, { status: 409 }, request);
     }
 
-    // Build notes JSON to store extra booking details
-    const notesObj: Record<string, any> = {};
-    if (extra_beds && extra_beds > 0) notesObj.extra_beds = extra_beds;
-    if (has_pwd) notesObj.has_pwd = true;
-    if (has_senior) notesObj.has_senior = true;
-    if (has_child) {
-      notesObj.has_child = true;
-      if (child_age_group) notesObj.child_age_group = child_age_group;
-    }
-    if (total_price) notesObj.total_price = total_price;
-    const notesStr = Object.keys(notesObj).length > 0 ? JSON.stringify(notesObj) : undefined;
-
     const insertPayload: Record<string, any> = {
       user_id: user.id,
       room_id,
       start_at,
-      end_at,
       guests,
       status: 'pending',
       has_child: has_child ?? false,
       child_age_group: has_child ? (child_age_group ?? null) : null,
       has_pwd: has_pwd ?? false,
       has_senior: has_senior ?? false,
+      extra_beds: extra_beds ?? 0,
       price_at_booking: total_price,
+      total_amount: total_price,
     };
-    if (notesStr) insertPayload.notes = notesStr;
 
-    // Try insert with notes first; if notes column doesn't exist, retry without it
-    let bookingResult = await supabase
-      .from('archived_bookings')
+    const { data: booking, error: bookingError } = await supabase
+      .from('bookings')
       .insert(insertPayload)
       .select()
       .single();
 
-    if (bookingResult.error && notesStr) {
-      const { notes: _, ...basePayload } = insertPayload;
-      bookingResult = await supabase
-        .from('archived_bookings')
-        .insert(basePayload)
-        .select()
-        .single();
-    }
-
-    const { data: booking, error: bookingError } = bookingResult;
     //amenities using str
     if (bookingError) {
       return jsonWithCors({ error: bookingError.message }, { status: 500 }, request);
@@ -168,53 +144,6 @@ export async function POST(request: Request) {
       if (amenityError) {
         return jsonWithCors({ error: amenityError.message }, { status: 500 }, request);
       }
-    }
-
-    // Fetch user profile and room details in parallel for the archive record
-    const [profileResult, roomResult] = await Promise.all([
-      supabase.from('users').select('fname, lname').eq('id', user.id).single(),
-      supabase.from('rooms').select('room_number, number, name').eq('id', room_id).single(),
-    ]);
-
-    if (profileResult.error) {
-      console.error('[bookings] Failed to fetch user profile for archive:', profileResult.error.message);
-    }
-    if (roomResult.error) {
-      console.error('[bookings] Failed to fetch room for archive:', roomResult.error.message);
-    }
-
-    const guestFname = profileResult.data?.fname ?? null;
-    const guestLname = profileResult.data?.lname ?? null;
-    const roomNumber = roomResult.data?.room_number ?? roomResult.data?.number ?? roomResult.data?.name ?? null;
-
-    // Archive the booking details
-    const archivePayload: Record<string, any> = {
-      original_booking_id: booking.id,
-      user_id: user.id,
-      room_id,
-      guest_fname: guestFname,
-      guest_lname: guestLname,
-      room_number: roomNumber,
-      start_at,
-      end_at,
-      guests,
-      status: booking.status,
-      extra_beds: extra_beds ?? 0,
-      has_pwd: has_pwd ?? false,
-      has_senior: has_senior ?? false,
-      has_child: has_child ?? false,
-      child_age_group: has_child ? (child_age_group ?? null) : null,
-      price_at_booking: total_price ?? null,
-      created_at: booking.created_at ?? new Date().toISOString(),
-      amenities: amenities ?? [],
-    };
-
-    const { error: archiveError } = await supabase
-      .from('archived_bookings')
-      .insert(archivePayload);
-
-    if (archiveError) {
-      console.error('[bookings] Failed to archive booking:', archiveError.message);
     }
 
     return jsonWithCors(booking, { status: 201 }, request);
@@ -249,7 +178,7 @@ export async function GET(request: Request) {
       .single();
 
     let query = supabase
-      .from('archived_bookings')
+      .from('bookings')
       .select('*')
       .order('created_at', { ascending: false });
 

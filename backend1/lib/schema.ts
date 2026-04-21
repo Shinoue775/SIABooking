@@ -34,7 +34,7 @@ export async function resolveBookingColumns(
       .from('information_schema.columns' as any)
       .select('column_name')
       .eq('table_schema', 'public')
-      .eq('table_name', 'archived_bookings');
+      .eq('table_name', 'bookings');
 
     if (error || !data) {
       // Fall back to the names used in the codebase if the schema query fails.

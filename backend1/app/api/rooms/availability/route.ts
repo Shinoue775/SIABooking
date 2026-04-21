@@ -38,11 +38,11 @@ export async function GET(request: Request) {
             });
         }
         const { data: bookings, error: bookErr } = await supabase
-            .from('archived_bookings')
+            .from('bookings')
             .select('*')
             .neq('status', 'cancelled')
-            .lt('start_at', dayEnd)
-            .gt('end_at', dayStart);
+            .gte('start_at', dayStart)
+            .lt('start_at', dayEnd);
 
         if (bookErr) {
             return jsonWithCors({ error: bookErr.message }, { status: 500 }, request);
