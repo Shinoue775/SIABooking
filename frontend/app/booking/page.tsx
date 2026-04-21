@@ -522,8 +522,11 @@ export default function BookingPage() {
             <h2 className={cormorantInfant.className} style={{ fontSize: 'clamp(32px, 6vw, 51px)', fontWeight: 400, lineHeight: '1.2', color: '#3D5A4C', marginBottom: '16px' }}>
               Calendar
             </h2>
-            <p style={{ fontSize: '10.2px', fontWeight: 500, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter', marginBottom: '16px' }}>
+            <p style={{ fontSize: '10.2px', fontWeight: 500, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter', marginBottom: '8px' }}>
               Check-in Date (Check-in: 3:00 PM | Check-out: 11:00 AM)
+            </p>
+            <p style={{ fontSize: '10.2px', fontWeight: 600, lineHeight: '16px', color: '#3D5A4C', fontFamily: 'Inter', marginBottom: '16px' }}>
+              Showing availability for: {roomType.split(' - ')[0]}
             </p>
 
             {/* Calendar Legend */}
@@ -844,7 +847,7 @@ export default function BookingPage() {
               <div className="flex justify-between items-center hover:border-opacity-80 hover:bg-gray-50 transition-all duration-200" style={{ padding: '16px', borderBottom: '2px solid rgba(61, 90, 76, 0.15)', background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px 8px 0 0' }}>
                 <select
                   value={roomType}
-                  onChange={(e) => setRoomType(e.target.value)}
+                  onChange={(e) => { setRoomType(e.target.value); setSelectedDate(null); }}
                   className="transition-colors duration-200"
                   style={{
                     width: '100%',
