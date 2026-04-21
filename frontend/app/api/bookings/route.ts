@@ -173,6 +173,53 @@ export async function POST(request: Request) {
       }
     }
 
+    // Fetch user profile and room details in parallel for the archive record
+    const [profileResult, roomResult] = await Promise.all([
+      supabase.from('users').select('fname, lname').eq('id', user.id).single(),
+      supabase.from('rooms').select('room_number, number, name').eq('id', room_id).single(),
+    ]);
+
+    if (profileResult.error) {
+      console.error('[bookings] Failed to fetch user profile for archive:', profileResult.error.message);
+    }
+    if (roomResult.error) {
+      console.error('[bookings] Failed to fetch room for archive:', roomResult.error.message);
+    }
+
+    const guestFname = profileResult.data?.fname ?? null;
+    const guestLname = profileResult.data?.lname ?? null;
+    const roomNumber = roomResult.data?.room_number ?? roomResult.data?.number ?? roomResult.data?.name ?? null;
+
+    // Archive the booking details
+    const archivePayload: Record<string, any> = {
+      booking_id: booking.id,
+      user_id: user.id,
+      room_id,
+      guest_fname: guestFname,
+      guest_lname: guestLname,
+      room_number: roomNumber,
+      start_at,
+      end_at,
+      guests,
+      status: booking.status,
+      extra_beds: extra_beds ?? 0,
+      has_pwd: has_pwd ?? false,
+      has_senior: has_senior ?? false,
+      has_child: has_child ?? false,
+      child_age_group: has_child ? (child_age_group ?? null) : null,
+      price_at_booking: total_price ?? null,
+      created_at: booking.created_at ?? new Date().toISOString(),
+      amenities: amenities ?? [],
+    };
+
+    const { error: archiveError } = await supabase
+      .from('archived_bookings')
+      .insert(archivePayload);
+
+    if (archiveError) {
+      console.error('[bookings] Failed to archive booking:', archiveError.message);
+    }
+
     return NextResponse.json(booking, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Unknown error' }, { status: 500 });
