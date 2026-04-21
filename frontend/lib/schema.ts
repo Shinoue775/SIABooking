@@ -32,7 +32,7 @@ export async function resolveBookingColumns(
       .from('information_schema.columns' as any)
       .select('column_name')
       .eq('table_schema', 'public')
-      .eq('table_name', 'bookings');
+      .eq('table_name', 'archived_bookings');
 
     if (error || !data) {
       console.error('[schema] Could not fetch bookings columns:', error?.message);
