@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import createServerSideClient from '@/lib/server';
 import { handleCors, jsonWithCors } from '@/lib/cors';
-import { resolveBookingColumns, col } from '@/lib/schema';
 
 const bookingSchema = z.object({
   room_id: z.number().int().positive(),
@@ -91,18 +90,13 @@ export async function POST(request: Request) {
 
     const { room_id, start_at, end_at, guests = 1, amenities, has_pwd, has_senior, has_child, child_age_group, extra_beds, total_price } = result.data;
 
-    // Discover actual column names from the DB schema (cached after first call).
-    const colMap = await resolveBookingColumns(supabase);
-    const startCol = col(colMap, 'start_at');
-    const endCol   = col(colMap, 'end_at');
-
     const { data: conflicts, error: confErr } = await supabase
-      .from('bookings')
-      .select('id')
+      .from('archived_bookings')
+      .select('booking_id')
       .eq('room_id', room_id)
       .neq('status', 'cancelled')
-      .lt(startCol, end_at)
-      .gt(endCol, start_at);
+      .lt('start_at', end_at)
+      .gt('end_at', start_at);
 
     if (confErr) {
       return jsonWithCors({ error: confErr.message }, { status: 500 }, request);
@@ -127,8 +121,6 @@ export async function POST(request: Request) {
     const insertPayload: Record<string, any> = {
       user_id: user.id,
       room_id,
-      [startCol]: start_at,
-      [endCol]: end_at,
       guests,
       status: 'pending',
       has_child: has_child ?? false,

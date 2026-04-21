@@ -87,6 +87,16 @@ export async function PATCH(
       return jsonWithCors({ error: updateErr.message }, { status: 500 }, request);
     }
 
+    // Keep archived_bookings in sync with the latest status
+    const { error: archiveSyncErr } = await supabase
+      .from('archived_bookings')
+      .update({ status })
+      .eq('booking_id', id);
+
+    if (archiveSyncErr) {
+      console.error('[bookings] Failed to sync status to archived_bookings:', archiveSyncErr.message);
+    }
+
     return jsonWithCors(updated, { status: 200 }, request);
   } catch (err: any) {
     return jsonWithCors({ error: err.message || 'Unknown error' }, { status: 500 }, request);
@@ -136,6 +146,16 @@ export async function DELETE(
 
     if (updateErr) {
       return jsonWithCors({ error: updateErr.message }, { status: 500 }, request);
+    }
+
+    // Keep archived_bookings in sync
+    const { error: archiveSyncErr } = await supabase
+      .from('archived_bookings')
+      .update({ status: 'cancelled' })
+      .eq('booking_id', id);
+
+    if (archiveSyncErr) {
+      console.error('[bookings] Failed to sync cancellation to archived_bookings:', archiveSyncErr.message);
     }
 
     return jsonWithCors(cancelled, { status: 200 }, request);
