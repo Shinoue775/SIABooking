@@ -92,7 +92,7 @@ export async function POST(request: Request) {
 
     const { data: conflicts, error: confErr } = await supabase
       .from('archived_bookings')
-      .select('booking_id')
+      .select('original_booking_id')
       .eq('room_id', room_id)
       .neq('status', 'cancelled')
       .lt('start_at', end_at)
@@ -186,7 +186,7 @@ export async function POST(request: Request) {
 
     // Archive the booking details
     const archivePayload: Record<string, any> = {
-      booking_id: booking.id,
+      original_booking_id: booking.id,
       user_id: user.id,
       room_id,
       guest_fname: guestFname,

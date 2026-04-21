@@ -91,7 +91,7 @@ export async function PATCH(
     const { error: archiveSyncErr } = await supabase
       .from('archived_bookings')
       .update({ status })
-      .eq('booking_id', id);
+      .eq('original_booking_id', id);
 
     if (archiveSyncErr) {
       console.error('[bookings] Failed to sync status to archived_bookings:', archiveSyncErr.message);
@@ -152,7 +152,7 @@ export async function DELETE(
     const { error: archiveSyncErr } = await supabase
       .from('archived_bookings')
       .update({ status: 'cancelled' })
-      .eq('booking_id', id);
+      .eq('original_booking_id', id);
 
     if (archiveSyncErr) {
       console.error('[bookings] Failed to sync cancellation to archived_bookings:', archiveSyncErr.message);
