@@ -116,8 +116,14 @@ export async function POST(request: Request) {
     const insertPayload: Record<string, any> = {
       user_id: user.id,
       room_id,
+      start_at,
+      end_at,
       guests,
       status: 'pending',
+      has_child: has_child ?? false,
+      child_age_group: has_child ? (child_age_group ?? null) : null,
+      has_pwd: has_pwd ?? false,
+      has_senior: has_senior ?? false,
     };
     if (notesStr) insertPayload.notes = notesStr;
 
