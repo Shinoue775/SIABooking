@@ -133,7 +133,7 @@ export async function POST(request: Request) {
 
     // Try insert with notes first; if notes column doesn't exist, retry without it
     let bookingResult = await supabase
-      .from('bookings')
+      .from('archived_bookings')
       .insert(insertPayload)
       .select()
       .single();
@@ -141,7 +141,7 @@ export async function POST(request: Request) {
     if (bookingResult.error && notesStr) {
       const { notes: _, ...basePayload } = insertPayload;
       bookingResult = await supabase
-        .from('bookings')
+        .from('archived_bookings')
         .insert(basePayload)
         .select()
         .single();
@@ -247,7 +247,7 @@ export async function GET(request: Request) {
       .single();
 
     let query = supabase
-      .from('bookings')
+      .from('archived_bookings')
       .select('*')
       .order('created_at', { ascending: false });
 
