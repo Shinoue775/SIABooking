@@ -49,7 +49,7 @@ export async function PATCH(
     }
 
     const { data: booking, error: fetchErr } = await supabase
-      .from('bookings')
+      .from('archived_bookings')
       .select('*')
       .eq('id', id)
       .single();
@@ -77,7 +77,7 @@ export async function PATCH(
     }
 
     const { data: updated, error: updateErr } = await supabase
-      .from('bookings')
+      .from('archived_bookings')
       .update({ status })
       .eq('id', id)
       .select()
@@ -115,7 +115,7 @@ export async function DELETE(
 
   try {
     const { data: booking, error: fetchErr } = await supabase
-      .from('bookings')
+      .from('archived_bookings')
       .select('*')
       .eq('id', id)
       .single();
@@ -138,7 +138,7 @@ export async function DELETE(
     }
 
     const { data: cancelled, error: updateErr } = await supabase
-      .from('bookings')
+      .from('archived_bookings')
       .update({ status: 'cancelled' })
       .eq('id', id)
       .select()
