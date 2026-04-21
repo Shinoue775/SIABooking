@@ -179,6 +179,13 @@ export async function POST(request: Request) {
       supabase.from('rooms').select('room_number, number, name').eq('id', room_id).single(),
     ]);
 
+    if (profileResult.error) {
+      console.error('[bookings] Failed to fetch user profile for archive:', profileResult.error.message);
+    }
+    if (roomResult.error) {
+      console.error('[bookings] Failed to fetch room for archive:', roomResult.error.message);
+    }
+
     const guestFname = profileResult.data?.fname ?? null;
     const guestLname = profileResult.data?.lname ?? null;
     const roomNumber = roomResult.data?.room_number ?? roomResult.data?.number ?? roomResult.data?.name ?? null;
