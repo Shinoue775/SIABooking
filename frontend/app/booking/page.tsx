@@ -526,7 +526,7 @@ export default function BookingPage() {
               Check-in Date (Check-in: 3:00 PM | Check-out: 11:00 AM)
             </p>
             <p style={{ fontSize: '10.2px', fontWeight: 600, lineHeight: '16px', color: '#3D5A4C', fontFamily: 'Inter', marginBottom: '16px' }}>
-              Showing availability for: {roomType.includes('Deluxe') ? 'Deluxe Room A' : 'Standard Room B'}
+              Showing availability for: {roomType.split(' - ')[0]}
             </p>
 
             {/* Calendar Legend */}
