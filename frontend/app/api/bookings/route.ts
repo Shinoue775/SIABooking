@@ -13,7 +13,7 @@ const bookingSchema = z.object({
   has_senior: z.boolean().optional(),
   has_child: z.boolean().optional(),
   child_age_group: z.enum(['under2', 'over2']).nullable().optional(),
-  total_price: z.number().positive().optional(),
+  total_price: z.number().positive({ message: 'total_price is required and must be positive' }),
 });
 
 // Allow both camelCase and snake_case payloads coming from the frontend
@@ -117,12 +117,14 @@ export async function POST(request: Request) {
       user_id: user.id,
       room_id,
       start_at,
+      end_at,
       guests,
       status: 'pending',
       has_child: has_child ?? false,
       child_age_group: has_child ? (child_age_group ?? null) : null,
       has_pwd: has_pwd ?? false,
       has_senior: has_senior ?? false,
+      price_at_booking: total_price,
     };
     if (notesStr) insertPayload.notes = notesStr;
 
