@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       return jsonWithCors({ error: error.message }, { status: 500 }, request);
     }
 
-    return jsonWithCors({ table: 'bookings', columns: data }, { status: 200 }, request);
+    return jsonWithCors({ table: 'archived_bookings', columns: data }, { status: 200 }, request);
   } catch (err: any) {
     return jsonWithCors({ error: err.message || 'Unknown error' }, { status: 500 }, request);
   }
