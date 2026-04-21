@@ -1,5 +1,6 @@
 import createServerSideClient from '@/lib/server';
 import { NextResponse } from 'next/server';
+import { resolveBookingColumns, col } from '@/lib/schema';
 
 //GET /api/rooms/availability
 export async function GET(request: Request) {
@@ -35,12 +36,16 @@ export async function GET(request: Request) {
             });
         }
 
+        const colMap = await resolveBookingColumns(supabase);
+        const startCol = col(colMap, 'start_at');
+        const endCol   = col(colMap, 'end_at');
+
         const { data: bookings, error: bookErr } = await supabase
             .from('bookings')
-            .select('room_id, start_at, end_at, status')
+            .select('*')
             .neq('status', 'cancelled')
-            .lt('start_at', dayEnd)
-            .gt('end_at', dayStart);
+            .lt(startCol, dayEnd)
+            .gt(endCol, dayStart);
 
         if (bookErr) {
             return NextResponse.json({ error: bookErr.message }, { status: 500 });
@@ -52,8 +57,8 @@ export async function GET(request: Request) {
                 ...room,
                 available: roomBookings.length === 0,
                 bookings: roomBookings.map((b) => ({
-                    start_at: b.start_at,
-                    end_at: b.end_at,
+                    start_at: b[startCol],
+                    end_at: b[endCol],
                     status: b.status,
                 })),
             };

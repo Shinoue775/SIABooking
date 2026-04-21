@@ -1,5 +1,6 @@
 import createServerSideClient from '@/lib/server';
 import { handleCors, jsonWithCors } from '@/lib/cors';
+import { resolveBookingColumns, col } from '@/lib/schema';
 export async function OPTIONS(request: Request) {
     return handleCors(request);
 }
@@ -37,12 +38,16 @@ export async function GET(request: Request) {
                 return leftLabel.localeCompare(rightLabel, undefined, { numeric: true, sensitivity: 'base' });
             });
         }
+        const colMap = await resolveBookingColumns(supabase);
+        const startCol = col(colMap, 'start_at');
+        const endCol   = col(colMap, 'end_at');
+
         const { data: bookings, error: bookErr } = await supabase
             .from('bookings')
-            .select('room_id, start_at, end_at, status')
+            .select('*')
             .neq('status', 'cancelled')
-            .lt('start_at', dayEnd)
-            .gt('end_at', dayStart);
+            .lt(startCol, dayEnd)
+            .gt(endCol, dayStart);
 
         if (bookErr) {
             return jsonWithCors({ error: bookErr.message }, { status: 500 }, request);
@@ -53,8 +58,8 @@ export async function GET(request: Request) {
                 ...room,
                 available: roomBookings.length === 0,
                 bookings: roomBookings.map((b) => ({
-                    start_at: b.start_at,
-                    end_at: b.end_at,
+                    start_at: b[startCol],
+                    end_at: b[endCol],
                     status: b.status,
                 })),
             };

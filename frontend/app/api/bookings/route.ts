@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import createServerSideClient from '@/lib/server';
 import { NextResponse } from 'next/server';
+import { resolveBookingColumns, col } from '@/lib/schema';
 
 const bookingSchema = z.object({
   room_id: z.number().int().positive(),
@@ -84,13 +85,19 @@ export async function POST(request: Request) {
     }
 
     const { room_id, start_at, end_at, guests = 1, amenities, extra_beds, has_pwd, has_senior, has_child, child_age_group, total_price } = result.data;
+
+    // Discover actual column names from the DB schema (cached after first call).
+    const colMap = await resolveBookingColumns(supabase);
+    const startCol = col(colMap, 'start_at');
+    const endCol   = col(colMap, 'end_at');
+
     const { data: conflicts, error: confErr } = await supabase
       .from('bookings')
       .select('id')
       .eq('room_id', room_id)
       .neq('status', 'cancelled')
-      .lt('start_at', end_at)
-      .gt('end_at', start_at);
+      .lt(startCol, end_at)
+      .gt(endCol, start_at);
 
     if (confErr) {
       return NextResponse.json({ error: confErr.message }, { status: 500 });
@@ -115,8 +122,8 @@ export async function POST(request: Request) {
     const insertPayload: Record<string, any> = {
       user_id: user.id,
       room_id,
-      start_at,
-      end_at,
+      [startCol]: start_at,
+      [endCol]: end_at,
       guests,
       status: 'pending',
     };
