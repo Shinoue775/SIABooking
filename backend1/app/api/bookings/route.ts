@@ -175,6 +175,32 @@ export async function POST(request: Request) {
       }
     }
 
+    // Archive the booking details
+    const archivePayload: Record<string, any> = {
+      booking_id: booking.id,
+      user_id: user.id,
+      room_id,
+      start_at,
+      end_at,
+      guests,
+      status: 'pending',
+      extra_beds: extra_beds ?? 0,
+      has_pwd: has_pwd ?? false,
+      has_senior: has_senior ?? false,
+      has_child: has_child ?? false,
+      child_age_group: has_child ? (child_age_group ?? null) : null,
+      total_price: total_price ?? null,
+      amenities: amenities ?? [],
+    };
+
+    const { error: archiveError } = await supabase
+      .from('archived_bookings')
+      .insert(archivePayload);
+
+    if (archiveError) {
+      console.error('[bookings] Failed to archive booking:', archiveError.message);
+    }
+
     return jsonWithCors(booking, { status: 201 }, request);
 
 
