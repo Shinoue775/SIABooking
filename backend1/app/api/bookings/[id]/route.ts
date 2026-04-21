@@ -49,7 +49,7 @@ export async function PATCH(
     }
 
     const { data: booking, error: fetchErr } = await supabase
-      .from('archived_bookings')
+      .from('bookings')
       .select('*')
       .eq('id', id)
       .single();
@@ -77,7 +77,7 @@ export async function PATCH(
     }
 
     const { data: updated, error: updateErr } = await supabase
-      .from('archived_bookings')
+      .from('bookings')
       .update({ status })
       .eq('id', id)
       .select()
@@ -85,16 +85,6 @@ export async function PATCH(
 
     if (updateErr) {
       return jsonWithCors({ error: updateErr.message }, { status: 500 }, request);
-    }
-
-    // Keep archived_bookings in sync with the latest status
-    const { error: archiveSyncErr } = await supabase
-      .from('archived_bookings')
-      .update({ status })
-      .eq('original_booking_id', id);
-
-    if (archiveSyncErr) {
-      console.error('[bookings] Failed to sync status to archived_bookings:', archiveSyncErr.message);
     }
 
     return jsonWithCors(updated, { status: 200 }, request);
@@ -115,7 +105,7 @@ export async function DELETE(
 
   try {
     const { data: booking, error: fetchErr } = await supabase
-      .from('archived_bookings')
+      .from('bookings')
       .select('*')
       .eq('id', id)
       .single();
@@ -138,7 +128,7 @@ export async function DELETE(
     }
 
     const { data: cancelled, error: updateErr } = await supabase
-      .from('archived_bookings')
+      .from('bookings')
       .update({ status: 'cancelled' })
       .eq('id', id)
       .select()
@@ -146,16 +136,6 @@ export async function DELETE(
 
     if (updateErr) {
       return jsonWithCors({ error: updateErr.message }, { status: 500 }, request);
-    }
-
-    // Keep archived_bookings in sync
-    const { error: archiveSyncErr } = await supabase
-      .from('archived_bookings')
-      .update({ status: 'cancelled' })
-      .eq('original_booking_id', id);
-
-    if (archiveSyncErr) {
-      console.error('[bookings] Failed to sync cancellation to archived_bookings:', archiveSyncErr.message);
     }
 
     return jsonWithCors(cancelled, { status: 200 }, request);

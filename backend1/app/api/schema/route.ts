@@ -14,14 +14,14 @@ export async function GET(request: Request) {
       .from('information_schema.columns' as any)
       .select('column_name, data_type, is_nullable')
       .eq('table_schema', 'public')
-      .eq('table_name', 'archived_bookings')
+      .eq('table_name', 'bookings')
       .order('ordinal_position' as any);
 
     if (error) {
       return jsonWithCors({ error: error.message }, { status: 500 }, request);
     }
 
-    return jsonWithCors({ table: 'archived_bookings', columns: data }, { status: 200 }, request);
+    return jsonWithCors({ table: 'bookings', columns: data }, { status: 200 }, request);
   } catch (err: any) {
     return jsonWithCors({ error: err.message || 'Unknown error' }, { status: 500 }, request);
   }
