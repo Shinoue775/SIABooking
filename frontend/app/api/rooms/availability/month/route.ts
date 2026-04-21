@@ -1,6 +1,5 @@
 import createServerSideClient from '@/lib/server';
 import { NextResponse } from 'next/server';
-import { resolveBookingColumns, col } from '@/lib/schema';
 
 // GET /api/rooms/availability/month?year=YYYY&month=M&room_id=N
 // Returns the day numbers (1–31) that are booked for the given room in the given month.
@@ -35,17 +34,14 @@ export async function GET(request: Request) {
         const rangeStart = `${year}-${monthPadded}-01T00:00:00.000Z`;
         const rangeEnd = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01T00:00:00.000Z`;
 
-        const colMap = await resolveBookingColumns(supabase);
-        const startCol = col(colMap, 'start_at');
-
         // Fetch all non-cancelled bookings whose check-in falls within this month.
         const { data: bookings, error: bookErr } = await supabase
-            .from('bookings')
-            .select(startCol)
+            .from('archived_bookings')
+            .select('start_at')
             .eq('room_id', roomId)
             .neq('status', 'cancelled')
-            .gte(startCol, rangeStart)
-            .lt(startCol, rangeEnd);
+            .gte('start_at', rangeStart)
+            .lt('start_at', rangeEnd);
 
         if (bookErr) {
             return NextResponse.json({ error: bookErr.message }, { status: 500 });
@@ -55,7 +51,7 @@ export async function GET(request: Request) {
         // Check-in is set to 3 PM local time → typically 7 AM UTC for UTC+8 (Philippines),
         // so the UTC date matches the local calendar date.
         const unavailableDays = [...new Set(
-            (bookings || []).map((b) => new Date((b as any)[startCol]).getUTCDate())
+            (bookings || []).map((b) => new Date(b.start_at).getUTCDate())
         )].sort((a, b) => a - b);
 
         return NextResponse.json(
