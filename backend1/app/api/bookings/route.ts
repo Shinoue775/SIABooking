@@ -162,7 +162,7 @@ export async function POST(request: Request) {
     if (amenities && amenities.length > 0) {
 
       const bookingAmenities = amenities.map((amenityId: string) => ({
-        booking_id: booking.id,
+        original_booking_id: booking.id,
         amenity_id: parseInt(amenityId),
       }));
 
@@ -194,7 +194,7 @@ export async function POST(request: Request) {
 
     // Archive the booking details
     const archivePayload: Record<string, any> = {
-      booking_id: booking.id,
+      original_booking_id: booking.id,
       user_id: user.id,
       room_id,
       guest_fname: guestFname,
