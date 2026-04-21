@@ -121,6 +121,8 @@ export async function POST(request: Request) {
     const insertPayload: Record<string, any> = {
       user_id: user.id,
       room_id,
+      start_at,
+      end_at,
       guests,
       status: 'pending',
       has_child: has_child ?? false,
