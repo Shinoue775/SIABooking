@@ -173,11 +173,24 @@ export async function POST(request: Request) {
       }
     }
 
+    // Fetch user profile and room details in parallel for the archive record
+    const [profileResult, roomResult] = await Promise.all([
+      supabase.from('users').select('fname, lname').eq('id', user.id).single(),
+      supabase.from('rooms').select('room_number, number, name').eq('id', room_id).single(),
+    ]);
+
+    const guestFname = profileResult.data?.fname ?? null;
+    const guestLname = profileResult.data?.lname ?? null;
+    const roomNumber = roomResult.data?.room_number ?? roomResult.data?.number ?? roomResult.data?.name ?? null;
+
     // Archive the booking details
     const archivePayload: Record<string, any> = {
       booking_id: booking.id,
       user_id: user.id,
       room_id,
+      guest_fname: guestFname,
+      guest_lname: guestLname,
+      room_number: roomNumber,
       start_at,
       end_at,
       guests,
@@ -187,7 +200,8 @@ export async function POST(request: Request) {
       has_senior: has_senior ?? false,
       has_child: has_child ?? false,
       child_age_group: has_child ? (child_age_group ?? null) : null,
-      total_price: total_price ?? null,
+      price_at_booking: total_price ?? null,
+      created_at: booking.created_at ?? new Date().toISOString(),
       amenities: amenities ?? [],
     };
 
