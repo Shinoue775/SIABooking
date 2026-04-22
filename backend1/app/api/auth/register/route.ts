@@ -33,11 +33,11 @@ export async function POST(request: Request) {
 
     const { email, password, full_name, phone, address, role } = result.data;
 
-    // Create auth user via admin API (service role)
+    // Create auth user via admin API (service role).
+    // email_confirm is left as true (default) so users must verify their email.
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: false,
       user_metadata: { full_name, role, phone, address },
     });
 
@@ -60,8 +60,11 @@ export async function POST(request: Request) {
       });
 
     if (insertError) {
-      // Roll back the auth user to keep data consistent
-      await supabase.auth.admin.deleteUser(userId);
+      // Attempt to roll back the auth user to keep data consistent
+      const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
+      if (deleteError) {
+        console.error('[register] Failed to roll back auth user after users insert error:', deleteError.message);
+      }
       return jsonWithCors({ error: insertError.message }, { status: 500 }, request);
     }
 
