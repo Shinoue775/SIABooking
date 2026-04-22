@@ -129,8 +129,34 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Terms and Conditions Agreement */}
-          <div className="mb-6">
+          {/* Login Button Section */}
+          <div className="space-y-4 sm:space-y-6">
+            <button
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 sm:py-4 px-4 text-base sm:text-lg rounded-md transition-all font-medium bg-white hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+            >
+              <Image
+                src="https://www.svgrepo.com/show/475656/google-color.svg"
+                alt="Google"
+                width={20}
+                height={20}
+                className="sm:w-[22px] sm:h-[22px]"
+              />
+              <span className="text-sm sm:text-base">
+                {loading ? "Redirecting..." : "Sign in with Google"}
+              </span>
+            </button>
+
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md animate-fadeIn">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Terms and Conditions Agreement - Moved below sign-in button */}
+          <div className="mt-6">
             <label className="flex items-start gap-3 cursor-pointer group">
               <div className="relative flex items-center">
                 <input
@@ -176,32 +202,6 @@ export default function LoginPage() {
                 </button>
               </span>
             </label>
-          </div>
-
-          {/* Login Button Section */}
-          <div className="space-y-4 sm:space-y-6">
-            <button
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 sm:py-4 px-4 text-base sm:text-lg rounded-md transition-all font-medium bg-white hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
-            >
-              <Image
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google"
-                width={20}
-                height={20}
-                className="sm:w-[22px] sm:h-[22px]"
-              />
-              <span className="text-sm sm:text-base">
-                {loading ? "Redirecting..." : "Sign in with Google"}
-              </span>
-            </button>
-
-            {error && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md animate-fadeIn">
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
-            )}
           </div>
 
           {/* Footer Links */}
@@ -391,23 +391,6 @@ export default function LoginPage() {
                     We collect and process your Gordon College email address, name, and reservation data solely for the purpose of managing room reservations. Your information will never be shared with third parties without your explicit consent, except as required by law.
                   </p>
                 </section>
-
-                <div className="bg-gradient-to-r from-pink-50 to-amber-50 p-6 rounded-xl mt-8 border border-pink-100">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    Contact Information
-                  </h4>
-                  <p className="text-sm leading-relaxed">
-                    For questions regarding these Terms and Conditions, please contact:
-                  </p>
-                  <div className="mt-3 space-y-1">
-                    <p className="text-sm font-medium">CHTM Department Office</p>
-                    <p className="text-sm">Gordon College</p>
-                    <p className="text-sm">Email: chtm@gordoncollege.edu.ph</p>
-                  </div>
-                </div>
               </div>
             </div>
 
