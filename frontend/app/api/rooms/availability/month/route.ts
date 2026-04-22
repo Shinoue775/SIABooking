@@ -34,25 +34,41 @@ export async function GET(request: Request) {
         const rangeStart = `${year}-${monthPadded}-01T00:00:00.000Z`;
         const rangeEnd = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01T00:00:00.000Z`;
 
-        // Fetch all non-cancelled bookings whose check-in falls within this month.
+        // Fetch all non-cancelled bookings that overlap with this month:
+        // existing.start_at < rangeEnd AND existing.end_at > rangeStart
         const { data: bookings, error: bookErr } = await supabase
             .from('bookings')
-            .select('start_at')
+            .select('start_at, end_at')
             .eq('room_id', roomId)
             .neq('status', 'cancelled')
-            .gte('start_at', rangeStart)
-            .lt('start_at', rangeEnd);
+            .lt('start_at', rangeEnd)
+            .gt('end_at', rangeStart);
 
         if (bookErr) {
             return NextResponse.json({ error: bookErr.message }, { status: 500 });
         }
 
-        // Extract the UTC day of each booking's check-in date.
-        // Check-in is set to 3 PM local time → typically 7 AM UTC for UTC+8 (Philippines),
-        // so the UTC date matches the local calendar date.
-        const unavailableDays = [...new Set(
-            (bookings || []).map((b) => new Date(b.start_at).getUTCDate())
-        )].sort((a, b) => a - b);
+        // Mark every calendar day within each booking range as unavailable.
+        // A day is unavailable from check-in day up to (but not including) check-out day.
+        const unavailableDaysSet = new Set<number>();
+
+        for (const b of bookings || []) {
+            const startDate = new Date(b.start_at);
+            const endDate = b.end_at ? new Date(b.end_at) : startDate;
+
+            // Iterate day by day from start to end (exclusive) within the requested month
+            const cursor = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
+            const endDay = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
+
+            while (cursor < endDay) {
+                if (cursor.getUTCFullYear() === year && cursor.getUTCMonth() + 1 === month) {
+                    unavailableDaysSet.add(cursor.getUTCDate());
+                }
+                cursor.setUTCDate(cursor.getUTCDate() + 1);
+            }
+        }
+
+        const unavailableDays = Array.from(unavailableDaysSet).sort((a, b) => a - b);
 
         return NextResponse.json(
             { year, month, room_id: roomId, unavailableDays },

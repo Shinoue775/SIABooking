@@ -59,7 +59,15 @@ export default function CalendarPage() {
     await supabase.auth.signOut();
   };
 
+  const isPrevMonthDisabled = () => {
+    const idx = MONTHS.indexOf(currentMonth);
+    const prevMonth = idx === 0 ? 11 : idx - 1;
+    const prevYear = idx === 0 ? currentYear - 1 : currentYear;
+    return prevYear < today.getFullYear() || (prevYear === today.getFullYear() && prevMonth < today.getMonth());
+  };
+
   const handlePrevMonth = () => {
+    if (isPrevMonthDisabled()) return;
     const idx = MONTHS.indexOf(currentMonth);
     if (idx === 0) {
       setCurrentMonth(MONTHS[11]);
@@ -67,7 +75,7 @@ export default function CalendarPage() {
     } else {
       setCurrentMonth(MONTHS[idx - 1]);
     }
-    setSelectedDate(1);
+    setSelectedDate(today.getMonth() === (idx === 0 ? 11 : idx - 1) && today.getFullYear() === (idx === 0 ? currentYear - 1 : currentYear) ? today.getDate() : 1);
   };
 
   const handleNextMonth = () => {
@@ -197,9 +205,17 @@ export default function CalendarPage() {
               {/* Month/Year Header */}
               <div className="flex items-center justify-between mb-8">
                 <button
-                  className="hover:bg-gray-100 flex items-center justify-center"
-                  style={{ width: '36px', height: '36px', borderRadius: '9999px' }}
+                  className="flex items-center justify-center"
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '9999px',
+                    cursor: isPrevMonthDisabled() ? 'not-allowed' : 'pointer',
+                    opacity: isPrevMonthDisabled() ? 0.3 : 1,
+                    background: 'transparent'
+                  }}
                   onClick={handlePrevMonth}
+                  disabled={isPrevMonthDisabled()}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="#3D5A4C" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -254,21 +270,23 @@ export default function CalendarPage() {
                   {/* Days of the month */}
                   {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
                     const isSelected = day === selectedDate;
+                    const isPast = new Date(currentYear, monthIndex, day) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
                     return (
                       <button
                         key={day}
-                        onClick={() => setSelectedDate(day)}
+                        onClick={() => !isPast && setSelectedDate(day)}
+                        disabled={isPast}
                         className="flex items-center justify-center transition-colors"
                         style={{
                           height: '48px',
                           background: isSelected ? '#F0E0E0' : 'transparent',
                           borderRadius: '9999px',
-                          color: isSelected ? '#3D5A4C' : 'rgba(61, 90, 76, 0.8)',
+                          color: isPast ? 'rgba(61, 90, 76, 0.25)' : isSelected ? '#3D5A4C' : 'rgba(61, 90, 76, 0.8)',
                           fontSize: '11.9px',
                           fontWeight: 500,
                           fontFamily: 'Inter',
-                          cursor: 'pointer',
+                          cursor: isPast ? 'not-allowed' : 'pointer',
                           border: 'none'
                         }}
                       >

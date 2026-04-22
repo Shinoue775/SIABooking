@@ -33,7 +33,6 @@ export default function BookingPage() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [guests, setGuests] = useState(2);
   const [roomType, setRoomType] = useState("Standard Room B - ₱2,500");
 
@@ -42,6 +41,13 @@ export default function BookingPage() {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
+
+  // Check-in / check-out selection state
+  const [checkInDate, setCheckInDate] = useState<Date | null>(null);
+  const [checkOutDate, setCheckOutDate] = useState<Date | null>(null);
+
+  // Payment method state
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'gcash'>('cash');
 
   // Child guest state
   const [hasChildren, setHasChildren] = useState(false);
@@ -214,7 +220,7 @@ export default function BookingPage() {
   };
 
   const handleConfirmBooking = async () => {
-    if (!selectedDate) return;
+    if (!checkInDate || !checkOutDate) return;
 
     if (!isLoggedIn) {
       router.push('/login');
@@ -239,11 +245,10 @@ export default function BookingPage() {
         return;
       }
 
-      // Check-in at 3:00 PM on selected date, check-out at 11:00 AM next day
-      const checkIn = new Date(selectedDate);
+      // Check-in at 3:00 PM on check-in date, check-out at 11:00 AM on check-out date
+      const checkIn = new Date(checkInDate);
       checkIn.setHours(CHECK_IN_HOUR, 0, 0, 0);
-      const checkOut = new Date(selectedDate);
-      checkOut.setDate(checkOut.getDate() + 1);
+      const checkOut = new Date(checkOutDate);
       checkOut.setHours(CHECK_OUT_HOUR, 0, 0, 0);
 
       const res = await fetch('/api/bookings', {
@@ -263,6 +268,7 @@ export default function BookingPage() {
           has_child: hasChildren,
           child_age_group: hasChildren ? childAgeGroup : null,
           total_price: total,
+          payment_method: paymentMethod,
         }),
       });
 
@@ -272,7 +278,8 @@ export default function BookingPage() {
         setBookingError(data.error || 'Failed to create booking. Please try again.');
       } else {
         setBookingSuccess('Booking confirmed! Admin will contact you at 3:00 PM for confirmation.');
-        setSelectedDate(null);
+        setCheckInDate(null);
+        setCheckOutDate(null);
       }
     } catch (err: any) {
       setBookingError(err.message || 'An unexpected error occurred. Please try again.');
@@ -291,20 +298,52 @@ export default function BookingPage() {
   const closeMenu = () => setMobileMenuOpen(false);
 
   const handleDateSelect = (day: number) => {
-    if (isDateAvailable(day) && !isDatePast(day)) {
-      const selectedDateTime = new Date(currentDisplayYear, currentDisplayMonth, day);
-      setSelectedDate(selectedDateTime);
+    if (isDatePast(day)) return;
+    const clickedDate = new Date(currentDisplayYear, currentDisplayMonth, day);
+
+    // If no check-in selected, or if a full range is already selected, start fresh
+    if (!checkInDate || checkOutDate) {
+      if (isDateAvailable(day)) {
+        setCheckInDate(clickedDate);
+        setCheckOutDate(null);
+      }
+      return;
+    }
+
+    // Check-in is set, check-out is not
+    if (clickedDate <= checkInDate) {
+      // Clicked on or before check-in: reset to new check-in
+      if (isDateAvailable(day)) {
+        setCheckInDate(clickedDate);
+        setCheckOutDate(null);
+      }
+    } else {
+      // Clicked after check-in: set as check-out
+      setCheckOutDate(clickedDate);
     }
   };
 
   const handlePreviousMonth = () => {
+    let newMonth = currentDisplayMonth;
+    let newYear = currentDisplayYear;
+
     if (currentDisplayMonth === 0) {
-      setCurrentDisplayMonth(11);
-      setCurrentDisplayYear(currentDisplayYear - 1);
+      newMonth = 11;
+      newYear = currentDisplayYear - 1;
     } else {
-      setCurrentDisplayMonth(currentDisplayMonth - 1);
+      newMonth = currentDisplayMonth - 1;
+      newYear = currentDisplayYear;
     }
-    setSelectedDate(null); // Clear selection when changing months
+
+    // Don't allow navigating before the current month
+    if (newYear < todayYear || (newYear === todayYear && newMonth < todayMonth)) {
+      return;
+    }
+
+    setCurrentDisplayMonth(newMonth);
+    setCurrentDisplayYear(newYear);
+    setCheckInDate(null);
+    setCheckOutDate(null);
   };
 
   const handleNextMonth = () => {
@@ -327,13 +366,21 @@ export default function BookingPage() {
     if (new Date(newYear, newMonth, 1) <= maxDate) {
       setCurrentDisplayMonth(newMonth);
       setCurrentDisplayYear(newYear);
-      setSelectedDate(null); // Clear selection when changing months
+      setCheckInDate(null);
+      setCheckOutDate(null);
     }
   };
 
-  const getDateButtonStyle = (day: number, isSelected: boolean) => {
+  const isDateInRange = (day: number): boolean => {
+    if (!checkInDate || !checkOutDate) return false;
+    const date = new Date(currentDisplayYear, currentDisplayMonth, day);
+    return date > checkInDate && date < checkOutDate;
+  };
+
+  const getDateButtonStyle = (day: number, isCheckIn: boolean, isCheckOut: boolean) => {
     const isPast = isDatePast(day);
     const isAvailable = isDateAvailable(day);
+    const inRange = isDateInRange(day);
     
     if (isPast) {
       return {
@@ -345,13 +392,34 @@ export default function BookingPage() {
       };
     }
     
+    if (isCheckIn || isCheckOut) {
+      return {
+        background: '#DCFCE7',
+        color: '#16A34A',
+        cursor: 'pointer',
+        boxShadow: '0px 2px 8px rgba(34, 197, 94, 0.2)',
+        border: '1px solid #16A34A',
+        fontWeight: 700
+      };
+    }
+
+    if (inRange) {
+      return {
+        background: 'rgba(34, 197, 94, 0.1)',
+        color: '#16A34A',
+        cursor: !isAvailable ? 'not-allowed' : 'pointer',
+        boxShadow: 'none',
+        border: 'none'
+      };
+    }
+    
     if (!isAvailable) {
       return {
-        background: isSelected ? '#FEE2E2' : '#FEF2F2',
-        color: isSelected ? '#DC2626' : '#EF4444',
+        background: '#FEF2F2',
+        color: '#EF4444',
         cursor: 'not-allowed',
-        boxShadow: isSelected ? '0px 2px 8px rgba(239, 68, 68, 0.2)' : 'none',
-        border: isSelected ? '1px solid #DC2626' : 'none'
+        boxShadow: 'none',
+        border: 'none'
       };
     }
     
@@ -361,11 +429,11 @@ export default function BookingPage() {
                     currentDisplayYear === todayYear;
     
     return {
-      background: isSelected ? '#DCFCE7' : 'transparent',
-      color: isSelected ? '#16A34A' : '#3D5A4C',
+      background: 'transparent',
+      color: '#3D5A4C',
       cursor: 'pointer',
-      boxShadow: isSelected ? '0px 2px 8px rgba(34, 197, 94, 0.2)' : 'none',
-      border: isToday && !isSelected ? '2px solid #22C55E' : (isSelected ? '1px solid #16A34A' : 'none'),
+      boxShadow: 'none',
+      border: isToday ? '2px solid #22C55E' : 'none',
       fontWeight: isToday ? 700 : 500
     };
   };
@@ -523,7 +591,7 @@ export default function BookingPage() {
               Calendar
             </h2>
             <p style={{ fontSize: '10.2px', fontWeight: 500, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter', marginBottom: '8px' }}>
-              Check-in Date (Check-in: 3:00 PM | Check-out: 11:00 AM)
+              Select check-in date, then select check-out date (Check-in: 3:00 PM | Check-out: 11:00 AM)
             </p>
             <p style={{ fontSize: '10.2px', fontWeight: 600, lineHeight: '16px', color: '#3D5A4C', fontFamily: 'Inter', marginBottom: '16px' }}>
               Showing availability for: {roomType.split(' - ')[0]}
@@ -532,8 +600,12 @@ export default function BookingPage() {
             {/* Calendar Legend */}
             <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-6">
               <div className="flex items-center gap-2">
-                <div style={{ width: '16px', height: '16px', background: '#DCFCE7', borderRadius: '4px', border: '1px solid #22C55E' }} />
-                <span style={{ fontSize: '11px', color: '#16A34A', fontFamily: 'Inter' }}>Available</span>
+                <div style={{ width: '16px', height: '16px', background: '#DCFCE7', borderRadius: '4px', border: '1px solid #16A34A' }} />
+                <span style={{ fontSize: '11px', color: '#16A34A', fontFamily: 'Inter' }}>Check-in / Check-out</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div style={{ width: '16px', height: '16px', background: 'rgba(34,197,94,0.1)', borderRadius: '4px', border: '1px solid #22C55E' }} />
+                <span style={{ fontSize: '11px', color: '#16A34A', fontFamily: 'Inter' }}>In Range</span>
               </div>
               <div className="flex items-center gap-2">
                 <div style={{ width: '16px', height: '16px', background: '#FEF2F2', borderRadius: '4px', border: '1px solid #EF4444' }} />
@@ -553,9 +625,15 @@ export default function BookingPage() {
               {/* Month/Year Header */}
               <div className="flex items-center justify-between" style={{ marginBottom: '32px' }}>
                 <button 
-                  className="hover:bg-gray-100 flex items-center justify-center transition-all duration-200"
-                  style={{ width: '35.99px', height: '35.99px', borderRadius: '9999px', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                  className="flex items-center justify-center transition-all duration-200"
+                  style={{
+                    width: '35.99px', height: '35.99px', borderRadius: '9999px', border: 'none',
+                    background: 'transparent',
+                    cursor: (currentDisplayMonth === todayMonth && currentDisplayYear === todayYear) ? 'not-allowed' : 'pointer',
+                    opacity: (currentDisplayMonth === todayMonth && currentDisplayYear === todayYear) ? 0.3 : 1
+                  }}
                   onClick={handlePreviousMonth}
+                  disabled={currentDisplayMonth === todayMonth && currentDisplayYear === todayYear}
                 >
                   <svg width="20" height="20" fill="none" stroke="#3D5A4C" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -617,36 +695,40 @@ export default function BookingPage() {
 
                   {/* Days of the month */}
                   {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-                    const isSelected = selectedDate?.getDate() === day && 
-                                      selectedDate?.getMonth() === currentDisplayMonth && 
-                                      selectedDate?.getFullYear() === currentDisplayYear;
+                    const isCheckIn = checkInDate?.getDate() === day &&
+                                      checkInDate?.getMonth() === currentDisplayMonth &&
+                                      checkInDate?.getFullYear() === currentDisplayYear;
+                    const isCheckOut = checkOutDate?.getDate() === day &&
+                                       checkOutDate?.getMonth() === currentDisplayMonth &&
+                                       checkOutDate?.getFullYear() === currentDisplayYear;
                     const isPast = isDatePast(day);
                     const isAvailable = isDateAvailable(day);
                     const isToday = day === todayDate && 
                                    currentDisplayMonth === todayMonth && 
                                    currentDisplayYear === todayYear;
-                    const buttonStyle = getDateButtonStyle(day, isSelected);
+                    const buttonStyle = getDateButtonStyle(day, isCheckIn, isCheckOut);
 
                     return (
                       <button
                         key={day}
                         onClick={() => handleDateSelect(day)}
-                        disabled={isPast || !isAvailable}
+                        disabled={isPast}
                         className="flex items-center justify-center transition-all duration-200 mx-auto disabled:opacity-100 relative"
                         style={{
                           width: 'clamp(32px, 8vw, 38.71px)',
                           height: '48px',
                           borderRadius: '9999px',
                           fontSize: '11.9px',
-                          fontWeight: buttonStyle.fontWeight || 500,
+                          fontWeight: (buttonStyle as any).fontWeight || 500,
                           lineHeight: '20px',
                           fontFamily: 'Inter',
-                          opacity: isPast ? 0.5 : 1,
+                          opacity: isPast ? 0.4 : 1,
                           ...buttonStyle
                         }}
+                        title={isCheckIn ? 'Check-in' : isCheckOut ? 'Check-out' : undefined}
                       >
                         {day}
-                        {isToday && !isSelected && (
+                        {isToday && !isCheckIn && !isCheckOut && (
                           <span 
                             style={{
                               position: 'absolute',
@@ -658,6 +740,12 @@ export default function BookingPage() {
                             }}
                           />
                         )}
+                        {isCheckIn && (
+                          <span style={{ position: 'absolute', top: '2px', right: '2px', fontSize: '6px', color: '#16A34A', fontWeight: 700 }}>IN</span>
+                        )}
+                        {isCheckOut && (
+                          <span style={{ position: 'absolute', top: '2px', right: '2px', fontSize: '6px', color: '#16A34A', fontWeight: 700 }}>OUT</span>
+                        )}
                       </button>
                     );
                   })}
@@ -665,14 +753,29 @@ export default function BookingPage() {
               </div>
             </div>
 
-            {/* Selected Date Display */}
-            {selectedDate && (
-              <div className="mt-4 p-3 rounded-lg" style={{ background: '#DCFCE7' }}>
-                <p style={{ fontSize: '12px', color: '#16A34A', fontFamily: 'Inter' }}>
-                  Selected Check-in: {formatSelectedDate(selectedDate)}
+            {/* Selected Date Range Display */}
+            <div className="mt-4 space-y-2">
+              {checkInDate && (
+                <div className="p-3 rounded-lg" style={{ background: '#DCFCE7' }}>
+                  <p style={{ fontSize: '12px', color: '#16A34A', fontFamily: 'Inter' }}>
+                    ✓ Check-in: {formatSelectedDate(checkInDate)}
+                    {!checkOutDate && <span style={{ color: 'rgba(61,90,76,0.6)', marginLeft: '8px' }}>(now select check-out date)</span>}
+                  </p>
+                </div>
+              )}
+              {checkOutDate && (
+                <div className="p-3 rounded-lg" style={{ background: '#DCFCE7' }}>
+                  <p style={{ fontSize: '12px', color: '#16A34A', fontFamily: 'Inter' }}>
+                    ✓ Check-out: {formatSelectedDate(checkOutDate)}
+                  </p>
+                </div>
+              )}
+              {!checkInDate && (
+                <p style={{ fontSize: '11px', color: 'rgba(61,90,76,0.5)', fontFamily: 'Inter' }}>
+                  Click a date to set your check-in date.
                 </p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Middle Column - Form Fields */}
@@ -847,7 +950,7 @@ export default function BookingPage() {
               <div className="flex justify-between items-center hover:border-opacity-80 hover:bg-gray-50 transition-all duration-200" style={{ padding: '16px', borderBottom: '2px solid rgba(61, 90, 76, 0.15)', background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px 8px 0 0' }}>
                 <select
                   value={roomType}
-                  onChange={(e) => { setRoomType(e.target.value); setSelectedDate(null); }}
+                  onChange={(e) => { setRoomType(e.target.value); setCheckInDate(null); setCheckOutDate(null); }}
                   className="transition-colors duration-200"
                   style={{
                     width: '100%',
@@ -954,24 +1057,74 @@ export default function BookingPage() {
               <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '20px', fontFamily: 'Inter' }}>
                 Check-in: 3:00 PM | Check-out: 11:00 AM
               </p>
-              <div className="relative hover:shadow-lg transition-all duration-200" style={{ width: '100%', maxWidth: '360px', height: '52px', background: 'rgba(255, 181, 197, 0.29)', borderRadius: '8px', border: '1px solid rgba(255, 181, 197, 0.3)' }}>
-                <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '0', height: '24px', borderLeft: '1px solid rgba(0, 0, 0, 0.1)' }} />
-                <div className="flex h-full">
-                  <div className="flex items-center justify-center flex-1">
-                    <svg width="20" height="20" fill="none" stroke="#10B981" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span style={{ marginLeft: '8px', fontSize: '12px', color: '#3D5A4C', fontFamily: 'Inter' }}>
-                      {selectedDate ? formatSelectedDate(selectedDate).split(',')[0] : 'Select date'}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3" style={{ padding: '12px 16px', background: 'rgba(255, 181, 197, 0.15)', borderRadius: '8px', border: '1px solid rgba(255, 181, 197, 0.3)' }}>
+                  <svg width="20" height="20" fill="none" stroke="#10B981" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <div>
+                    <span style={{ fontSize: '10px', color: 'rgba(61,90,76,0.5)', fontFamily: 'Inter', display: 'block' }}>Check-in (3:00 PM)</span>
+                    <span style={{ fontSize: '12px', color: '#3D5A4C', fontFamily: 'Inter' }}>
+                      {checkInDate ? formatSelectedDate(checkInDate) : 'Not selected'}
                     </span>
                   </div>
-                  <div className="flex items-center justify-center flex-1">
-                    <svg width="20" height="20" fill="none" stroke="#10B981" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span style={{ marginLeft: '8px', fontSize: '12px', color: '#3D5A4C', fontFamily: 'Inter' }}>3:00 PM</span>
+                </div>
+                <div className="flex items-center gap-3" style={{ padding: '12px 16px', background: 'rgba(255, 181, 197, 0.15)', borderRadius: '8px', border: '1px solid rgba(255, 181, 197, 0.3)' }}>
+                  <svg width="20" height="20" fill="none" stroke="#10B981" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <span style={{ fontSize: '10px', color: 'rgba(61,90,76,0.5)', fontFamily: 'Inter', display: 'block' }}>Check-out (11:00 AM)</span>
+                    <span style={{ fontSize: '12px', color: '#3D5A4C', fontFamily: 'Inter' }}>
+                      {checkOutDate ? formatSelectedDate(checkOutDate) : 'Not selected'}
+                    </span>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Mode of Payment */}
+            <div>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, lineHeight: '20px', color: '#3D5A4C', display: 'block', marginBottom: '8px', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Mode of Payment
+              </h3>
+              <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '16px', fontFamily: 'Inter' }}>
+                Select your preferred payment method
+              </p>
+              <div style={{ padding: '16px', background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px' }} className="space-y-3">
+                {[
+                  { value: 'cash', label: 'Cash', sublabel: 'Pay upon check-in' },
+                  { value: 'gcash', label: 'GCash', sublabel: 'Mobile wallet payment' },
+                ].map((option) => (
+                  <label
+                    key={option.value}
+                    className="flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-all duration-200"
+                    style={{
+                      background: paymentMethod === option.value ? 'rgba(61,90,76,0.08)' : 'transparent',
+                      border: `1px solid ${paymentMethod === option.value ? 'rgba(61,90,76,0.3)' : 'transparent'}`
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value={option.value}
+                      checked={paymentMethod === option.value}
+                      onChange={() => setPaymentMethod(option.value as 'cash' | 'gcash')}
+                      style={{ accentColor: '#3D5A4C', cursor: 'pointer' }}
+                    />
+                    <div>
+                      <span style={{ fontSize: '12px', fontWeight: 500, color: '#3D5A4C', fontFamily: 'Inter', display: 'block' }}>
+                        {option.label}
+                      </span>
+                      <span style={{ fontSize: '10px', color: 'rgba(61,90,76,0.5)', fontFamily: 'Inter' }}>
+                        {option.sublabel}
+                      </span>
+                    </div>
+                    {paymentMethod === option.value && (
+                      <span style={{ fontSize: '10px', color: '#22C55E', fontFamily: 'Inter', marginLeft: 'auto' }}>✓ Selected</span>
+                    )}
+                  </label>
+                ))}
               </div>
             </div>
           </div>
@@ -987,7 +1140,15 @@ export default function BookingPage() {
               <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
                 <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Check-in</span>
                 <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>
-                  {formatSelectedDate(selectedDate)}
+                  {formatSelectedDate(checkInDate)}
+                </span>
+              </div>
+              <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
+
+              <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
+                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Check-out</span>
+                <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>
+                  {formatSelectedDate(checkOutDate)}
                 </span>
               </div>
               <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
@@ -1075,6 +1236,11 @@ export default function BookingPage() {
                 <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>₱{taxes.toFixed(2)}</span>
               </div>
               <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
+              <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
+                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Payment Method</span>
+                <span style={{ fontSize: '11.9px', fontWeight: 500, lineHeight: '20px', color: '#FFB5C5', fontFamily: 'Inter', textTransform: 'capitalize' }}>{paymentMethod}</span>
+              </div>
+              <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
               <div className="flex justify-between items-center" style={{ paddingTop: '8px' }}>
                 <span className={cormorantInfant.className} style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#FFB5C5' }}>Total</span>
                 <span className={cormorantInfant.className} style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#FFB5C5' }}>₱{total.toFixed(2)}</span>
@@ -1097,14 +1263,14 @@ export default function BookingPage() {
             <div style={{ marginBottom: '24px' }}>
               <button
                 className="group/btn hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                disabled={!selectedDate || bookingLoading}
+                disabled={!checkInDate || !checkOutDate || bookingLoading}
                 onClick={handleConfirmBooking}
                 style={{
                   width: '100%',
                   maxWidth: '257px',
                   height: '48px',
-                  background: selectedDate ? '#FFFAF5' : '#9CA3AF',
-                  boxShadow: selectedDate ? '0px 4px 12px rgba(255, 181, 197, 0.3)' : 'none',
+                  background: (checkInDate && checkOutDate) ? '#FFFAF5' : '#9CA3AF',
+                  boxShadow: (checkInDate && checkOutDate) ? '0px 4px 12px rgba(255, 181, 197, 0.3)' : 'none',
                   border: 'none',
                   borderRadius: '4px',
                   fontSize: '11.9px',
@@ -1112,24 +1278,24 @@ export default function BookingPage() {
                   lineHeight: '20px',
                   color: '#3D5A4C',
                   fontFamily: 'Inter',
-                  cursor: selectedDate && !bookingLoading ? 'pointer' : 'not-allowed',
+                  cursor: (checkInDate && checkOutDate) && !bookingLoading ? 'pointer' : 'not-allowed',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto'
                 }}
                 onMouseEnter={(e) => {
-                  if (selectedDate && !bookingLoading) {
+                  if (checkInDate && checkOutDate && !bookingLoading) {
                     e.currentTarget.style.background = '#FFB5C5';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (selectedDate && !bookingLoading) {
+                  if (checkInDate && checkOutDate && !bookingLoading) {
                     e.currentTarget.style.background = '#FFFAF5';
                   }
                 }}
               >
-                {bookingLoading ? 'Processing...' : selectedDate ? 'Confirm Booking' : 'Select a Date'}
+                {bookingLoading ? 'Processing...' : (checkInDate && checkOutDate) ? 'Confirm Booking' : !checkInDate ? 'Select Check-in Date' : 'Select Check-out Date'}
               </button>
             </div>
 
