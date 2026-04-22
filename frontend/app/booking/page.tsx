@@ -377,7 +377,16 @@ export default function BookingPage() {
     return date > checkInDate && date < checkOutDate;
   };
 
-  const getDateButtonStyle = (day: number, isCheckIn: boolean, isCheckOut: boolean) => {
+  type DateButtonStyle = {
+    background: string;
+    color: string;
+    cursor: string;
+    boxShadow: string;
+    border: string;
+    fontWeight?: number;
+  };
+
+  const getDateButtonStyle = (day: number, isCheckIn: boolean, isCheckOut: boolean): DateButtonStyle => {
     const isPast = isDatePast(day);
     const isAvailable = isDateAvailable(day);
     const inRange = isDateInRange(day);
@@ -712,14 +721,14 @@ export default function BookingPage() {
                       <button
                         key={day}
                         onClick={() => handleDateSelect(day)}
-                        disabled={isPast}
+                        disabled={isPast || !isAvailable}
                         className="flex items-center justify-center transition-all duration-200 mx-auto disabled:opacity-100 relative"
                         style={{
                           width: 'clamp(32px, 8vw, 38.71px)',
                           height: '48px',
                           borderRadius: '9999px',
                           fontSize: '11.9px',
-                          fontWeight: (buttonStyle as any).fontWeight || 500,
+                          fontWeight: buttonStyle.fontWeight || 500,
                           lineHeight: '20px',
                           fontFamily: 'Inter',
                           opacity: isPast ? 0.4 : 1,

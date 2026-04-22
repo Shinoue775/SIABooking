@@ -61,7 +61,8 @@ export async function GET(request: Request) {
             const endDay = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
 
             while (cursor < endDay) {
-                if (cursor.getUTCFullYear() === year && cursor.getUTCMonth() + 1 === month) {
+                const cursorMonth = cursor.getUTCMonth() + 1;
+                if (cursor.getUTCFullYear() === year && cursorMonth === month) {
                     unavailableDaysSet.add(cursor.getUTCDate());
                 }
                 cursor.setUTCDate(cursor.getUTCDate() + 1);
