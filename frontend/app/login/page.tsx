@@ -235,12 +235,12 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Terms and Conditions Modal */}
+      {/* Terms and Conditions Modal - FIXED: Removed sticky footer that blocks content */}
       {showTerms && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden animate-slideUp">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden animate-slideUp">
             {/* Modal Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 sm:px-8 sm:py-5 flex items-center justify-between">
+            <div className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-4 sm:px-8 sm:py-5 flex items-center justify-between">
               <h3 
                 className={`text-2xl sm:text-3xl ${cormorant.className}`}
                 style={{ color: '#3D5A4C' }}
@@ -257,8 +257,8 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {/* Modal Content */}
-            <div className="px-6 py-6 sm:px-8 sm:py-8 overflow-y-auto max-h-[calc(85vh-80px)]">
+            {/* Modal Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto px-6 py-6 sm:px-8 sm:py-8">
               <div className="space-y-6 text-gray-700">
                 <div className="bg-gradient-to-r from-pink-50 to-transparent p-4 rounded-lg border-l-4 border-pink-600">
                   <p className="text-sm text-gray-600">
@@ -391,11 +391,14 @@ export default function LoginPage() {
                     We collect and process your Gordon College email address, name, and reservation data solely for the purpose of managing room reservations. Your information will never be shared with third parties without your explicit consent, except as required by law.
                   </p>
                 </section>
+
+                {/* Added bottom padding to ensure last section isn't cut off */}
+                <div className="pb-2"></div>
               </div>
             </div>
 
-            {/* Modal Footer */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 sm:px-8 sm:py-5 flex flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* Modal Footer - Not sticky anymore, part of flex layout */}
+            <div className="flex-shrink-0 bg-white border-t border-gray-200 px-6 py-4 sm:px-8 sm:py-5 flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={() => {
                   setAgreed(true)
