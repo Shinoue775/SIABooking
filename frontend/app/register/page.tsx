@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -51,24 +50,26 @@ export default function RegisterPage() {
     }
 
     try {
-      // 1. Sign up the user with Supabase Auth
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            role: formData.role,
-            phone: formData.phone,
-            address: formData.address
-          }
-        }
-      } as any)
+      // 1. Sign up the user via the backend (creates auth user + inserts email into users table)
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+      const res = await fetch(`${backendUrl}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          full_name: formData.fullName,
+          phone: formData.phone,
+          address: formData.address,
+          role: formData.role,
+        }),
+      })
 
-      if (error) throw error
+      const payload = await res.json()
+      if (!res.ok) throw new Error(payload.error || 'Registration failed')
 
       // 2. Show success message
-      setSuccess('Registration successful! Please check your email for confirmation.')
+      setSuccess(payload.message || 'Registration successful! Please check your email for confirmation.')
       
       // Clear form
       setFormData({
