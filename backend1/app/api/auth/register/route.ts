@@ -7,8 +7,8 @@ export async function OPTIONS(request: Request) {
 }
 
 const registerSchema = z.object({
+  id: z.string().uuid('Valid user id is required'),
   email: z.string().email('Valid email is required'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
   full_name: z.string().min(1, 'Full name is required'),
   phone: z.string().optional(),
   address: z.string().optional(),
@@ -16,6 +16,8 @@ const registerSchema = z.object({
 });
 
 // POST /api/auth/register
+// Called after supabase.auth.signUp() on the frontend to persist the user
+// profile (including email) into the public users table.
 export async function POST(request: Request) {
   const supabase = createServerSideClient();
 
@@ -31,27 +33,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const { email, password, full_name, phone, address, role } = result.data;
+    const { id, email, full_name, phone, address, role } = result.data;
 
-    // Create auth user via admin API (service role).
-    // email_confirm is left as true (default) so users must verify their email.
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      user_metadata: { full_name, role, phone, address },
-    });
-
-    if (authError) {
-      return jsonWithCors({ error: authError.message }, { status: 400 }, request);
-    }
-
-    const userId = authData.user.id;
-
-    // Insert user row with email into the users table
+    // Insert (or update) the user row with email in the users table.
+    // Uses the service-role client so it bypasses RLS.
     const { error: insertError } = await supabase
       .from('users')
-      .insert({
-        id: userId,
+      .upsert({
+        id,
         email,
         full_name,
         phone: phone ?? null,
@@ -60,16 +49,11 @@ export async function POST(request: Request) {
       });
 
     if (insertError) {
-      // Attempt to roll back the auth user to keep data consistent
-      const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
-      if (deleteError) {
-        console.error('[register] Failed to roll back auth user after users insert error:', deleteError.message);
-      }
       return jsonWithCors({ error: insertError.message }, { status: 500 }, request);
     }
 
     return jsonWithCors(
-      { message: 'Registration successful! Please check your email for confirmation.' },
+      { message: 'User profile saved successfully.' },
       { status: 201 },
       request
     );

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -50,14 +51,31 @@ export default function RegisterPage() {
     }
 
     try {
-      // 1. Sign up the user via the backend (creates auth user + inserts email into users table)
+      // 1. Sign up the user via Supabase Auth (sends confirmation email)
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+            role: formData.role,
+            phone: formData.phone,
+            address: formData.address,
+          }
+        }
+      })
+
+      if (error) throw error
+      if (!data.user) throw new Error('Registration failed: no user returned')
+
+      // 2. Insert the user profile (including email) into the users table via backend
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
       const res = await fetch(`${backendUrl}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          id: data.user.id,
           email: formData.email,
-          password: formData.password,
           full_name: formData.fullName,
           phone: formData.phone,
           address: formData.address,
@@ -65,11 +83,13 @@ export default function RegisterPage() {
         }),
       })
 
-      const payload = await res.json()
-      if (!res.ok) throw new Error(payload.error || 'Registration failed')
+      if (!res.ok) {
+        const payload = await res.json()
+        throw new Error(payload.error || 'Failed to save user profile')
+      }
 
-      // 2. Show success message
-      setSuccess(payload.message || 'Registration successful! Please check your email for confirmation.')
+      // 3. Show success message
+      setSuccess('Registration successful! Please check your email for confirmation.')
       
       // Clear form
       setFormData({
