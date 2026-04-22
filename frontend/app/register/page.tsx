@@ -51,7 +51,7 @@ export default function RegisterPage() {
     }
 
     try {
-      // 1. Sign up the user with Supabase Auth
+      // 1. Sign up the user via Supabase Auth (sends confirmation email)
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -60,14 +60,35 @@ export default function RegisterPage() {
             full_name: formData.fullName,
             role: formData.role,
             phone: formData.phone,
-            address: formData.address
+            address: formData.address,
           }
         }
-      } as any)
+      })
 
       if (error) throw error
+      if (!data.user) throw new Error('Registration failed: no user returned')
 
-      // 2. Show success message
+      // 2. Insert the user profile (including email) into the users table via backend
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+      const res = await fetch(`${backendUrl}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: data.user.id,
+          email: formData.email,
+          full_name: formData.fullName,
+          phone: formData.phone,
+          address: formData.address,
+          role: formData.role,
+        }),
+      })
+
+      if (!res.ok) {
+        const payload = await res.json()
+        throw new Error(payload.error || 'Failed to save user profile')
+      }
+
+      // 3. Show success message
       setSuccess('Registration successful! Please check your email for confirmation.')
       
       // Clear form

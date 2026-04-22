@@ -40,6 +40,7 @@ export default function CallbackPage() {
           .from("users")
           .upsert({
             id: user.id,
+            email,
             fname,
             lname,
             role: "user"
