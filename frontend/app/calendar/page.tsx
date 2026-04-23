@@ -126,9 +126,9 @@ export default function CalendarPage() {
         // Intersection: days where ALL rooms have a booking
         const allBooked = new Set<number>();
         if (allRooms.length > 0) {
-          const first = new Set(unavailablePerRoom[0]);
-          first.forEach((day) => {
-            if (unavailablePerRoom.every((days) => days.includes(day))) {
+          const roomDaySets = unavailablePerRoom.map((days) => new Set(days));
+          roomDaySets[0].forEach((day) => {
+            if (roomDaySets.every((s) => s.has(day))) {
               allBooked.add(day);
             }
           });
@@ -142,7 +142,7 @@ export default function CalendarPage() {
     };
 
     fetchMonthAvailability();
-  }, [currentMonth, currentYear]);
+  }, [monthIndex, currentYear]);
 
   // Fetch availability when date changes
   useEffect(() => {
