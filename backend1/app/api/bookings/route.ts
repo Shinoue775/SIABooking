@@ -14,6 +14,7 @@ const bookingSchema = z.object({
   child_age_group: z.enum(['under2', 'over2']).nullable().optional(),
   extra_beds: z.number().int().min(0).max(2).optional(),
   total_price: z.number().positive({ message: 'total_price is required and must be positive' }),
+  payment_method: z.enum(['cash', 'gcash']).optional(),
 });
 
 // Allow both camelCase and snake_case payloads coming from the frontend
@@ -53,6 +54,7 @@ function normalizeBookingPayload(body: any) {
       typeof totalPriceRaw === 'string'
         ? parseFloat(totalPriceRaw)
         : totalPriceRaw,
+    payment_method: body.payment_method ?? body.paymentMethod ?? undefined,
   };
 }
 
@@ -88,14 +90,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const { room_id, start_at, end_at, guests = 1, amenities, has_pwd, has_senior, has_child, child_age_group, extra_beds, total_price } = result.data;
+    const { room_id, start_at, end_at, guests = 1, amenities, has_pwd, has_senior, has_child, child_age_group, extra_beds, total_price, payment_method } = result.data;
 
+    // Check for range-overlapping bookings: existing.start_at < new.end_at AND existing.end_at > new.start_at
     const { data: conflicts, error: confErr } = await supabase
       .from('bookings')
       .select('id')
       .eq('room_id', room_id)
       .neq('status', 'cancelled')
-      .eq('start_at', start_at);
+      .lt('start_at', end_at)
+      .gt('end_at', start_at);
 
     if (confErr) {
       return jsonWithCors({ error: confErr.message }, { status: 500 }, request);
@@ -109,6 +113,7 @@ export async function POST(request: Request) {
       user_id: user.id,
       room_id,
       start_at,
+      end_at,
       guests,
       status: 'pending',
       has_child: has_child ?? false,
@@ -118,6 +123,7 @@ export async function POST(request: Request) {
       extra_beds: extra_beds ?? 0,
       price_at_booking: total_price,
       total_amount: total_price,
+      ...(payment_method ? { payment_method } : {}),
     };
 
     const { data: booking, error: bookingError } = await supabase
