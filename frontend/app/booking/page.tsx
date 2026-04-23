@@ -115,9 +115,14 @@ export default function BookingPage() {
   const DISCOUNT_RATE = 0.20;
   const EXTRA_BED_PRICE = 700;
 
+  const numberOfNights = (checkInDate && checkOutDate)
+    ? Math.round((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
+    : 1;
+
   const baseRate = roomRates[roomType] ?? 2500;
-  const extraBedsFee = extraBeds * EXTRA_BED_PRICE;
-  const subtotalBeforeDiscount = baseRate + extraBedsFee;
+  const totalRoomCost = baseRate * numberOfNights;
+  const extraBedsFee = extraBeds * EXTRA_BED_PRICE * numberOfNights;
+  const subtotalBeforeDiscount = totalRoomCost + extraBedsFee;
   const hasDiscount = hasPwd || hasSenior;
   const discountAmount = hasDiscount ? Math.round(subtotalBeforeDiscount * DISCOUNT_RATE) : 0;
   const discountedSubtotal = subtotalBeforeDiscount - discountAmount;
@@ -333,8 +338,6 @@ export default function BookingPage() {
 
     setCurrentDisplayMonth(newMonth);
     setCurrentDisplayYear(newYear);
-    setCheckInDate(null);
-    setCheckOutDate(null);
   };
 
   const handleNextMonth = () => {
@@ -357,8 +360,6 @@ export default function BookingPage() {
     if (new Date(newYear, newMonth, 1) <= maxDate) {
       setCurrentDisplayMonth(newMonth);
       setCurrentDisplayYear(newYear);
-      setCheckInDate(null);
-      setCheckOutDate(null);
     }
   };
 
@@ -377,7 +378,7 @@ export default function BookingPage() {
     fontWeight?: number;
   };
 
-  const getDateButtonStyle = (day: number, isCheckIn: boolean, isCheckOut: boolean): DateButtonStyle => {
+  const getDateButtonStyle = (day: number, isCheckIn: boolean, isCheckOut: boolean, isValidCheckoutTarget: boolean): DateButtonStyle => {
     const isPast = isDatePast(day);
     const isAvailable = isDateAvailable(day);
     const inRange = isDateInRange(day);
@@ -413,7 +414,7 @@ export default function BookingPage() {
       };
     }
     
-    if (!isAvailable) {
+    if (!isAvailable && !isValidCheckoutTarget) {
       return {
         background: '#FEF2F2',
         color: '#EF4444',
@@ -697,7 +698,9 @@ export default function BookingPage() {
                   ))}
 
                   {/* Days of the month */}
-                  {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
+                  {(() => {
+                    const isSelectingCheckout = !!checkInDate && !checkOutDate;
+                    return Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
                     const isCheckIn = checkInDate?.getDate() === day &&
                                       checkInDate?.getMonth() === currentDisplayMonth &&
                                       checkInDate?.getFullYear() === currentDisplayYear;
@@ -709,13 +712,15 @@ export default function BookingPage() {
                     const isToday = day === todayDate && 
                                    currentDisplayMonth === todayMonth && 
                                    currentDisplayYear === todayYear;
-                    const buttonStyle = getDateButtonStyle(day, isCheckIn, isCheckOut);
+                    const thisDateObj = new Date(currentDisplayYear, currentDisplayMonth, day);
+                    const isValidCheckoutTarget = isSelectingCheckout && checkInDate !== null && thisDateObj > checkInDate;
+                    const buttonStyle = getDateButtonStyle(day, isCheckIn, isCheckOut, isValidCheckoutTarget);
 
                     return (
                       <button
                         key={day}
                         onClick={() => handleDateSelect(day)}
-                        disabled={isPast || !isAvailable}
+                        disabled={isPast || (!isAvailable && !isValidCheckoutTarget)}
                         className="flex items-center justify-center transition-all duration-200 mx-auto disabled:opacity-100 relative"
                         style={{
                           width: 'clamp(32px, 8vw, 38.71px)',
@@ -751,7 +756,8 @@ export default function BookingPage() {
                         )}
                       </button>
                     );
-                  })}
+                  });
+                  })()}
                 </div>
               </div>
             </div>
@@ -1215,13 +1221,22 @@ export default function BookingPage() {
             {/* Pricing */}
             <div className="space-y-3" style={{ marginBottom: '32px' }}>
               <div className="flex justify-between items-center">
-                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Base Room Rate</span>
-                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>₱{baseRate.toFixed(2)}</span>
+                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>
+                  Room Rate ({numberOfNights} night{numberOfNights !== 1 ? 's' : ''})
+                </span>
+                <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>₱{totalRoomCost.toFixed(2)}</span>
               </div>
+              {numberOfNights > 1 && (
+                <div className="flex justify-between items-center">
+                  <span style={{ fontSize: '10.5px', fontWeight: 400, lineHeight: '18px', color: 'rgba(255,250,245,0.6)', fontFamily: 'Inter' }}>
+                    ₱{baseRate.toFixed(2)} × {numberOfNights} nights
+                  </span>
+                </div>
+              )}
               {extraBeds > 0 && (
                 <div className="flex justify-between items-center">
                   <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>
-                    Extra Bed{extraBeds > 1 ? 's' : ''} (×{extraBeds})
+                    Extra Bed{extraBeds > 1 ? 's' : ''} (×{extraBeds}{numberOfNights > 1 ? ` × ${numberOfNights} nights` : ''})
                   </span>
                   <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>₱{extraBedsFee.toFixed(2)}</span>
                 </div>
