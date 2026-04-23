@@ -123,7 +123,7 @@ export async function POST(request: Request) {
       extra_beds: extra_beds ?? 0,
       price_at_booking: total_price,
       total_amount: total_price,
-      ...(payment_method ? { payment_method } : {}),
+      ...(payment_method ? { payment_mode: payment_method } : {}),
     };
 
     const { data: booking, error: bookingError } = await supabase
