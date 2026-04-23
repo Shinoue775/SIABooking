@@ -30,6 +30,10 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'room_id must be a positive integer' }, { status: 400 });
     }
 
+    if (roomId !== 10 && roomId !== 11) {
+        return NextResponse.json({ error: 'room_id must be 10 (Standard) or 11 (Deluxe)' }, { status: 400 });
+    }
+
     try {
         // Build the UTC timestamp range that covers the entire requested month.
         const monthPadded = String(month).padStart(2, '0');

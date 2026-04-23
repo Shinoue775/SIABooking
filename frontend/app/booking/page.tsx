@@ -26,6 +26,10 @@ const CHECK_OUT_HOUR = 11;
 // Room type → 'deluxe' keyword check
 const ROOM_A_KEYWORDS = ['room a', 'deluxe'];
 
+// Room IDs in the database: 11 = Deluxe, 10 = Standard
+const DELUXE_ROOM_ID = 11;
+const STANDARD_ROOM_ID = 10;
+
 export default function BookingPage() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -154,7 +158,7 @@ export default function BookingPage() {
     const fetchAvailability = async () => {
       // Derive the room_id value (11 for Deluxe, 10 for Standard) from the selected room type
       const isDeluxe = roomType.includes('Deluxe') || roomType.includes('Room A');
-      const roomId = isDeluxe ? 11 : 10;
+      const roomId = isDeluxe ? DELUXE_ROOM_ID : STANDARD_ROOM_ID;
 
       setAvailabilityLoading(true);
       try {
@@ -183,7 +187,7 @@ export default function BookingPage() {
 
   const getSelectedRoomId = (): number => {
     const isDeluxe = roomType.includes('Deluxe') || roomType.includes('Room A');
-    return isDeluxe ? 11 : 10;
+    return isDeluxe ? DELUXE_ROOM_ID : STANDARD_ROOM_ID;
   };
 
   const handleConfirmBooking = async () => {
