@@ -38,6 +38,10 @@ export default function CalendarPage() {
   const [rooms, setRooms] = useState<Array<{ id?: string | number; name: string; floor: string; available: boolean }>>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
 
+  // Month-level availability: which days have at least one room booked (any) or all rooms booked (all)
+  const [monthBookedDays, setMonthBookedDays] = useState<Set<number>>(new Set());
+  const [monthAllBookedDays, setMonthAllBookedDays] = useState<Set<number>>(new Set());
+
   useEffect(() => {
     const syncSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -88,6 +92,57 @@ export default function CalendarPage() {
     }
     setSelectedDate(1);
   };
+
+  // Fetch month-level availability to show indicators on calendar days
+  useEffect(() => {
+    const fetchMonthAvailability = async () => {
+      try {
+        const roomsRes = await fetch('/api/rooms');
+        if (!roomsRes.ok) return;
+        const roomsData = await roomsRes.json();
+        const allRooms: Array<{ id: number }> = Array.isArray(roomsData) ? roomsData : [];
+        if (allRooms.length === 0) return;
+
+        // Fetch unavailable days per room in parallel
+        const unavailablePerRoom: number[][] = await Promise.all(
+          allRooms.map(async (room) => {
+            try {
+              const res = await fetch(
+                `/api/rooms/availability/month?year=${currentYear}&month=${monthIndex + 1}&room_id=${room.id}`
+              );
+              if (!res.ok) return [];
+              const data = await res.json();
+              return Array.isArray(data.unavailableDays) ? data.unavailableDays : [];
+            } catch {
+              return [];
+            }
+          })
+        );
+
+        // Union: days where at least one room has a booking
+        const anyBooked = new Set<number>();
+        unavailablePerRoom.forEach((days) => days.forEach((d) => anyBooked.add(d)));
+
+        // Intersection: days where ALL rooms have a booking
+        const allBooked = new Set<number>();
+        if (allRooms.length > 0) {
+          const roomDaySets = unavailablePerRoom.map((days) => new Set(days));
+          roomDaySets[0].forEach((day) => {
+            if (roomDaySets.every((s) => s.has(day))) {
+              allBooked.add(day);
+            }
+          });
+        }
+
+        setMonthBookedDays(anyBooked);
+        setMonthAllBookedDays(allBooked);
+      } catch (err) {
+        console.error('Failed to fetch month availability:', err);
+      }
+    };
+
+    fetchMonthAvailability();
+  }, [monthIndex, currentYear]);
 
   // Fetch availability when date changes
   useEffect(() => {
@@ -271,18 +326,20 @@ export default function CalendarPage() {
                   {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
                     const isSelected = day === selectedDate;
                     const isPast = new Date(currentYear, monthIndex, day) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    const allBooked = !isPast && monthAllBookedDays.has(day);
+                    const anyBooked = !isPast && monthBookedDays.has(day);
 
                     return (
                       <button
                         key={day}
                         onClick={() => !isPast && setSelectedDate(day)}
                         disabled={isPast}
-                        className="flex items-center justify-center transition-colors"
+                        className="flex flex-col items-center justify-center transition-colors"
                         style={{
                           height: '48px',
                           background: isSelected ? '#F0E0E0' : 'transparent',
                           borderRadius: '9999px',
-                          color: isPast ? 'rgba(61, 90, 76, 0.25)' : isSelected ? '#3D5A4C' : 'rgba(61, 90, 76, 0.8)',
+                          color: isPast ? 'rgba(61, 90, 76, 0.25)' : allBooked ? '#991B1B' : isSelected ? '#3D5A4C' : 'rgba(61, 90, 76, 0.8)',
                           fontSize: '11.9px',
                           fontWeight: 500,
                           fontFamily: 'Inter',
@@ -291,6 +348,18 @@ export default function CalendarPage() {
                         }}
                       >
                         {day}
+                        {anyBooked && (
+                          <span
+                            style={{
+                              display: 'block',
+                              width: '4px',
+                              height: '4px',
+                              borderRadius: '9999px',
+                              background: allBooked ? '#991B1B' : '#F87171',
+                              marginTop: '1px',
+                            }}
+                          />
+                        )}
                       </button>
                     );
                   })}
@@ -303,8 +372,12 @@ export default function CalendarPage() {
                     <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter' }}>Selected</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div style={{ width: '12px', height: '12px', borderRadius: '9999px', background: '#991B1B' }}></div>
-                    <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter' }}>Unavailable Rooms</span>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '9999px', background: '#F87171' }}></div>
+                    <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter' }}>Some rooms booked</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div style={{ width: '6px', height: '6px', borderRadius: '9999px', background: '#991B1B' }}></div>
+                    <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter' }}>All rooms booked</span>
                   </div>
                 </div>
               </div>
