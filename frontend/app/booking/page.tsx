@@ -167,24 +167,14 @@ export default function BookingPage() {
   // displayed year, or selected room type changes.
   useEffect(() => {
     const fetchAvailability = async () => {
-      if (rooms.length === 0) return;
-
-      // Resolve the room ID for the currently selected room type
+      // Derive the room_type value ('deluxe' or 'standard') from the selected room type
       const isDeluxe = roomType.includes('Deluxe') || roomType.includes('Room A');
-      const matched = rooms.find((r) => {
-        const name = String(r.name || r.room_number || '').toLowerCase();
-        if (isDeluxe) {
-          return ROOM_A_KEYWORDS.some((kw) => name.includes(kw)) || r.room_number === ROOM_A_NUMBER;
-        }
-        return ROOM_B_KEYWORDS.some((kw) => name.includes(kw)) || r.room_number === ROOM_B_NUMBER;
-      });
-      const room_id = matched ? matched.id : (rooms[0]?.id ?? null);
-      if (!room_id) return;
+      const roomTypeParam = isDeluxe ? 'deluxe' : 'standard';
 
       setAvailabilityLoading(true);
       try {
         const res = await fetch(
-          `/api/rooms/availability/month?year=${currentDisplayYear}&month=${currentDisplayMonth + 1}&room_id=${room_id}`
+          `/api/rooms/availability/month?year=${currentDisplayYear}&month=${currentDisplayMonth + 1}&room_type=${roomTypeParam}`
         );
         if (res.ok) {
           const data = await res.json();
@@ -197,7 +187,7 @@ export default function BookingPage() {
       }
     };
     fetchAvailability();
-  }, [currentDisplayMonth, currentDisplayYear, rooms, roomType]);
+  }, [currentDisplayMonth, currentDisplayYear, roomType]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -602,6 +592,9 @@ export default function BookingPage() {
             </h2>
             <p style={{ fontSize: '10.2px', fontWeight: 500, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.7)', fontFamily: 'Inter', marginBottom: '8px' }}>
               Select check-in date, then select check-out date (Check-in: 3:00 PM | Check-out: 11:00 AM)
+            </p>
+            <p style={{ fontSize: '10.2px', fontWeight: 700, lineHeight: '16px', color: '#EF4444', fontFamily: 'Inter', marginBottom: '8px' }}>
+              ⚠ Disclaimer: Reservations not checked in by 9:00 PM are automatically forfeited.
             </p>
             <p style={{ fontSize: '10.2px', fontWeight: 600, lineHeight: '16px', color: '#3D5A4C', fontFamily: 'Inter', marginBottom: '16px' }}>
               Showing availability for: {roomType.split(' - ')[0]}
