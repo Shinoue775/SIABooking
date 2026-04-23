@@ -116,7 +116,7 @@ export default function BookingPage() {
   const EXTRA_BED_PRICE = 700;
 
   const numberOfNights = (checkInDate && checkOutDate)
-    ? Math.max(1, Math.round((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)))
+    ? Math.round((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
     : 1;
 
   const baseRate = roomRates[roomType] ?? 2500;
@@ -1231,7 +1231,6 @@ export default function BookingPage() {
                   <span style={{ fontSize: '10.5px', fontWeight: 400, lineHeight: '18px', color: 'rgba(255,250,245,0.6)', fontFamily: 'Inter' }}>
                     ₱{baseRate.toFixed(2)} × {numberOfNights} nights
                   </span>
-                  <span style={{ fontSize: '10.5px', fontWeight: 400, lineHeight: '18px', color: 'rgba(255,250,245,0.6)', fontFamily: 'Inter' }}></span>
                 </div>
               )}
               {extraBeds > 0 && (
