@@ -1,28 +1,31 @@
 import createServerSideClient from '@/lib/server';
 import { NextResponse } from 'next/server';
 
-// GET /api/rooms/availability/month?year=YYYY&month=M&room_id=N
-// Returns the day numbers (1–31) that are booked for the given room in the given month.
+// GET /api/rooms/availability/month?year=YYYY&month=M&room_type=standard|deluxe
+// Returns the day numbers (1–31) that are booked for the given room type in the given month.
 export async function GET(request: Request) {
     const supabase = createServerSideClient();
     const { searchParams } = new URL(request.url);
     const yearStr = searchParams.get('year');
     const monthStr = searchParams.get('month'); // 1-indexed (1 = January)
-    const roomIdStr = searchParams.get('room_id');
+    const roomType = searchParams.get('room_type');
 
-    if (!yearStr || !monthStr || !roomIdStr) {
+    if (!yearStr || !monthStr || !roomType) {
         return NextResponse.json(
-            { error: 'year, month (1–12), and room_id are required' },
+            { error: 'year, month (1–12), and room_type are required' },
             { status: 400 }
         );
     }
 
     const year = parseInt(yearStr, 10);
     const month = parseInt(monthStr, 10); // 1–12
-    const roomId = parseInt(roomIdStr, 10);
 
-    if (isNaN(year) || isNaN(month) || isNaN(roomId) || month < 1 || month > 12) {
-        return NextResponse.json({ error: 'Invalid year, month, or room_id' }, { status: 400 });
+    if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+        return NextResponse.json({ error: 'Invalid year or month' }, { status: 400 });
+    }
+
+    if (roomType !== 'standard' && roomType !== 'deluxe') {
+        return NextResponse.json({ error: 'room_type must be "standard" or "deluxe"' }, { status: 400 });
     }
 
     try {
@@ -34,12 +37,12 @@ export async function GET(request: Request) {
         const rangeStart = `${year}-${monthPadded}-01T00:00:00.000Z`;
         const rangeEnd = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01T00:00:00.000Z`;
 
-        // Fetch all non-cancelled bookings that overlap with this month:
+        // Fetch all non-cancelled bookings for the given room_type that overlap with this month:
         // existing.start_at < rangeEnd AND existing.end_at > rangeStart
         const { data: bookings, error: bookErr } = await supabase
             .from('bookings')
             .select('start_at, end_at')
-            .eq('room_id', roomId)
+            .eq('room_type', roomType)
             .neq('status', 'cancelled')
             .lt('start_at', rangeEnd)
             .gt('end_at', rangeStart);
@@ -72,7 +75,7 @@ export async function GET(request: Request) {
         const unavailableDays = Array.from(unavailableDaysSet).sort((a, b) => a - b);
 
         return NextResponse.json(
-            { year, month, room_id: roomId, unavailableDays },
+            { year, month, room_type: roomType, unavailableDays },
             { status: 200 }
         );
     } catch (err: any) {
