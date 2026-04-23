@@ -23,11 +23,8 @@ const monthNames = [
 const CHECK_IN_HOUR = 15;
 const CHECK_OUT_HOUR = 11;
 
-// Room type → database room name mapping keywords
+// Room type → 'deluxe' keyword check
 const ROOM_A_KEYWORDS = ['room a', 'deluxe'];
-const ROOM_B_KEYWORDS = ['room b', 'standard'];
-const ROOM_A_NUMBER = '1';
-const ROOM_B_NUMBER = '2';
 
 export default function BookingPage() {
   const router = useRouter();
@@ -37,7 +34,6 @@ export default function BookingPage() {
   const [roomType, setRoomType] = useState("Standard Room B - ₱2,500");
 
   // Booking submission state
-  const [rooms, setRooms] = useState<Array<{ id: number; name?: string; room_number?: string }>>([]);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
@@ -152,34 +148,18 @@ export default function BookingPage() {
     }
   }, [])
 
-  // Fetch available rooms on mount to get real room IDs
-  useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const res = await fetch('/api/rooms');
-        if (res.ok) {
-          const data = await res.json();
-          setRooms(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch rooms:', err);
-      }
-    };
-    fetchRooms();
-  }, []);
-
   // Fetch real room availability from the database whenever the displayed month,
   // displayed year, or selected room type changes.
   useEffect(() => {
     const fetchAvailability = async () => {
-      // Derive the room_type value ('deluxe' or 'standard') from the selected room type
+      // Derive the room_id value (11 for Deluxe, 10 for Standard) from the selected room type
       const isDeluxe = roomType.includes('Deluxe') || roomType.includes('Room A');
-      const roomTypeParam = isDeluxe ? 'deluxe' : 'standard';
+      const roomId = isDeluxe ? 11 : 10;
 
       setAvailabilityLoading(true);
       try {
         const res = await fetch(
-          `/api/rooms/availability/month?year=${currentDisplayYear}&month=${currentDisplayMonth + 1}&room_type=${roomTypeParam}`
+          `/api/rooms/availability/month?year=${currentDisplayYear}&month=${currentDisplayMonth + 1}&room_id=${roomId}`
         );
         if (res.ok) {
           const data = await res.json();
@@ -201,17 +181,9 @@ export default function BookingPage() {
     router.replace('/')
   }
 
-  const getSelectedRoomId = (): number | null => {
-    if (rooms.length === 0) return null;
+  const getSelectedRoomId = (): number => {
     const isDeluxe = roomType.includes('Deluxe') || roomType.includes('Room A');
-    const matched = rooms.find((r) => {
-      const name = String(r.name || r.room_number || '').toLowerCase();
-      if (isDeluxe) {
-        return ROOM_A_KEYWORDS.some((kw) => name.includes(kw)) || r.room_number === ROOM_A_NUMBER;
-      }
-      return ROOM_B_KEYWORDS.some((kw) => name.includes(kw)) || r.room_number === ROOM_B_NUMBER;
-    });
-    return matched ? matched.id : (rooms[0]?.id ?? null);
+    return isDeluxe ? 11 : 10;
   };
 
   const handleConfirmBooking = async () => {
@@ -234,11 +206,6 @@ export default function BookingPage() {
       }
 
       const room_id = getSelectedRoomId();
-      if (!room_id) {
-        setBookingError('Could not determine room. Please try again.');
-        setBookingLoading(false);
-        return;
-      }
 
       // Check-in at 3:00 PM on check-in date, check-out at 11:00 AM on check-out date
       const checkIn = new Date(checkInDate);
