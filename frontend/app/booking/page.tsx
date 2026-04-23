@@ -259,6 +259,7 @@ export default function BookingPage() {
         },
         body: JSON.stringify({
           room_id,
+          room_type: ROOM_A_KEYWORDS.some((kw) => roomType.toLowerCase().includes(kw)) ? 'deluxe' : 'standard',
           start_at: checkIn.toISOString(),
           end_at: checkOut.toISOString(),
           guests: totalGuests,

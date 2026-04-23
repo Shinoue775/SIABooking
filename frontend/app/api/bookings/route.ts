@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 
 const bookingSchema = z.object({
   room_id: z.number().int().positive(),
+  room_type: z.enum(['deluxe', 'standard']).optional(),
   start_at: z.string().min(1, 'start_at is required'),
   end_at: z.string().min(1, 'end_at is required'),
   guests: z.number().int().positive().optional(),
@@ -33,6 +34,7 @@ function normalizeBookingPayload(body: any) {
       typeof roomIdRaw === 'string'
         ? parseInt(roomIdRaw, 10)
         : roomIdRaw,
+    room_type: body.room_type ?? body.roomType ?? undefined,
     start_at: startAt,
     end_at: endAt,
     guests:
@@ -85,7 +87,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { room_id, start_at, end_at, guests = 1, amenities, extra_beds, has_pwd, has_senior, has_child, child_age_group, total_price, payment_method } = result.data;
+    const { room_id, room_type, start_at, end_at, guests = 1, amenities, extra_beds, has_pwd, has_senior, has_child, child_age_group, total_price, payment_method } = result.data;
 
     // Check for range-overlapping bookings: existing.start_at < new.end_at AND existing.end_at > new.start_at
     const { data: conflicts, error: confErr } = await supabase
@@ -108,6 +110,7 @@ export async function POST(request: Request) {
     const insertPayload: Record<string, any> = {
       user_id: user.id,
       room_id,
+      ...(room_type ? { room_type } : {}),
       start_at,
       end_at,
       guests,
