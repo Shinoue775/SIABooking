@@ -56,6 +56,7 @@ export default function BookingPage() {
   // PWD / Senior Citizen discount state
   const [hasPwd, setHasPwd] = useState(false);
   const [hasSenior, setHasSenior] = useState(false);
+  const [discountOpen, setDiscountOpen] = useState(false);
 
   // Extra beds state (0, 1, or 2)
   const [extraBeds, setExtraBeds] = useState(0);
@@ -596,6 +597,7 @@ export default function BookingPage() {
               </div>
             </div>
             
+            {/* Calendar Component - Same as before */}
             <div className="group" style={{ background: '#FFFAF5', boxShadow: '0px 4px 12px rgba(61, 90, 76, 0.08)', borderRadius: '8px', padding: 'clamp(20px, 5vw, 32.9px)', transition: 'all 0.3s ease', border: '1px solid rgba(61, 90, 76, 0.05)' }}>
               {/* Month/Year Header */}
               <div className="flex items-center justify-between" style={{ marginBottom: '32px' }}>
@@ -669,9 +671,7 @@ export default function BookingPage() {
                   ))}
 
                   {/* Days of the month */}
-                  {(() => {
-                    const isSelectingCheckout = !!checkInDate && !checkOutDate;
-                    return Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
+                  {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
                     const isCheckIn = checkInDate?.getDate() === day &&
                                       checkInDate?.getMonth() === currentDisplayMonth &&
                                       checkInDate?.getFullYear() === currentDisplayYear;
@@ -680,9 +680,7 @@ export default function BookingPage() {
                                        checkOutDate?.getFullYear() === currentDisplayYear;
                     const isPast = isDatePast(day);
                     const isAvailable = isDateAvailable(day);
-                    const isToday = day === todayDate && 
-                                   currentDisplayMonth === todayMonth && 
-                                   currentDisplayYear === todayYear;
+                    const isSelectingCheckout = !!checkInDate && !checkOutDate;
                     const thisDateObj = new Date(currentDisplayYear, currentDisplayMonth, day);
                     const isValidCheckoutTarget = isSelectingCheckout && checkInDate !== null && thisDateObj > checkInDate;
                     const buttonStyle = getDateButtonStyle(day, isCheckIn, isCheckOut, isValidCheckoutTarget);
@@ -707,18 +705,6 @@ export default function BookingPage() {
                         title={isCheckIn ? 'Check-in' : isCheckOut ? 'Check-out' : undefined}
                       >
                         {day}
-                        {isToday && !isCheckIn && !isCheckOut && (
-                          <span 
-                            style={{
-                              position: 'absolute',
-                              bottom: '4px',
-                              width: '4px',
-                              height: '4px',
-                              borderRadius: '50%',
-                              background: '#22C55E'
-                            }}
-                          />
-                        )}
                         {isCheckIn && (
                           <span style={{ position: 'absolute', top: '2px', right: '2px', fontSize: '6px', color: '#16A34A', fontWeight: 700 }}>IN</span>
                         )}
@@ -727,8 +713,7 @@ export default function BookingPage() {
                         )}
                       </button>
                     );
-                  });
-                  })()}
+                  })}
                 </div>
               </div>
             </div>
@@ -867,55 +852,91 @@ export default function BookingPage() {
               </div>
             </div>
 
-            {/* PWD / Senior Citizen Discount */}
+            {/* PWD / Senior Citizen Discount - DROPDOWN */}
             <div>
-              <h3 style={{ fontSize: '14px', fontWeight: 600, lineHeight: '20px', color: '#3D5A4C', display: 'block', marginBottom: '8px', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Discount Eligibility
-              </h3>
-              <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '16px', fontFamily: 'Inter' }}>
-                20% discount for PWD or Senior Citizen · Required documents verified at check-in
-              </p>
-              <div style={{ padding: '16px', background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px' }} className="space-y-3">
-                <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-all duration-200" style={{ background: hasPwd ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${hasPwd ? '#22C55E' : 'transparent'}` }}>
-                  <input
-                    type="checkbox"
-                    checked={hasPwd}
-                    onChange={(e) => {
-                      setHasPwd(e.target.checked);
-                    }}
-                    style={{ width: '16px', height: '16px', accentColor: '#3D5A4C', cursor: 'pointer' }}
-                  />
-                  <div>
-                    <span style={{ fontSize: '12px', fontWeight: 500, color: '#3D5A4C', fontFamily: 'Inter', display: 'block' }}>
-                      Person with Disability (PWD)
-                    </span>
-                    {hasPwd && (
-                      <span style={{ fontSize: '10px', color: '#22C55E', fontFamily: 'Inter' }}>
-                        ✓ 20% discount applied
+              <button
+                onClick={() => setDiscountOpen(!discountOpen)}
+                className="w-full flex items-center justify-between"
+                style={{ 
+                  fontSize: '14px', 
+                  fontWeight: 600, 
+                  lineHeight: '20px', 
+                  color: '#3D5A4C', 
+                  fontFamily: 'Inter', 
+                  textTransform: 'uppercase', 
+                  letterSpacing: '0.5px',
+                  marginBottom: '8px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0
+                }}
+              >
+                <span>Discount Eligibility {hasDiscount ? '(Active)' : ''}</span>
+                <svg 
+                  width="16" 
+                  height="16" 
+                  fill="none" 
+                  stroke="#3D5A4C" 
+                  viewBox="0 0 24 24" 
+                  strokeWidth={2}
+                  className={`transition-transform duration-300 ${discountOpen ? 'rotate-180' : ''}`}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {/* Collapsible content */}
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  discountOpen ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <p style={{ fontSize: '10.2px', fontWeight: 400, lineHeight: '16px', color: 'rgba(61, 90, 76, 0.6)', marginBottom: '16px', fontFamily: 'Inter' }}>
+                  20% discount for PWD or Senior Citizen · Required documents verified at check-in
+                </p>
+                <div style={{ padding: '16px', background: 'rgba(61, 90, 76, 0.02)', borderRadius: '8px' }} className="space-y-3">
+                  <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-all duration-200" style={{ background: hasPwd ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${hasPwd ? '#22C55E' : 'transparent'}` }}>
+                    <input
+                      type="checkbox"
+                      checked={hasPwd}
+                      onChange={(e) => {
+                        setHasPwd(e.target.checked);
+                      }}
+                      style={{ width: '16px', height: '16px', accentColor: '#3D5A4C', cursor: 'pointer' }}
+                    />
+                    <div>
+                      <span style={{ fontSize: '12px', fontWeight: 500, color: '#3D5A4C', fontFamily: 'Inter', display: 'block' }}>
+                        Person with Disability (PWD)
                       </span>
-                    )}
-                  </div>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-all duration-200" style={{ background: hasSenior ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${hasSenior ? '#22C55E' : 'transparent'}` }}>
-                  <input
-                    type="checkbox"
-                    checked={hasSenior}
-                    onChange={(e) => {
-                      setHasSenior(e.target.checked);
-                    }}
-                    style={{ width: '16px', height: '16px', accentColor: '#3D5A4C', cursor: 'pointer' }}
-                  />
-                  <div>
-                    <span style={{ fontSize: '12px', fontWeight: 500, color: '#3D5A4C', fontFamily: 'Inter', display: 'block' }}>
-                      Senior Citizen (60 years old and above)
-                    </span>
-                    {hasSenior && (
-                      <span style={{ fontSize: '10px', color: '#22C55E', fontFamily: 'Inter' }}>
-                        ✓ 20% discount applied
+                      {hasPwd && (
+                        <span style={{ fontSize: '10px', color: '#22C55E', fontFamily: 'Inter' }}>
+                          ✓ 20% discount applied
+                        </span>
+                      )}
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-all duration-200" style={{ background: hasSenior ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${hasSenior ? '#22C55E' : 'transparent'}` }}>
+                    <input
+                      type="checkbox"
+                      checked={hasSenior}
+                      onChange={(e) => {
+                        setHasSenior(e.target.checked);
+                      }}
+                      style={{ width: '16px', height: '16px', accentColor: '#3D5A4C', cursor: 'pointer' }}
+                    />
+                    <div>
+                      <span style={{ fontSize: '12px', fontWeight: 500, color: '#3D5A4C', fontFamily: 'Inter', display: 'block' }}>
+                        Senior Citizen (60 years old and above)
                       </span>
-                    )}
-                  </div>
-                </label>
+                      {hasSenior && (
+                        <span style={{ fontSize: '10px', color: '#22C55E', fontFamily: 'Inter' }}>
+                          ✓ 20% discount applied
+                        </span>
+                      )}
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -955,7 +976,7 @@ export default function BookingPage() {
               </div>
             </div>
 
-            {/* Included Amenities - With Availability Indicators */}
+            {/* Included Amenities */}
             <div>
               <h3 style={{ fontSize: '14px', fontWeight: 600, lineHeight: '20px', color: '#3D5A4C', display: 'block', marginBottom: '8px', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Included Amenities
@@ -1109,13 +1130,13 @@ export default function BookingPage() {
             </div>
           </div>
 
-          {/* Right Column - Your Stay Summary */}
+          {/* Right Column - Your Stay Summary (FIXED FONTS) */}
           <div className="flex-1" style={{ background: '#3D5A4C', padding: 'clamp(24px, 5vw, 40px)', borderRadius: '8px', boxShadow: '0px 8px 24px rgba(61, 90, 76, 0.2)' }}>
             <h2 className={cormorantInfant.className} style={{ fontSize: '24px', fontWeight: 400, lineHeight: '32px', color: '#FFFAF5', marginBottom: 'clamp(32px, 8vw, 64px)' }}>
               Your Stay
             </h2>
 
-            {/* Summary Details */}
+            {/* Summary Details - All fonts explicitly set to Inter */}
             <div className="space-y-0" style={{ marginBottom: '48px' }}>
               <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
                 <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>Check-in</span>
@@ -1189,7 +1210,7 @@ export default function BookingPage() {
               <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginTop: '16px' }} />
             </div>
 
-            {/* Pricing */}
+            {/* Pricing - All fonts explicitly set to Inter */}
             <div className="space-y-3" style={{ marginBottom: '32px' }}>
               <div className="flex justify-between items-center">
                 <span style={{ fontSize: '11.9px', fontWeight: 400, lineHeight: '20px', color: '#FFFAF5', fontFamily: 'Inter' }}>
@@ -1231,8 +1252,8 @@ export default function BookingPage() {
               </div>
               <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.32)', marginBottom: '16px' }} />
               <div className="flex justify-between items-center" style={{ paddingTop: '8px' }}>
-                <span className={cormorantInfant.className} style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#FFB5C5' }}>Total</span>
-                <span className={cormorantInfant.className} style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#FFB5C5' }}>₱{total.toFixed(2)}</span>
+                <span style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#FFB5C5', fontFamily: 'Inter' }}>Total</span>
+                <span style={{ fontSize: '17px', fontWeight: 400, lineHeight: '28px', color: '#FFB5C5', fontFamily: 'Inter' }}>₱{total.toFixed(2)}</span>
               </div>
             </div>
 
