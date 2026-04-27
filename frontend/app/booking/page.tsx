@@ -988,12 +988,15 @@ export default function BookingPage() {
                   <div className="space-y-3 p-2">
                     {/* PWD Option */}
                     <label 
-                      className="flex items-start gap-4 cursor-pointer p-5 rounded-xl transition-all duration-300 relative overflow-hidden group"
+                      className="flex items-start gap-4 p-5 rounded-xl transition-all duration-300 relative overflow-hidden group"
                       style={{ 
                         background: hasPwd ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.06) 100%)' : 'rgba(61, 90, 76, 0.03)', 
                         border: hasPwd ? '2px solid #22C55E' : '2px solid rgba(61, 90, 76, 0.08)',
                         boxShadow: hasPwd ? '0px 4px 16px rgba(34, 197, 94, 0.15)' : 'none',
-                        transform: hasPwd ? 'scale(1.02)' : 'scale(1)'
+                        transform: hasPwd ? 'scale(1.02)' : 'scale(1)',
+                        cursor: hasSenior ? 'not-allowed' : 'pointer',
+                        opacity: hasSenior ? 0.4 : 1,
+                        pointerEvents: hasSenior ? 'none' : 'auto',
                       }}
                     >
                       <input
@@ -1001,6 +1004,7 @@ export default function BookingPage() {
                         name="discountEligibility"
                         value="pwd"
                         checked={hasPwd}
+                        disabled={hasSenior}
                         onChange={() => {
                           setHasPwd(true);
                           setHasSenior(false);
@@ -1008,7 +1012,7 @@ export default function BookingPage() {
                         style={{ 
                           marginTop: '4px', 
                           accentColor: '#22C55E', 
-                          cursor: 'pointer',
+                          cursor: hasSenior ? 'not-allowed' : 'pointer',
                           width: '18px',
                           height: '18px'
                         }}
@@ -1075,12 +1079,15 @@ export default function BookingPage() {
 
                     {/* Senior Citizen Option */}
                     <label 
-                      className="flex items-start gap-4 cursor-pointer p-5 rounded-xl transition-all duration-300 relative overflow-hidden group"
+                      className="flex items-start gap-4 p-5 rounded-xl transition-all duration-300 relative overflow-hidden group"
                       style={{ 
                         background: hasSenior ? 'linear-gradient(135deg, rgba(61, 90, 76, 0.15) 0%, rgba(61, 90, 76, 0.08) 100%)' : 'rgba(61, 90, 76, 0.03)', 
                         border: hasSenior ? '2px solid #3D5A4C' : '2px solid rgba(61, 90, 76, 0.08)',
                         boxShadow: hasSenior ? '0px 4px 16px rgba(61, 90, 76, 0.2)' : 'none',
-                        transform: hasSenior ? 'scale(1.02)' : 'scale(1)'
+                        transform: hasSenior ? 'scale(1.02)' : 'scale(1)',
+                        cursor: hasPwd ? 'not-allowed' : 'pointer',
+                        opacity: hasPwd ? 0.4 : 1,
+                        pointerEvents: hasPwd ? 'none' : 'auto',
                       }}
                     >
                       <input
@@ -1088,6 +1095,7 @@ export default function BookingPage() {
                         name="discountEligibility"
                         value="senior"
                         checked={hasSenior}
+                        disabled={hasPwd}
                         onChange={() => {
                           setHasSenior(true);
                           setHasPwd(false);
@@ -1095,7 +1103,7 @@ export default function BookingPage() {
                         style={{ 
                           marginTop: '4px', 
                           accentColor: '#3D5A4C', 
-                          cursor: 'pointer',
+                          cursor: hasPwd ? 'not-allowed' : 'pointer',
                           width: '18px',
                           height: '18px'
                         }}
@@ -1453,7 +1461,7 @@ export default function BookingPage() {
                   <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
                     <span style={{ fontSize: '12px', fontWeight: 400, lineHeight: '20px', color: 'rgba(255, 250, 245, 0.8)', fontFamily: 'Inter' }}>Discount</span>
                     <span style={{ fontSize: '12px', fontWeight: 600, lineHeight: '20px', color: '#86EFAC', fontFamily: 'Inter' }}>
-                      {hasPwd && hasSenior ? 'PWD & Senior' : hasPwd ? 'PWD' : 'Senior'} (20%)
+                      {hasPwd ? 'PWD' : 'Senior'} (20%)
                     </span>
                   </div>
                   <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)', marginBottom: '16px' }} />
