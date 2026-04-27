@@ -89,6 +89,10 @@ export async function POST(request: Request) {
 
     const { room_id, room_type, start_at, end_at, guests = 1, amenities, extra_beds, has_pwd, has_senior, has_child, child_age_group, total_price, payment_method } = result.data;
 
+    if (has_pwd && has_senior) {
+      return NextResponse.json({ error: 'Cannot apply both PWD and Senior discounts at the same time' }, { status: 400 });
+    }
+
     // Check for range-overlapping bookings: existing.start_at < new.end_at AND existing.end_at > new.start_at
     const { data: conflicts, error: confErr } = await supabase
       .from('bookings')

@@ -1453,7 +1453,7 @@ export default function BookingPage() {
                   <div className="flex justify-between items-center" style={{ paddingBottom: '16px' }}>
                     <span style={{ fontSize: '12px', fontWeight: 400, lineHeight: '20px', color: 'rgba(255, 250, 245, 0.8)', fontFamily: 'Inter' }}>Discount</span>
                     <span style={{ fontSize: '12px', fontWeight: 600, lineHeight: '20px', color: '#86EFAC', fontFamily: 'Inter' }}>
-                      {hasPwd && hasSenior ? 'PWD & Senior' : hasPwd ? 'PWD' : 'Senior'} (20%)
+                      {hasPwd ? 'PWD' : 'Senior'} (20%)
                     </span>
                   </div>
                   <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.2)', marginBottom: '16px' }} />
