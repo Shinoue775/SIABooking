@@ -1,0 +1,3 @@
+# Exclude the Next.js backend from the frontend (SiaBookingMigrated-main) Vercel build.
+# The backend (backend1/) is deployed as a separate Vercel project.
+backend1
