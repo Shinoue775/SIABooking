@@ -21,6 +21,10 @@
             <p class="text-sm sm:text-base md:text-lg text-gray-200 mb-6 sm:mb-8 px-2">
                 Discover premium accommodations in the heart of the Gordon College campus
             </p>
+            <a href="/booking" class="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-lg transition font-semibold">
+                Book Direct
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+            </a>
         </div>
 
         <div class="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 mb-6 sm:mb-8">
@@ -233,6 +237,17 @@
 
 <!-- Main Content - Rooms Section -->
 <main class="container mx-auto px-4 max-w-7xl py-8 sm:py-12">
+    <div class="mb-8 sm:mb-10">
+        <label for="roomSearch" class="block text-sm font-semibold text-gray-700 mb-2">Search rooms</label>
+        <input
+            id="roomSearch"
+            type="search"
+            placeholder="Search by room name, type, or amenity"
+            class="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
+        >
+        <p id="roomSearchEmpty" class="hidden mt-3 text-sm text-gray-500">No rooms matched your search.</p>
+    </div>
+
     <!-- Featured Room - Deluxe Room A -->
     <div class="mb-12 sm:mb-16">
         <div class="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
@@ -650,6 +665,10 @@
         }
         
         startModalSlideshow();
+        const bookLink = document.querySelector('#roomModal a[href^="/booking"]');
+        if (bookLink) {
+            bookLink.href = roomKey === 'A' ? '/booking?room=deluxe' : '/booking?room=standard';
+        }
         const modal = document.getElementById('roomModal');
         modal.classList.remove('hidden');
         modal.classList.add('flex');
@@ -681,6 +700,34 @@
             stopModalSlideshow();
             startModalSlideshow();
         }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const roomSearchInput = document.getElementById('roomSearch');
+        const emptyState = document.getElementById('roomSearchEmpty');
+        const roomCards = [
+            document.getElementById('roomA-card'),
+            document.getElementById('roomB-card'),
+        ].filter(Boolean);
+
+        function filterRooms() {
+            const query = (roomSearchInput?.value || '').trim().toLowerCase();
+            let visibleCount = 0;
+
+            roomCards.forEach((card) => {
+                const haystack = card.textContent.toLowerCase();
+                const visible = !query || haystack.includes(query);
+                card.style.display = visible ? '' : 'none';
+                if (visible) visibleCount += 1;
+            });
+
+            if (emptyState) {
+                emptyState.classList.toggle('hidden', visibleCount > 0);
+            }
+        }
+
+        roomSearchInput?.addEventListener('input', filterRooms);
     });
 </script>
 @endsection

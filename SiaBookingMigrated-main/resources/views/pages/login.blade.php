@@ -51,13 +51,13 @@
                 <div class="mb-8 text-center lg:text-left">
                     <h2 class="font-cormorant font-light mb-3" style="color: #3D5A4C; font-size: clamp(32px, 8vw, 56px);">Welcome</h2>
                     <div class="w-40 h-1 bg-pink-600 mb-3 mx-auto lg:mx-0"></div>
-                    <p class="text-gray-600 text-base font-medium">Please sign in using your Gordon College Google account.</p>
+                    <p class="text-gray-600 text-base font-medium">Please sign in to continue.</p>
                 </div>
 
                 <div class="space-y-4">
                     <button class="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 px-4 rounded-md transition font-medium bg-white hover:bg-gray-50 shadow-sm">
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
-                        <span class="text-sm">Sign in with Google</span>
+                        <span class="text-sm">Sign in only</span>
                     </button>
                 </div>
 

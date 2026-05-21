@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 const ALLOWED_ORIGINS = [
     'https://sia-backup.vercel.app',
     'https://sia-booking-lbtq.vercel.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
 ];
 
 export function corsHeaders(origin?: string | null): Record<string, string> {

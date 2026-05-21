@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'booking_api' => [
+        'base_url' => rtrim(env('BOOKING_API_BASE_URL', 'http://127.0.0.1:3001'), '/'),
+    ],
+
 ];
