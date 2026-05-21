@@ -1,0 +1,50 @@
+/* Custom utility classes */
+.text-clamp14 {
+    font-size: clamp(13px, 3.5vw, 14px);
+}
+
+.text-clamp20 {
+    font-size: clamp(18px, 4vw, 20px);
+}
+
+.text-clamp28 {
+    font-size: clamp(28px, 5vw, 42px);
+}
+
+.text-clamp36 {
+    font-size: clamp(36px, 8vw, 56px);
+}
+
+/* Custom transitions */
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom button styles */
+.btn-primary {
+    background: linear-gradient(135deg, #3D5A4C 0%, #2D4A3C 100%);
+    color: #FFFAF5;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2D4A3C 0%, #1D3A2C 100%);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid #3D5A4C;
+    color: #3D5A4C;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: rgba(61, 90, 76, 0.1);
+    transform: translateY(-2px);
+}
