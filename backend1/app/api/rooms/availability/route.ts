@@ -20,23 +20,18 @@ export async function GET(request: Request) {
     try {
         const dayStart = `${date}T00:00:00`;
         const dayEnd = `${date}T23:59:59`;
-        let rooms: any[] = [];
         const { data: roomData, error: roomErr } = await supabase
             .from('rooms')
             .select('*');
 
         if (roomErr) {
-            rooms = [
-                { id: '1', name: 'Room A', floor: '6th floor', number: '601', type: 'Premium' },
-                { id: '2', name: 'Room B', floor: '6th floor', number: '602', type: 'Standard' },
-            ];
-        } else {
-            rooms = (roomData || []).sort((left, right) => {
-                const leftLabel = String(left.room_number || left.number || left.name || left.id || '');
-                const rightLabel = String(right.room_number || right.number || right.name || right.id || '');
-                return leftLabel.localeCompare(rightLabel, undefined, { numeric: true, sensitivity: 'base' });
-            });
+            return jsonWithCors({ error: roomErr.message }, { status: 500 }, request);
         }
+        const rooms = (roomData || []).sort((left, right) => {
+            const leftLabel = String(left.room_number || left.number || left.name || left.id || '');
+            const rightLabel = String(right.room_number || right.number || right.name || right.id || '');
+            return leftLabel.localeCompare(rightLabel, undefined, { numeric: true, sensitivity: 'base' });
+        });
         const { data: bookings, error: bookErr } = await supabase
             .from('bookings')
             .select('*')

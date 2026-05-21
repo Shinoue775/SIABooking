@@ -25,10 +25,10 @@
             </p>
 
             <div class="flex flex-col sm:flex-row gap-3 sm:gap-4" style="margin-top: clamp(24px, 6vw, 32px);">
-                <a href="/login" class="px-6 sm:px-8 md:px-10 py-3 sm:py-4 text-center transition hover:bg-[#2d4338] w-full sm:w-auto" style="background: #3D5A4C; color: #FFFAF5; font-size: clamp(13px, 3.5vw, 14px); font-weight: 500;">
+                <a href="/booking" class="px-6 sm:px-8 md:px-10 py-3 sm:py-4 text-center transition hover:bg-[#2d4338] w-full sm:w-auto" style="background: #3D5A4C; color: #FFFAF5; font-size: clamp(13px, 3.5vw, 14px); font-weight: 500;">
                     Book Your Stay
                 </a>
-                <a href="/login" class="px-6 sm:px-8 md:px-10 py-3 sm:py-4 text-center transition hover:bg-gray-50 border w-full sm:w-auto" style="border-color: #3D5A4C; background: white; color: #3D5A4C; font-size: clamp(13px, 3.5vw, 14px); font-weight: 500;">
+                <a href="/booking" class="px-6 sm:px-8 md:px-10 py-3 sm:py-4 text-center transition hover:bg-gray-50 border w-full sm:w-auto" style="border-color: #3D5A4C; background: white; color: #3D5A4C; font-size: clamp(13px, 3.5vw, 14px); font-weight: 500;">
                     Check Availability
                 </a>
             </div>

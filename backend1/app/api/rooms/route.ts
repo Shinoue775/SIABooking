@@ -24,14 +24,6 @@ export async function GET(request: Request) {
             return leftLabel.localeCompare(rightLabel, undefined, { numeric: true, sensitivity: 'base' });
         });
 
-        // If no rooms in database, return test rooms for UI with standard IDs (1, 2)
-        if (sorted.length === 0) {
-            return jsonWithCors([
-                { id: 1, room_number: '1', name: 'Room A' },
-                { id: 2, room_number: '2', name: 'Room B' }
-            ], { status: 200 }, request);
-        }
-
         return jsonWithCors(sorted, { status: 200 }, request);
     } catch (err: any) {
         return jsonWithCors({ error: err.message || 'Unknown error' }, { status: 500 }, request);

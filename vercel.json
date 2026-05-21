@@ -1,1 +1,32 @@
-{}
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "SiaBookingMigrated-main/public/index.php",
+      "use": "vercel-php@0.7.3",
+      "config": {
+        "buildCommand": "cd SiaBookingMigrated-main && composer install --no-dev --optimize-autoloader && npm ci && npm run build",
+        "maxDuration": 30
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/build/(.*)",
+      "dest": "/SiaBookingMigrated-main/public/build/$1"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "/SiaBookingMigrated-main/public/images/$1"
+    },
+    {
+      "src": "/(.*\\.(?:css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot))$",
+      "dest": "/SiaBookingMigrated-main/public/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/SiaBookingMigrated-main/public/index.php"
+    }
+  ]
+}
+

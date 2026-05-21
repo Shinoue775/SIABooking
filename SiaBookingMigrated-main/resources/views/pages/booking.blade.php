@@ -58,34 +58,35 @@
                         <h3 class="text-lg font-semibold text-gray-800">Select Your Room</h3>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label class="relative cursor-pointer">
+                    <div class="mb-4">
+                        <label for="roomTypeSearch" class="block text-sm font-medium text-gray-700 mb-1">Search Room Type</label>
+                        <input type="search" id="roomTypeSearch" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition" placeholder="Search room by name or type">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="roomTypeContainer">
+                        <label class="relative cursor-pointer room-option" id="roomOptionStandard">
                             <input type="radio" name="roomType" value="standard" class="peer sr-only" checked>
                             <div class="border-2 rounded-xl p-4 peer-checked:border-green-600 peer-checked:bg-green-50 transition-all">
-                                <h4 class="font-bold text-gray-800">Standard Room B</h4>
-                                <p class="text-2xl font-bold text-green-700 mt-2">₱2,500</p>
+                                <h4 class="font-bold text-gray-800" id="roomLabelStandard">Standard Room B</h4>
+                                <p class="text-2xl font-bold text-green-700 mt-2" id="roomPriceStandard">₱2,500</p>
                                 <p class="text-xs text-gray-500 mt-1">per night</p>
-                                <div class="flex flex-wrap gap-1 mt-3">
-                                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">2 Single Beds</span>
-                                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">Air Conditioning</span>
-                                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">TV</span>
+                                <div class="flex flex-wrap gap-1 mt-3" id="roomTagsStandard">
+                                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">Standard</span>
                                 </div>
                             </div>
                         </label>
-                        <label class="relative cursor-pointer">
+                        <label class="relative cursor-pointer room-option" id="roomOptionDeluxe">
                             <input type="radio" name="roomType" value="deluxe" class="peer sr-only">
                             <div class="border-2 rounded-xl p-4 peer-checked:border-green-600 peer-checked:bg-green-50 transition-all">
-                                <h4 class="font-bold text-gray-800">Deluxe Room A</h4>
-                                <p class="text-2xl font-bold text-green-700 mt-2">₱4,500</p>
+                                <h4 class="font-bold text-gray-800" id="roomLabelDeluxe">Deluxe Room A</h4>
+                                <p class="text-2xl font-bold text-green-700 mt-2" id="roomPriceDeluxe">₱4,500</p>
                                 <p class="text-xs text-gray-500 mt-1">per night</p>
-                                <div class="flex flex-wrap gap-1 mt-3">
-                                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">2 King Beds</span>
-                                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">Bathtub</span>
-                                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">Smart TV</span>
+                                <div class="flex flex-wrap gap-1 mt-3" id="roomTagsDeluxe">
+                                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">Deluxe</span>
                                 </div>
                             </div>
                         </label>
                     </div>
+                    <p id="roomTypeEmpty" class="text-sm text-gray-500 mt-3 hidden">No room type matched your search.</p>
                 </div>
 
                 <!-- 3. Guest Categories -->
@@ -171,13 +172,25 @@
                     </div>
                     
                     <!-- Selected Dates Display -->
-                    <div class="mt-6 pt-4 border-t border-gray-100">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div class="mt-6 pt-4 border-t border-gray-100">
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="p-3 rounded-lg" id="checkInDisplay" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%); border: 1px solid rgba(34, 197, 94, 0.2);">
                                 <p class="text-xs text-gray-500 mb-1">CHECK-IN DATE</p>
                                 <p class="text-lg font-semibold text-green-700" id="selectedCheckIn">Not selected</p>
                                 <p class="text-xs text-gray-400 mt-1">Check-in time: 3:00 PM</p>
+                         </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Check-in Time</label>
+                                <input type="time" id="checkInTime" value="15:00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition">
                             </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Check-out Time</label>
+                                <input type="time" id="checkOutTime" value="11:00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition">
+                            </div>
+                        </div>
+                        <input type="hidden" id="checkInDate">
+                        <input type="hidden" id="checkOutDate">
                             <div class="p-3 rounded-lg" id="checkOutDisplay" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%); border: 1px solid rgba(34, 197, 94, 0.2);">
                                 <p class="text-xs text-gray-500 mb-1">CHECK-OUT DATE</p>
                                 <p class="text-lg font-semibold text-green-700" id="selectedCheckOut">Not selected</p>
@@ -216,6 +229,24 @@
                     </div>
                     
                     <div class="space-y-4">
+                        <div>
+                            <button type="button" id="amenitiesToggle" class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition">
+                                <span class="font-semibold text-gray-800">Amenities</span>
+                                <span class="text-xs text-gray-500" id="amenitiesSummaryText">Select amenities</span>
+                            </button>
+                            <div id="amenitiesPanel" class="hidden mt-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="amenitiesList">
+                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Air Conditioning" data-price="300"> Air Conditioning (+₱300/night)</label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Smart TV" data-price="0"> Smart TV</label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="WiFi" data-price="0"> WiFi</label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Breakfast" data-price="150"> Breakfast (+₱150/night)</label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Bathtub" data-price="0"> Bathtub</label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Mini Sala" data-price="0"> Mini Sala</label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Cabinet" data-price="0"> Cabinet</label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Shower" data-price="0"> Shower</label>
+                                </div>
+                            </div>
+                        </div>
                         <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                             <div>
                                 <span class="font-semibold text-gray-800">🛏️ Extra Bed</span>
@@ -331,6 +362,10 @@
                             <div class="flex justify-between">
                                 <span class="text-white/70 text-sm">Extra Beds</span>
                                 <span class="text-white text-sm" id="costExtraBeds">₱0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-white/70 text-sm">Amenities</span>
+                                <span class="text-white text-sm" id="costAmenities">₱0</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-white/70 text-sm">Subtotal</span>
@@ -508,21 +543,120 @@
     let selectedCheckIn = null;
     let selectedCheckOut = null;
 
-    // Available dates (for demo, mark some dates as unavailable)
-    // In production, this would come from your backend
-    const unavailableDates = [];
-
-    // Room rates by date (for dynamic pricing)
+    const BOOKING_API_BASE = @json(config('services.booking_api.base_url'));
+    let unavailableDates = [];
     const dailyRates = {
         standard: 2500,
         deluxe: 4500,
     };
+    const roomCatalog = {
+        standard: { id: null, name: 'Standard Room B', tags: ['Standard'], raw: null },
+        deluxe: { id: null, name: 'Deluxe Room A', tags: ['Deluxe'], raw: null },
+    };
+    let selectedAmenities = [];
 
     const roomRates = dailyRates;
     const EXTRA_BED_PRICE = 700;
     const SERVICE_CHARGE = 85;
     const DISCOUNT_RATE = 0.20;
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const BASELINE_MONTH = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    let availabilityRequestToken = 0;
+
+    function syncRoomSummary() {
+        const activeRoom = roomCatalog[roomType];
+        const roomPrice = roomRates[roomType] || 0;
+        document.getElementById('summaryRoom').innerText = activeRoom?.name || 'Selected Room';
+        document.getElementById('summaryRoomPrice').innerHTML = `₱${roomPrice.toLocaleString()} / night`;
+    }
+
+    function renderRoomCard(type) {
+        const room = roomCatalog[type];
+        if (!room) return;
+        const labelEl = document.getElementById(type === 'standard' ? 'roomLabelStandard' : 'roomLabelDeluxe');
+        const priceEl = document.getElementById(type === 'standard' ? 'roomPriceStandard' : 'roomPriceDeluxe');
+        const tagsEl = document.getElementById(type === 'standard' ? 'roomTagsStandard' : 'roomTagsDeluxe');
+        if (labelEl) labelEl.innerText = room.name;
+        if (priceEl) priceEl.innerText = `₱${(roomRates[type] || 0).toLocaleString()}`;
+        if (tagsEl) {
+            tagsEl.innerHTML = '';
+            (room.tags || []).forEach((tag) => {
+                const span = document.createElement('span');
+                span.className = 'text-xs bg-gray-100 px-2 py-1 rounded';
+                span.innerText = tag;
+                tagsEl.appendChild(span);
+            });
+        }
+    }
+
+    async function loadRoomsFromBackend() {
+        try {
+            const response = await fetch(`${BOOKING_API_BASE}/api/rooms`);
+            if (!response.ok) return;
+            const rooms = await response.json();
+            const sorted = (Array.isArray(rooms) ? rooms : []).slice(0, 2);
+            sorted.forEach((room, index) => {
+                const key = index === 0 ? 'standard' : 'deluxe';
+                roomCatalog[key].id = room.id ?? null;
+                roomCatalog[key].name = room.name || room.room_name || room.room_number || roomCatalog[key].name;
+                roomCatalog[key].raw = room;
+                roomCatalog[key].tags = [room.type || room.category || key];
+                const roomPrice = Number(room.price_per_night ?? room.rate ?? room.price ?? room.base_price);
+                if (!Number.isNaN(roomPrice) && roomPrice > 0) {
+                    roomRates[key] = roomPrice;
+                }
+                renderRoomCard(key);
+            });
+            syncRoomSummary();
+            updateSummary();
+            await refreshAvailabilityForMonth();
+        } catch (_error) {
+            // keep UI defaults when backend cannot be reached
+        }
+    }
+
+    async function refreshAvailabilityForMonth() {
+        const selectedRoomId = roomCatalog[roomType]?.id;
+        if (!selectedRoomId) {
+            unavailableDates = [];
+            renderCalendar();
+            return;
+        }
+
+        const requestToken = ++availabilityRequestToken;
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const checks = Array.from({ length: daysInMonth }, (_, index) => {
+            const dateValue = new Date(currentYear, currentMonth, index + 1).toISOString().split('T')[0];
+            return fetch(`${BOOKING_API_BASE}/api/rooms/availability?date=${dateValue}`)
+                .then((response) => (response.ok ? response.json() : null))
+                .then((payload) => {
+                    const room = payload?.rooms?.find((candidate) => String(candidate.id) === String(selectedRoomId));
+                    return room && room.available === false ? dateValue : null;
+                })
+                .catch(() => null);
+        });
+
+        const results = await Promise.all(checks);
+        if (requestToken !== availabilityRequestToken) return;
+        unavailableDates = results.filter(Boolean);
+        renderCalendar();
+    }
+
+    function filterRoomTypes() {
+        const query = (document.getElementById('roomTypeSearch')?.value || '').trim().toLowerCase();
+        const options = Array.from(document.querySelectorAll('.room-option'));
+        let matches = 0;
+        options.forEach((option) => {
+            const show = !query || option.textContent.toLowerCase().includes(query);
+            option.style.display = show ? '' : 'none';
+            if (show) matches += 1;
+        });
+        document.getElementById('roomTypeEmpty')?.classList.toggle('hidden', matches > 0);
+    }
+
+    function getAmenitiesTotalPerNight() {
+        return selectedAmenities.reduce((total, amenity) => total + (Number(amenity.price) || 0), 0);
+    }
 
     function updateGuestCount(type, delta) {
         if (type === 'adults') {
@@ -616,11 +750,8 @@
     document.querySelectorAll('input[name="roomType"]').forEach(radio => {
         radio.addEventListener('change', function() {
             roomType = this.value;
-            const roomName = roomType === 'standard' ? 'Standard Room B' : 'Deluxe Room A';
-            const roomPrice = roomRates[roomType];
-            document.getElementById('summaryRoom').innerText = roomName;
-            document.getElementById('summaryRoomPrice').innerHTML = `₱${roomPrice.toLocaleString()} / night`;
-            renderCalendar();
+            syncRoomSummary();
+            refreshAvailabilityForMonth();
             updateSummary();
         });
     });
@@ -808,13 +939,44 @@
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
+    function updateAmenitiesSummary() {
+        const summaryText = document.getElementById('amenitiesSummaryText');
+        if (!summaryText) return;
+        if (selectedAmenities.length === 0) {
+            summaryText.innerText = 'Select amenities';
+            return;
+        }
+        summaryText.innerText = selectedAmenities.map((item) => item.name).join(', ');
+    }
+
+    function bindAmenitiesHandlers() {
+        document.getElementById('amenitiesToggle')?.addEventListener('click', () => {
+            document.getElementById('amenitiesPanel')?.classList.toggle('hidden');
+        });
+
+        document.querySelectorAll('.amenityOption').forEach((input) => {
+            input.addEventListener('change', () => {
+                selectedAmenities = Array.from(document.querySelectorAll('.amenityOption:checked')).map((checkbox) => ({
+                    name: checkbox.value,
+                    price: Number(checkbox.dataset.price || 0),
+                }));
+                updateAmenitiesSummary();
+                updateSummary();
+            });
+        });
+    }
+
     document.getElementById('prevMonth')?.addEventListener('click', () => {
+        const prevMonthDate = new Date(currentYear, currentMonth - 1, 1);
+        if (prevMonthDate < BASELINE_MONTH) {
+            return;
+        }
         currentMonth--;
         if (currentMonth < 0) {
             currentMonth = 11;
             currentYear--;
         }
-        renderCalendar();
+        refreshAvailabilityForMonth();
     });
 
     document.getElementById('nextMonth')?.addEventListener('click', () => {
@@ -823,21 +985,16 @@
             currentMonth = 0;
             currentYear++;
         }
-        renderCalendar();
-    });
-
-    document.querySelectorAll('input[name="roomType"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            renderCalendar();
-        });
+        refreshAvailabilityForMonth();
     });
 
     function updateSummary() {
         const nights = (selectedCheckIn && selectedCheckOut) ? calculateNights(selectedCheckIn, selectedCheckOut) : 1;
-        const rate = roomRates[roomType];
+        const rate = roomRates[roomType] || 0;
         const roomTotal = rate * nights;
         const extraBedsTotal = extraBeds * EXTRA_BED_PRICE * nights;
-        const subtotal = roomTotal + extraBedsTotal;
+        const amenitiesTotal = getAmenitiesTotalPerNight() * nights;
+        const subtotal = roomTotal + extraBedsTotal + amenitiesTotal;
 
         const hasDiscount = pwdDiscount || seniorDiscount;
         const discountAmount = hasDiscount ? Math.round(subtotal * DISCOUNT_RATE) : 0;
@@ -851,6 +1008,7 @@
 
         document.getElementById('costRoomRate').innerHTML = `₱${roomTotal.toLocaleString()}`;
         document.getElementById('costExtraBeds').innerHTML = `₱${extraBedsTotal.toLocaleString()}`;
+        document.getElementById('costAmenities').innerHTML = `₱${amenitiesTotal.toLocaleString()}`;
         document.getElementById('costSubtotal').innerHTML = `₱${subtotal.toLocaleString()}`;
 
         const discountRow = document.getElementById('discountRow');
@@ -946,34 +1104,42 @@
         }
 
         const nights = calculateNights(selectedCheckIn, selectedCheckOut);
-        const rate = roomRates[roomType];
+        const rate = roomRates[roomType] || 0;
         const roomTotal = rate * nights;
         const extraBedsTotal = extraBeds * EXTRA_BED_PRICE * nights;
-        const subtotal = roomTotal + extraBedsTotal;
+        const amenitiesTotal = getAmenitiesTotalPerNight() * nights;
+        const subtotal = roomTotal + extraBedsTotal + amenitiesTotal;
         const hasDiscount = pwdDiscount || seniorDiscount;
         const discountAmount = hasDiscount ? Math.round(subtotal * DISCOUNT_RATE) : 0;
         const total = (subtotal - discountAmount) + SERVICE_CHARGE;
+        const checkInTime = document.getElementById('checkInTime').value;
+        const checkOutTime = document.getElementById('checkOutTime').value;
 
         const bookingData = {
             fullName: fullName,
             email: email,
             contact: contact,
             address: document.getElementById('address').value,
-            roomType: roomType === 'standard' ? 'Standard Room B' : 'Deluxe Room A',
+            roomType: roomCatalog[roomType]?.name || 'Selected Room',
+            roomId: roomCatalog[roomType]?.id || null,
             roomRate: rate,
             checkIn: selectedCheckIn,
             checkOut: selectedCheckOut,
+            checkInTime: checkInTime,
+            checkOutTime: checkOutTime,
             nights: nights,
             adults: adults,
             kids: kids,
             infants: infants,
             extraBeds: extraBeds,
+            amenities: selectedAmenities.map((item) => item.name),
             pwdDiscount: pwdDiscount,
             seniorDiscount: seniorDiscount,
             paymentMethod: selectedMethod,
             subtotal: subtotal,
             discountAmount: discountAmount,
             serviceCharge: SERVICE_CHARGE,
+            amenitiesTotal: amenitiesTotal,
             totalAmount: total
         };
 
@@ -1003,8 +1169,28 @@
     window.selectedCheckIn = selectedCheckIn;
     window.selectedCheckOut = selectedCheckOut;
 
-    renderCalendar();
+    const roomQuery = (new URLSearchParams(window.location.search).get('room') || '').toLowerCase();
+    if (roomQuery === 'a' || roomQuery === 'deluxe') {
+        const deluxeOption = document.querySelector('input[name="roomType"][value="deluxe"]');
+        if (deluxeOption) {
+            deluxeOption.checked = true;
+            roomType = 'deluxe';
+        }
+    } else if (roomQuery === 'b' || roomQuery === 'standard') {
+        const standardOption = document.querySelector('input[name="roomType"][value="standard"]');
+        if (standardOption) {
+            standardOption.checked = true;
+            roomType = 'standard';
+        }
+    }
+
+    document.getElementById('roomTypeSearch')?.addEventListener('input', filterRoomTypes);
+    bindAmenitiesHandlers();
+    loadRoomsFromBackend();
+    syncRoomSummary();
+    refreshAvailabilityForMonth();
     updateSummary();
+    updateAmenitiesSummary();
     window.updateDateSummary();
 </script>
 @endsection
