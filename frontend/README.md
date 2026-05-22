@@ -7,6 +7,15 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## SIABooking Vercel deployment
+
+- Deploy the Laravel frontend from `/home/runner/work/SIABooking/SIABooking/frontend` as its own Vercel project root.
+- Deploy `backend1/` as a separate Vercel project for the booking API.
+- This project now uses `frontend/vercel.json` with `functions` instead of legacy `builds`, so Vercel project build settings are no longer ignored.
+- During Vercel builds, Composer will run the `vercel` script to install frontend Node dependencies and build Vite assets.
+- On Vercel, session, cache, queue, and log defaults automatically switch to serverless-safe values when explicit environment variables are not provided.
+- Still set these environment variables in Vercel: `APP_KEY`, `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL`, and `BOOKING_API_BASE_URL`.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Str;
 
+$isVercel = (bool) env('VERCEL');
+
 return [
 
     /*
@@ -18,7 +20,7 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'database'),
+    'driver' => env('SESSION_DRIVER', $isVercel ? 'cookie' : 'database'),
 
     /*
     |--------------------------------------------------------------------------

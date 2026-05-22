@@ -5,6 +5,8 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
 
+$isVercel = (bool) env('VERCEL');
+
 return [
 
     /*
@@ -18,7 +20,7 @@ return [
     |
     */
 
-    'default' => env('LOG_CHANNEL', 'stack'),
+    'default' => env('LOG_CHANNEL', $isVercel ? 'stderr' : 'stack'),
 
     /*
     |--------------------------------------------------------------------------
