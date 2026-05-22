@@ -9,7 +9,7 @@
 
 ## SIABooking Vercel deployment
 
-- Deploy the Laravel frontend from `/home/runner/work/SIABooking/SIABooking/frontend` as its own Vercel project root.
+- Deploy the Laravel frontend from `frontend/` as its own Vercel project root.
 - Deploy `backend1/` as a separate Vercel project for the booking API.
 - This project now uses `frontend/vercel.json` with `functions` instead of legacy `builds`, so Vercel project build settings are no longer ignored.
 - During Vercel builds, Composer will run the `vercel` script to install frontend Node dependencies and build Vite assets.
