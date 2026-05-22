@@ -1,5 +1,7 @@
 <?php
 
+$isVercel = (bool) env('VERCEL');
+
 return [
 
     /*
@@ -13,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('QUEUE_CONNECTION', 'database'),
+    'default' => env('QUEUE_CONNECTION', $isVercel ? 'sync' : 'database'),
 
     /*
     |--------------------------------------------------------------------------

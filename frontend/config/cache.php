@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Str;
 
+$isVercel = (bool) env('VERCEL');
+
 return [
 
     /*
@@ -15,7 +17,7 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'database'),
+    'default' => env('CACHE_STORE', $isVercel ? 'array' : 'database'),
 
     /*
     |--------------------------------------------------------------------------
