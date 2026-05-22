@@ -1,0 +1,19 @@
+{
+  "name": "siabooking-root",
+  "private": true,
+  "scripts": {
+    "predev": "npm --prefix backend1 install",
+    "dev": "npm --prefix backend1 run dev",
+    "prebuild": "npm --prefix backend1 install",
+    "build": "npm --prefix backend1 run build",
+    "prestart": "npm --prefix backend1 install",
+    "start": "npm --prefix backend1 run start",
+    "prelint": "npm --prefix backend1 install",
+    "lint": "npm --prefix backend1 run lint"
+  },
+  "dependencies": {
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  }
+}
