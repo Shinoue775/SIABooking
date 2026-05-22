@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // Origins that are allowed to call the backend API.
-// The primary frontend is SiaBookingMigrated-main deployed at sia-booking-lbtq.vercel.app.
+// The primary frontend is deployed at sia-booking-lbtq.vercel.app.
 const ALLOWED_ORIGINS = [
     'https://sia-booking-lbtq.vercel.app',
     'https://sia-backup.vercel.app',
