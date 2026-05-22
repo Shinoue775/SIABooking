@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "framework": null,
+  "installCommand": "cd frontend && composer install --no-interaction --prefer-dist --optimize-autoloader",
+  "buildCommand": "cd frontend && composer run vercel",
+  "functions": {
+    "frontend/api/index.php": {
+      "runtime": "vercel-php@0.7.4",
+      "maxDuration": 30
+    }
+  },
+  "routes": [
+    {
+      "src": "/build/(.*)",
+      "dest": "/frontend/public/build/$1"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "/frontend/public/images/$1"
+    },
+    {
+      "src": "/(.*\\.(?:css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot))$",
+      "dest": "/frontend/public/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/api/index.php"
+    }
+  ]
+}

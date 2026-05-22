@@ -11,6 +11,7 @@
 
 - Deploy the Laravel frontend from `frontend/` as its own Vercel project root.
 - Deploy `backend1/` as a separate Vercel project for the booking API.
+- For the Laravel frontend project, do **not** use the `Next.js` framework preset; use auto-detect/other and ensure the root directory is `frontend/`.
 - This project now uses `frontend/vercel.json` with `functions` instead of legacy `builds`, so Vercel project build settings are no longer ignored.
 - During Vercel builds, Composer will run the `vercel` script to install frontend Node dependencies and build Vite assets.
 - On Vercel, session, cache, queue, and log defaults automatically switch to serverless-safe values when explicit environment variables are not provided.
