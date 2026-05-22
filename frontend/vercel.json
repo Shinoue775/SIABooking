@@ -2,7 +2,7 @@
   "version": 2,
   "outputDirectory": "public/build",
   "functions": {
-    "public/index.php": {
+    "api/index.php": {
       "runtime": "vercel-php@0.7.4",
       "maxDuration": 30
     }
@@ -22,7 +22,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/public/index.php"
+      "dest": "/api/index.php"
     }
   ]
 }
