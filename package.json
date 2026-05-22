@@ -1,0 +1,13 @@
+{
+  "name": "siabooking-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix backend1 run dev",
+    "build": "npm --prefix backend1 run build",
+    "start": "npm --prefix backend1 run start",
+    "lint": "npm --prefix backend1 run lint"
+  },
+  "dependencies": {
+    "next": "^16.1.6"
+  }
+}
