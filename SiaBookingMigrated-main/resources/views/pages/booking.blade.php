@@ -87,6 +87,7 @@
                         </label>
                     </div>
                     <p id="roomTypeEmpty" class="text-sm text-gray-500 mt-3 hidden">No room type matched your search.</p>
+                    <p id="roomTypeDataNotice" class="text-sm text-amber-700 mt-3 hidden">Real room data is currently unavailable. Please try again later.</p>
                 </div>
 
                 <!-- 3. Guest Categories -->
@@ -178,7 +179,13 @@
                                 <p class="text-xs text-gray-500 mb-1">CHECK-IN DATE</p>
                                 <p class="text-lg font-semibold text-green-700" id="selectedCheckIn">Not selected</p>
                                 <p class="text-xs text-gray-400 mt-1">Check-in time: 3:00 PM</p>
-                         </div>
+                            </div>
+                            <div class="p-3 rounded-lg" id="checkOutDisplay" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%); border: 1px solid rgba(34, 197, 94, 0.2);">
+                                <p class="text-xs text-gray-500 mb-1">CHECK-OUT DATE</p>
+                                <p class="text-lg font-semibold text-green-700" id="selectedCheckOut">Not selected</p>
+                                <p class="text-xs text-gray-400 mt-1">Check-out time: 11:00 AM</p>
+                            </div>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
                                 <label class="block text-xs text-gray-500 mb-1">Check-in Time</label>
@@ -191,12 +198,6 @@
                         </div>
                         <input type="hidden" id="checkInDate">
                         <input type="hidden" id="checkOutDate">
-                            <div class="p-3 rounded-lg" id="checkOutDisplay" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%); border: 1px solid rgba(34, 197, 94, 0.2);">
-                                <p class="text-xs text-gray-500 mb-1">CHECK-OUT DATE</p>
-                                <p class="text-lg font-semibold text-green-700" id="selectedCheckOut">Not selected</p>
-                                <p class="text-xs text-gray-400 mt-1">Check-out time: 11:00 AM</p>
-                            </div>
-                        </div>
                         
                         <!-- Nights Summary -->
                         <div id="nightsSummary" class="mt-4 p-3 bg-green-50 rounded-lg text-center hidden">
@@ -230,9 +231,12 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <button type="button" id="amenitiesToggle" class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition">
+                            <button type="button" id="amenitiesToggle" class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition" aria-expanded="false" aria-controls="amenitiesPanel">
                                 <span class="font-semibold text-gray-800">Amenities</span>
-                                <span class="text-xs text-gray-500" id="amenitiesSummaryText">Select amenities</span>
+                                <span class="flex items-center gap-2">
+                                    <span class="text-xs text-gray-500" id="amenitiesSummaryText">Select amenities</span>
+                                    <svg id="amenitiesToggleIcon" class="w-4 h-4 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                </span>
                             </button>
                             <div id="amenitiesPanel" class="hidden mt-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="amenitiesList">
@@ -266,6 +270,16 @@
                                 <div>
                                     <span class="font-semibold text-gray-800">♿ PWD Discount</span>
                                     <p class="text-xs text-gray-500">20% off - Valid ID required</p>
+                                </div>
+                                <div id="discountPersonSelector" class="hidden p-4 bg-green-50 border border-green-200 rounded-xl">
+                                    <p class="text-sm font-semibold text-green-800" id="discountPersonLabel">Eligible discounted guests</p>
+                                    <p class="text-xs text-green-700 mb-3">Discount is computed per qualified person.</p>
+                                    <div class="flex items-center gap-4">
+                                        <button type="button" onclick="updateDiscountGuests(-1)" class="w-8 h-8 rounded-full bg-green-100 hover:bg-green-200 transition text-lg font-bold text-green-800">−</button>
+                                        <span id="discountGuestCount" class="text-xl font-bold w-8 text-center text-green-800">1</span>
+                                        <button type="button" onclick="updateDiscountGuests(1)" class="w-8 h-8 rounded-full bg-green-100 hover:bg-green-200 transition text-lg font-bold text-green-800">+</button>
+                                        <span class="text-xs text-green-700" id="discountGuestLimitText"></span>
+                                    </div>
                                 </div>
                             </label>
                             
@@ -350,6 +364,7 @@
                         <p class="text-white text-sm" id="summaryKids">Kids (3-12): 0</p>
                         <p class="text-white/60 text-sm" id="summaryInfants">Infants (0-2): 0 (free)</p>
                         <p class="text-white text-sm" id="summaryExtraBeds">Extra Beds: 0</p>
+                        <p class="text-white/80 text-xs mt-2" id="summaryAmenitiesList">Amenities: None</p>
                     </div>
 
                     <div class="pb-4 mb-4 border-b border-white/20">
@@ -535,6 +550,8 @@
     let roomType = 'standard';
     let pwdDiscount = false;
     let seniorDiscount = false;
+    let discountGuests = 1;
+    let hasRealRoomData = false;
 
     // Calendar Variables
     let currentDate = new Date();
@@ -562,6 +579,60 @@
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const BASELINE_MONTH = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     let availabilityRequestToken = 0;
+
+    function formatLocalDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function getTodayAtMidnight() {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+
+    function getEligibleGuestCount() {
+        return adults + kids;
+    }
+
+    function updateRoomDataNotice() {
+        const notice = document.getElementById('roomTypeDataNotice');
+        if (!notice) return;
+        notice.classList.toggle('hidden', hasRealRoomData);
+    }
+
+    function applyRoomAvailabilityState() {
+        const optionMap = [
+            { key: 'standard', optionId: 'roomOptionStandard' },
+            { key: 'deluxe', optionId: 'roomOptionDeluxe' },
+        ];
+        let firstAvailableType = null;
+        optionMap.forEach(({ key, optionId }) => {
+            const option = document.getElementById(optionId);
+            const input = option?.querySelector('input[name="roomType"]');
+            const available = Boolean(roomCatalog[key]?.id);
+            if (!option || !input) return;
+            option.style.display = available ? '' : 'none';
+            input.disabled = !available;
+            if (available && !firstAvailableType) firstAvailableType = key;
+        });
+
+        hasRealRoomData = Boolean(firstAvailableType);
+        if (!hasRealRoomData) {
+            unavailableDates = [];
+            updateRoomDataNotice();
+            return;
+        }
+
+        if (!roomCatalog[roomType]?.id) {
+            roomType = firstAvailableType;
+            const activeInput = document.querySelector(`input[name="roomType"][value="${roomType}"]`);
+            if (activeInput) activeInput.checked = true;
+        }
+        updateRoomDataNotice();
+        filterRoomTypes();
+    }
 
     function syncRoomSummary() {
         const activeRoom = roomCatalog[roomType];
@@ -592,11 +663,29 @@
     async function loadRoomsFromBackend() {
         try {
             const response = await fetch(`${BOOKING_API_BASE}/api/rooms`);
-            if (!response.ok) return;
+            if (!response.ok) {
+                hasRealRoomData = false;
+                applyRoomAvailabilityState();
+                return;
+            }
             const rooms = await response.json();
-            const sorted = (Array.isArray(rooms) ? rooms : []).slice(0, 2);
-            sorted.forEach((room, index) => {
-                const key = index === 0 ? 'standard' : 'deluxe';
+            const sorted = Array.isArray(rooms) ? rooms : [];
+            const roomAssignments = { standard: null, deluxe: null };
+            sorted.forEach((room) => {
+                const normalizedType = String(room.type || room.category || room.name || room.room_name || '').toLowerCase();
+                const preferredKey = normalizedType.includes('deluxe') ? 'deluxe' : 'standard';
+                if (!roomAssignments[preferredKey]) {
+                    roomAssignments[preferredKey] = room;
+                } else if (!roomAssignments[preferredKey === 'deluxe' ? 'standard' : 'deluxe']) {
+                    roomAssignments[preferredKey === 'deluxe' ? 'standard' : 'deluxe'] = room;
+                }
+            });
+
+            Object.entries(roomAssignments).forEach(([key, room]) => {
+                if (!room) {
+                    roomCatalog[key].id = null;
+                    return;
+                }
                 roomCatalog[key].id = room.id ?? null;
                 roomCatalog[key].name = room.name || room.room_name || room.room_number || roomCatalog[key].name;
                 roomCatalog[key].raw = room;
@@ -607,11 +696,13 @@
                 }
                 renderRoomCard(key);
             });
+            applyRoomAvailabilityState();
             syncRoomSummary();
             updateSummary();
             await refreshAvailabilityForMonth();
         } catch (_error) {
-            // keep UI defaults when backend cannot be reached
+            hasRealRoomData = false;
+            applyRoomAvailabilityState();
         }
     }
 
@@ -626,7 +717,7 @@
         const requestToken = ++availabilityRequestToken;
         const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
         const checks = Array.from({ length: daysInMonth }, (_, index) => {
-            const dateValue = new Date(currentYear, currentMonth, index + 1).toISOString().split('T')[0];
+            const dateValue = formatLocalDate(new Date(currentYear, currentMonth, index + 1));
             return fetch(`${BOOKING_API_BASE}/api/rooms/availability?date=${dateValue}`)
                 .then((response) => (response.ok ? response.json() : null))
                 .then((payload) => {
@@ -647,7 +738,9 @@
         const options = Array.from(document.querySelectorAll('.room-option'));
         let matches = 0;
         options.forEach((option) => {
-            const show = !query || option.textContent.toLowerCase().includes(query);
+            const input = option.querySelector('input[name="roomType"]');
+            const isEnabled = input ? !input.disabled : true;
+            const show = isEnabled && (!query || option.textContent.toLowerCase().includes(query));
             option.style.display = show ? '' : 'none';
             if (show) matches += 1;
         });
@@ -678,6 +771,7 @@
                 document.getElementById('infantsCount').innerText = infants;
             }
         }
+        updateDiscountGuestControls();
         updateSummary();
     }
 
@@ -723,8 +817,41 @@
         } else {
             clearBtn.classList.add('hidden');
         }
-        
+
+        updateDiscountGuestControls();
         updateSummary();
+    }
+
+    function updateDiscountGuests(delta) {
+        const maxEligible = Math.max(getEligibleGuestCount(), 1);
+        const nextValue = Math.min(Math.max(discountGuests + delta, 1), maxEligible);
+        discountGuests = nextValue;
+        const countEl = document.getElementById('discountGuestCount');
+        if (countEl) countEl.innerText = String(discountGuests);
+        updateSummary();
+    }
+
+    function updateDiscountGuestControls() {
+        const hasDiscount = pwdDiscount || seniorDiscount;
+        const selector = document.getElementById('discountPersonSelector');
+        const label = document.getElementById('discountPersonLabel');
+        const countEl = document.getElementById('discountGuestCount');
+        const limitText = document.getElementById('discountGuestLimitText');
+        const maxEligible = Math.max(getEligibleGuestCount(), 1);
+
+        if (!hasDiscount) {
+            if (selector) selector.classList.add('hidden');
+            discountGuests = 1;
+            if (countEl) countEl.innerText = '1';
+            if (limitText) limitText.innerText = '';
+            return;
+        }
+
+        discountGuests = Math.min(Math.max(discountGuests, 1), maxEligible);
+        if (selector) selector.classList.remove('hidden');
+        if (label) label.innerText = pwdDiscount ? 'Eligible PWD guests' : 'Eligible senior guests';
+        if (countEl) countEl.innerText = String(discountGuests);
+        if (limitText) limitText.innerText = `Max: ${maxEligible}`;
     }
 
     function clearDiscounts() {
@@ -739,10 +866,11 @@
         // Reset discount flags
         pwdDiscount = false;
         seniorDiscount = false;
+        discountGuests = 1;
         
         // Hide clear button
         clearBtn.classList.add('hidden');
-        
+        updateDiscountGuestControls();
         // Update summary
         updateSummary();
     }
@@ -778,13 +906,13 @@
 
             if (isCurrentMonth) {
                 displayDate = new Date(currentYear, currentMonth, dayNumber);
-                dateStr = displayDate.toISOString().split('T')[0];
+                dateStr = formatLocalDate(displayDate);
             }
 
-            const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
+            const today = getTodayAtMidnight();
+            const todayStr = formatLocalDate(today);
             const isToday = isCurrentMonth && dateStr === todayStr;
-            const isPast = isCurrentMonth && displayDate < new Date(todayStr);
+            const isPast = isCurrentMonth && displayDate < today;
             const isUnavailable = isCurrentMonth && unavailableDates.includes(dateStr);
             const isCheckIn = isCurrentMonth && selectedCheckIn === dateStr;
             const isCheckOut = isCurrentMonth && selectedCheckOut === dateStr;
@@ -842,11 +970,10 @@
     }
 
     function selectDate(date) {
-        const dateStr = date.toISOString().split('T')[0];
-        const today = new Date();
-        const todayStr = today.toISOString().split('T')[0];
+        const dateStr = formatLocalDate(date);
+        const today = getTodayAtMidnight();
 
-        if (date < new Date(todayStr)) {
+        if (date < today) {
             return;
         }
 
@@ -946,12 +1073,19 @@
             summaryText.innerText = 'Select amenities';
             return;
         }
-        summaryText.innerText = selectedAmenities.map((item) => item.name).join(', ');
+        const amenitiesTotal = getAmenitiesTotalPerNight();
+        summaryText.innerText = `${selectedAmenities.length} selected${amenitiesTotal > 0 ? ` (+₱${amenitiesTotal}/night)` : ''}`;
     }
 
     function bindAmenitiesHandlers() {
         document.getElementById('amenitiesToggle')?.addEventListener('click', () => {
-            document.getElementById('amenitiesPanel')?.classList.toggle('hidden');
+            const panel = document.getElementById('amenitiesPanel');
+            const toggle = document.getElementById('amenitiesToggle');
+            const icon = document.getElementById('amenitiesToggleIcon');
+            if (!panel || !toggle) return;
+            const isHidden = panel.classList.toggle('hidden');
+            toggle.setAttribute('aria-expanded', String(!isHidden));
+            if (icon) icon.classList.toggle('rotate-180', !isHidden);
         });
 
         document.querySelectorAll('.amenityOption').forEach((input) => {
@@ -997,7 +1131,10 @@
         const subtotal = roomTotal + extraBedsTotal + amenitiesTotal;
 
         const hasDiscount = pwdDiscount || seniorDiscount;
-        const discountAmount = hasDiscount ? Math.round(subtotal * DISCOUNT_RATE) : 0;
+        const eligibleGuests = Math.max(getEligibleGuestCount(), 1);
+        const effectiveDiscountGuests = hasDiscount ? Math.min(discountGuests, eligibleGuests) : 0;
+        const perPersonRoomShare = roomTotal / eligibleGuests;
+        const discountAmount = hasDiscount ? Math.round(perPersonRoomShare * DISCOUNT_RATE * effectiveDiscountGuests) : 0;
         const discountedSubtotal = subtotal - discountAmount;
         const total = discountedSubtotal + SERVICE_CHARGE;
 
@@ -1005,6 +1142,7 @@
         document.getElementById('summaryKids').innerHTML = `Kids (3-12): ${kids}`;
         document.getElementById('summaryInfants').innerHTML = `Infants (0-2): ${infants} (free)`;
         document.getElementById('summaryExtraBeds').innerHTML = `Extra Beds: ${extraBeds}`;
+        document.getElementById('summaryAmenitiesList').innerHTML = `Amenities: ${selectedAmenities.length ? selectedAmenities.map((item) => item.name).join(', ') : 'None'}`;
 
         document.getElementById('costRoomRate').innerHTML = `₱${roomTotal.toLocaleString()}`;
         document.getElementById('costExtraBeds').innerHTML = `₱${extraBedsTotal.toLocaleString()}`;
@@ -1017,7 +1155,7 @@
         if (hasDiscount) {
             discountRow.style.display = 'flex';
             const discountType = pwdDiscount ? 'PWD' : 'Senior';
-            document.querySelector('#discountRow span:first-child').innerHTML = `${discountType} Discount (20%)`;
+            document.querySelector('#discountRow span:first-child').innerHTML = `${discountType} Discount (20% × ${effectiveDiscountGuests} guest${effectiveDiscountGuests !== 1 ? 's' : ''})`;
             costDiscount.innerHTML = `-₱${discountAmount.toLocaleString()}`;
         } else {
             discountRow.style.display = 'none';
@@ -1092,6 +1230,10 @@
             alert('Please select check-in and check-out dates');
             return;
         }
+        if (!hasRealRoomData || !roomCatalog[roomType]?.id) {
+            alert('Room data is unavailable. Please refresh and try again.');
+            return;
+        }
 
         const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
 
@@ -1110,7 +1252,10 @@
         const amenitiesTotal = getAmenitiesTotalPerNight() * nights;
         const subtotal = roomTotal + extraBedsTotal + amenitiesTotal;
         const hasDiscount = pwdDiscount || seniorDiscount;
-        const discountAmount = hasDiscount ? Math.round(subtotal * DISCOUNT_RATE) : 0;
+        const eligibleGuests = Math.max(getEligibleGuestCount(), 1);
+        const effectiveDiscountGuests = hasDiscount ? Math.min(discountGuests, eligibleGuests) : 0;
+        const perPersonRoomShare = roomTotal / eligibleGuests;
+        const discountAmount = hasDiscount ? Math.round(perPersonRoomShare * DISCOUNT_RATE * effectiveDiscountGuests) : 0;
         const total = (subtotal - discountAmount) + SERVICE_CHARGE;
         const checkInTime = document.getElementById('checkInTime').value;
         const checkOutTime = document.getElementById('checkOutTime').value;
@@ -1135,6 +1280,7 @@
             amenities: selectedAmenities.map((item) => item.name),
             pwdDiscount: pwdDiscount,
             seniorDiscount: seniorDiscount,
+            discountGuests: effectiveDiscountGuests,
             paymentMethod: selectedMethod,
             subtotal: subtotal,
             discountAmount: discountAmount,

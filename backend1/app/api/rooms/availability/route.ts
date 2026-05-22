@@ -36,8 +36,8 @@ export async function GET(request: Request) {
             .from('bookings')
             .select('*')
             .neq('status', 'cancelled')
-            .gte('start_at', dayStart)
-            .lt('start_at', dayEnd);
+            .lt('start_at', dayEnd)
+            .gt('end_at', dayStart);
 
         if (bookErr) {
             return jsonWithCors({ error: bookErr.message }, { status: 500 }, request);
