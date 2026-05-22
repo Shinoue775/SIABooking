@@ -32,6 +32,18 @@ if (isset($_ENV['VERCEL']) || getenv('VERCEL')) {
         @mkdir($tmpStorage.'/'.$subPath, 0755, true);
     }
     $app->useStoragePath($tmpStorage);
+
+    // Generate an ephemeral encryption key when APP_KEY is not configured in
+    // Vercel environment variables.  Each serverless invocation is stateless,
+    // so a per-request key is acceptable here; the app can still render views
+    // and serve pages.  For full CSRF and session persistence, set APP_KEY in
+    // the Vercel project's Environment Variables dashboard.
+    if (empty(getenv('APP_KEY'))) {
+        $ephemeralKey = 'base64:'.base64_encode(random_bytes(32));
+        putenv('APP_KEY='.$ephemeralKey);
+        $_ENV['APP_KEY'] = $ephemeralKey;
+        $_SERVER['APP_KEY'] = $ephemeralKey;
+    }
 }
 
 return $app;
