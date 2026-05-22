@@ -1,0 +1,14 @@
+{
+  "name": "siabooking-root",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm --prefix backend1 ci && npm --prefix backend1 run build",
+    "dev": "npm --prefix backend1 run dev",
+    "start": "npm --prefix backend1 run start",
+    "lint": "npm --prefix backend1 run lint"
+  },
+  "dependencies": {
+    "next": "^16.1.6"
+  }
+}
