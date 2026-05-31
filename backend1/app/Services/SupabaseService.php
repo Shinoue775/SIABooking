@@ -9,8 +9,29 @@ use RuntimeException;
 
 class SupabaseService
 {
+    private const USER_ENCRYPTED_FIELDS = [
+        'email',
+        'full_name',
+        'phone',
+        'address',
+    ];
+
+    private const BOOKING_ENCRYPTED_FIELDS = [
+        'room_type',
+        'guests',
+        'has_child',
+        'child_age_group',
+        'has_pwd',
+        'has_senior',
+        'extra_beds',
+        'price_at_booking',
+        'total_amount',
+        'payment_method',
+    ];
+
     public function __construct(
         private readonly HttpFactory $http,
+        private readonly AesGcmCipher $cipher,
     ) {
     }
 
@@ -31,13 +52,15 @@ class SupabaseService
 
     public function findUserProfile(string $userId): ?array
     {
-        return $this->fetchSingle('users', [
+        return $this->decryptFields($this->fetchSingle('users', [
             'id' => ['eq', $userId],
-        ]);
+        ]), self::USER_ENCRYPTED_FIELDS);
     }
 
     public function upsertUser(array $payload): void
     {
+        $payload = $this->encryptFields($payload, self::USER_ENCRYPTED_FIELDS);
+
         $response = $this->rest('POST', 'users', [
             'on_conflict' => 'id',
         ], [$payload], [
@@ -71,18 +94,22 @@ class SupabaseService
         $response = $this->rest('GET', 'bookings', $query);
         $this->ensureSuccess($response, 'Unable to load bookings.');
 
-        return $response->json() ?? [];
+        return array_map(
+            fn (array $booking) => $this->decryptFields($booking, self::BOOKING_ENCRYPTED_FIELDS),
+            $response->json() ?? [],
+        );
     }
 
     public function createBooking(array $payload): array
     {
+        $payload = $this->encryptFields($payload, self::BOOKING_ENCRYPTED_FIELDS);
         $response = $this->rest('POST', 'bookings', [], [$payload], [
             'Prefer' => 'return=representation',
         ]);
 
         $this->ensureSuccess($response, 'Unable to create booking.');
 
-        return Arr::first($response->json() ?? []) ?? [];
+        return $this->decryptFields(Arr::first($response->json() ?? []) ?? [], self::BOOKING_ENCRYPTED_FIELDS);
     }
 
     public function createBookingAmenities(array $payload): void
@@ -96,13 +123,14 @@ class SupabaseService
 
     public function findBooking(string $id): ?array
     {
-        return $this->fetchSingle('bookings', [
+        return $this->decryptFields($this->fetchSingle('bookings', [
             'id' => ['eq', $id],
-        ]);
+        ]), self::BOOKING_ENCRYPTED_FIELDS);
     }
 
     public function updateBooking(string $id, array $payload): array
     {
+        $payload = $this->encryptFields($payload, self::BOOKING_ENCRYPTED_FIELDS);
         $response = $this->rest('PATCH', 'bookings', $this->buildFilters([
             'id' => ['eq', $id],
         ]), $payload, [
@@ -111,7 +139,7 @@ class SupabaseService
 
         $this->ensureSuccess($response, 'Unable to update booking.');
 
-        return Arr::first($response->json() ?? []) ?? [];
+        return $this->decryptFields(Arr::first($response->json() ?? []) ?? [], self::BOOKING_ENCRYPTED_FIELDS);
     }
 
     public function bookingSchema(): array
@@ -143,6 +171,40 @@ class SupabaseService
         $this->ensureSuccess($response, "Unable to fetch {$table} record.");
 
         return $response->json();
+    }
+
+    private function encryptFields(array $payload, array $fields): array
+    {
+        foreach ($fields as $field) {
+            if (! array_key_exists($field, $payload) || $payload[$field] === null) {
+                continue;
+            }
+
+            $payload[$field] = $this->cipher->encrypt($payload[$field]);
+        }
+
+        return $payload;
+    }
+
+    private function decryptFields(?array $payload, array $fields): ?array
+    {
+        if ($payload === null) {
+            return null;
+        }
+
+        foreach ($fields as $field) {
+            if (! array_key_exists($field, $payload) || ! is_string($payload[$field])) {
+                continue;
+            }
+
+            try {
+                $payload[$field] = $this->cipher->decrypt($payload[$field]);
+            } catch (\InvalidArgumentException) {
+                continue;
+            }
+        }
+
+        return $payload;
     }
 
     private function rest(

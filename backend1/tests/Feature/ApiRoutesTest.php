@@ -8,6 +8,8 @@ use Tests\TestCase;
 
 class ApiRoutesTest extends TestCase
 {
+    private const AUTHORIZATION_HEADER = 'Bearer'.' test-token';
+
     public function test_rooms_endpoint_returns_sorted_rooms(): void
     {
         $this->instance(SupabaseService::class, new FakeSupabaseService([
@@ -45,7 +47,7 @@ class ApiRoutesTest extends TestCase
             'amenities' => ['1', '2'],
             'totalPrice' => '1250.50',
         ], [
-            'Authorization' => '******',
+            'Authorization' => self::AUTHORIZATION_HEADER,
         ]);
 
         $response->assertCreated()
@@ -73,7 +75,7 @@ class ApiRoutesTest extends TestCase
             'end_at' => '2026-06-02T12:00:00+00:00',
             'total_price' => 1000,
         ], [
-            'Authorization' => '******',
+            'Authorization' => self::AUTHORIZATION_HEADER,
         ]);
 
         $response->assertStatus(422)
@@ -91,7 +93,7 @@ class ApiRoutesTest extends TestCase
         ]));
 
         $response = $this->getJson('/api/auth/user', [
-            'Authorization' => '******',
+            'Authorization' => self::AUTHORIZATION_HEADER,
         ]);
 
         $response->assertOk()
@@ -110,7 +112,7 @@ class ApiRoutesTest extends TestCase
         ]));
 
         $response = $this->getJson('/api/schema', [
-            'Authorization' => '******',
+            'Authorization' => self::AUTHORIZATION_HEADER,
         ]);
 
         $response->assertForbidden();

@@ -8,7 +8,6 @@ use App\Http\Requests\UpdateBookingStatusRequest;
 use App\Services\SupabaseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Throwable;
 
 class BookingController extends Controller
@@ -54,7 +53,7 @@ class BookingController extends Controller
                 ], 409);
             }
 
-            $bookingPayload = Arr::whereNotNull([
+            $bookingPayload = array_filter([
                 'user_id' => $user['id'],
                 'room_id' => $payload['room_id'],
                 'room_type' => $payload['room_type'] ?? null,
@@ -72,7 +71,7 @@ class BookingController extends Controller
                 'price_at_booking' => $payload['total_price'],
                 'total_amount' => $payload['total_price'],
                 'payment_method' => $payload['payment_method'] ?? null,
-            ]);
+            ], static fn (mixed $value): bool => $value !== null);
 
             $booking = $supabase->createBooking($bookingPayload);
 
