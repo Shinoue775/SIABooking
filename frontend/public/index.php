@@ -19,20 +19,19 @@ $app = require_once __DIR__.'/../bootstrap/app.php';
 
 echo "<pre>";
 
-echo "view: ";
-var_dump($app->bound('view'));
+try {
+    echo "config app exists: ";
+    var_dump(file_exists(__DIR__.'/../config/app.php'));
 
-echo "router: ";
-var_dump($app->bound('router'));
+    echo "config view exists: ";
+    var_dump(file_exists(__DIR__.'/../config/view.php'));
 
-echo "events: ";
-var_dump($app->bound('events'));
+    echo "base path: ";
+    var_dump($app->basePath());
 
-echo "config: ";
-var_dump($app->bound('config'));
-
-echo "files: ";
-var_dump($app->bound('files'));
+} catch (\Throwable $e) {
+    echo $e->getMessage();
+}
 
 exit;
 
