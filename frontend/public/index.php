@@ -17,7 +17,23 @@ require __DIR__.'/../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
+echo "<pre>";
+
+echo "view: ";
 var_dump($app->bound('view'));
+
+echo "router: ";
+var_dump($app->bound('router'));
+
+echo "events: ";
+var_dump($app->bound('events'));
+
+echo "config: ";
+var_dump($app->bound('config'));
+
+echo "files: ";
+var_dump($app->bound('files'));
+
 exit;
 
 $app->handleRequest(Request::capture());
