@@ -19,28 +19,20 @@ $app = require_once __DIR__.'/../bootstrap/app.php';
 
 echo "<pre>";
 
-echo "__DIR__:\n";
-var_dump(__DIR__);
+echo "Laravel version: ";
+echo $app->version();
+echo "\n\n";
 
-echo "\n";
+echo "Has config repository: ";
+var_dump($app->bound('config'));
 
-echo "basePath:\n";
-var_dump($app->basePath());
+echo "Loaded config app name: ";
 
-echo "\n";
-
-echo "config path:\n";
-var_dump($app->configPath());
-
-echo "\n";
-
-echo "resource path:\n";
-var_dump(resource_path());
-
-echo "\n";
-
-echo "storage path:\n";
-var_dump(storage_path());
+try {
+    var_dump(config('app.name'));
+} catch (\Throwable $e) {
+    echo $e->getMessage();
+}
 
 exit;
 
