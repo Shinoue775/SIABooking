@@ -4,7 +4,7 @@
   "outputDirectory": "public/build",
   "functions": {
     "api/index.php": {
-      "runtime": "vercel-php@0.9.0",
+      "runtime": "vercel-php@latest",
       "maxDuration": 30
     }
   },
