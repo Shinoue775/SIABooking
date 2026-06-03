@@ -74,6 +74,11 @@
         "vercel-build": [
             "@php artisan package:discover --ansi",
             "npm run build"
+        ],
+        "post-autoload-dump": [
+            "@php -r \"file_put_contents('package-discovery-test.txt', 'executed');\"",
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
         ]
     },
     "extra": {
