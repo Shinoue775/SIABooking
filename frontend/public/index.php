@@ -19,20 +19,13 @@ $app = require_once __DIR__.'/../bootstrap/app.php';
 
 echo "<pre>";
 
-echo "Laravel version: ";
-echo $app->version();
-echo "\n\n";
+echo "packages.php: ";
+var_dump(file_exists(__DIR__.'/../bootstrap/cache/packages.php'));
 
-echo "Has config repository: ";
-var_dump($app->bound('config'));
+echo "\n";
 
-echo "Loaded config app name: ";
-
-try {
-    var_dump(config('app.name'));
-} catch (\Throwable $e) {
-    echo $e->getMessage();
-}
+echo "services.php: ";
+var_dump(file_exists(__DIR__.'/../bootstrap/cache/services.php'));
 
 exit;
 
