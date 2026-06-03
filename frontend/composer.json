@@ -70,12 +70,7 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
-        ],
-            "vercel-build": [
-        "composer install",
-        "@php artisan package:discover --ansi",
-        "npm run build"
-    ]
+        ]
     },
     "extra": {
         "laravel": {
