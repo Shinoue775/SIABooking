@@ -17,8 +17,6 @@ require __DIR__.'/../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
-$app = require_once __DIR__.'/../bootstrap/app.php';
-
 echo "<pre>";
 
 echo "cache dir exists: ";
@@ -26,6 +24,8 @@ var_dump(is_dir(__DIR__.'/../bootstrap/cache'));
 
 echo "cache dir contents:\n";
 print_r(scandir(__DIR__.'/../bootstrap/cache'));
+
+var_dump(file_exists(base_path('package-discovery-test.txt')));
 
 exit;
 
