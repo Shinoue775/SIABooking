@@ -17,4 +17,8 @@ require __DIR__.'/../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
+var_dump($app->bound('config'));
+var_dump($app->bound('view'));
+var_dump($app->bound('files'));
+
 $app->handleRequest(Request::capture());
