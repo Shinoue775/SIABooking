@@ -70,6 +70,10 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ],
+        "vercel-build": [
+            "@php artisan package:discover --ansi",
+            "npm run build"
         ]
     },
     "extra": {
