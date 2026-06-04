@@ -1,4 +1,4 @@
 <?php
 
-echo "API INDEX IS RUNNING";
+echo "VERCEL TEST 123";
 exit;
