@@ -17,16 +17,4 @@ require __DIR__.'/../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
-echo "<pre>";
-
-echo "packages.php: ";
-var_dump(file_exists(__DIR__.'/../bootstrap/cache/packages.php'));
-
-echo "\n";
-
-echo "services.php: ";
-var_dump(file_exists(__DIR__.'/../bootstrap/cache/services.php'));
-
-exit;
-
 $app->handleRequest(Request::capture());
