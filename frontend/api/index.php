@@ -1,3 +1,4 @@
 <?php
 
-require __DIR__.'/../vendor/autoload.php';
+echo "API INDEX IS RUNNING";
+exit;
