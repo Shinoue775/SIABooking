@@ -1,4 +1,3 @@
 <?php
 
-echo "VERCEL TEST 123";
-exit;
+require __DIR__ . '/../public/index.php';
