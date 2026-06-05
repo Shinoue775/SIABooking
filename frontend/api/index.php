@@ -6,30 +6,32 @@ $app = require __DIR__.'/../bootstrap/app.php';
 
 echo "<pre>";
 
+echo "config repository bound before bootstrap: ";
+var_dump($app->bound('config'));
+
+echo "\n";
+
+$kernel = $app->make(
+    Illuminate\Contracts\Http\Kernel::class
+);
+
+echo "kernel resolved\n";
+
+echo "config repository bound after kernel: ";
+var_dump($app->bound('config'));
+
+echo "\n";
+
 try {
 
-    $providers = require __DIR__.'/../bootstrap/cache/services.php';
+    $config = $app->make('config');
 
-    foreach ($providers['providers'] as $provider) {
+    echo "CONFIG RESOLVED\n";
 
-        echo "REGISTERING: $provider\n";
+} catch (Throwable $e) {
 
-        $instance = new $provider($app);
-
-        $instance->register();
-
-        echo "OK\n";
-    }
-
-} catch (\Throwable $e) {
-
-    echo "\nFAILED PROVIDER:\n";
-    echo $provider . "\n\n";
-
-    echo get_class($e) . "\n";
-    echo $e->getMessage() . "\n\n";
-
-    echo $e->getFile() . ':' . $e->getLine();
+    echo "CONFIG FAILED\n";
+    echo $e->getMessage();
 
 }
 
