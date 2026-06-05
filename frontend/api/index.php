@@ -1,39 +1,25 @@
 <?php
 
-require __DIR__.'/../vendor/autoload.php';
-
 $app = require __DIR__.'/../bootstrap/app.php';
 
-$kernel = $app->make(
-    Illuminate\Contracts\Http\Kernel::class
-);
+echo "<pre>";
 
-$request = Illuminate\Http\Request::capture();
+echo "bootstrap cache writable: ";
+var_dump(is_writable(__DIR__.'/../bootstrap/cache'));
 
-try {
-    $kernel->bootstrap();
+echo "\n";
 
-    echo "<pre>";
+echo "bootstrap cache exists: ";
+var_dump(is_dir(__DIR__.'/../bootstrap/cache'));
 
-    echo "config bound: ";
-    var_dump($app->bound('config'));
+echo "\n";
 
-    echo "\n";
+echo "services.php exists: ";
+var_dump(file_exists(__DIR__.'/../bootstrap/cache/services.php'));
 
-    echo "view bound: ";
-    var_dump($app->bound('view'));
+echo "\n";
 
-    echo "\n";
+echo "packages.php exists: ";
+var_dump(file_exists(__DIR__.'/../bootstrap/cache/packages.php'));
 
-    echo "app env: ";
-    var_dump(config('app.env'));
-
-} catch (\Throwable $e) {
-    echo get_class($e);
-    echo "\n\n";
-    echo $e->getMessage();
-    echo "\n\n";
-    echo $e->getFile();
-    echo ':';
-    echo $e->getLine();
-}
+exit;
