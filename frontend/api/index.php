@@ -1,14 +1,15 @@
 <?php
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+use Illuminate\Http\Request;
 
 require __DIR__.'/../vendor/autoload.php';
 
-try {
-    $app = require __DIR__.'/../bootstrap/app.php';
+$app = require __DIR__.'/../bootstrap/app.php';
 
-    echo "BOOTSTRAP OK";
+try {
+    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+
+    echo "KERNEL OK";
 } catch (Throwable $e) {
     echo "<pre>";
     echo get_class($e) . "\n\n";
