@@ -1,25 +1,23 @@
 <?php
 
-$app = require __DIR__.'/../bootstrap/app.php';
+require __DIR__.'/../vendor/autoload.php';
 
 echo "<pre>";
 
-echo "bootstrap cache writable: ";
-var_dump(is_writable(__DIR__.'/../bootstrap/cache'));
+echo "packages.php: ";
+var_dump(file_exists(__DIR__.'/../bootstrap/cache/packages.php'));
 
-echo "\n";
-
-echo "bootstrap cache exists: ";
-var_dump(is_dir(__DIR__.'/../bootstrap/cache'));
-
-echo "\n";
-
-echo "services.php exists: ";
+echo "services.php: ";
 var_dump(file_exists(__DIR__.'/../bootstrap/cache/services.php'));
 
 echo "\n";
 
-echo "packages.php exists: ";
-var_dump(file_exists(__DIR__.'/../bootstrap/cache/packages.php'));
+if (file_exists(__DIR__.'/../bootstrap/cache/services.php')) {
+    echo substr(
+        file_get_contents(__DIR__.'/../bootstrap/cache/services.php'),
+        0,
+        500
+    );
+}
 
 exit;
