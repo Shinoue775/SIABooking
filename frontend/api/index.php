@@ -4,25 +4,36 @@ require __DIR__.'/../vendor/autoload.php';
 
 $app = require __DIR__.'/../bootstrap/app.php';
 
-echo "<pre>";
+$kernel = $app->make(
+    Illuminate\Contracts\Http\Kernel::class
+);
 
-echo "base path:\n";
-echo $app->basePath()."\n\n";
+$request = Illuminate\Http\Request::capture();
 
-echo "config path:\n";
-echo $app->configPath()."\n\n";
+try {
+    $kernel->bootstrap();
 
-echo "providers path:\n";
-echo $app->bootstrapPath()."/providers.php\n\n";
+    echo "<pre>";
 
-echo "app.php exists:\n";
-var_dump(file_exists($app->configPath('app.php')));
+    echo "config bound: ";
+    var_dump($app->bound('config'));
 
-echo "\nview.php exists:\n";
-var_dump(file_exists($app->configPath('view.php')));
+    echo "\n";
 
-echo "\nservices.php exists:\n";
-var_dump(file_exists($app->bootstrapPath('cache/services.php')));
+    echo "view bound: ";
+    var_dump($app->bound('view'));
 
-echo "\npackages.php exists:\n";
-var_dump(file_exists($app->bootstrapPath('cache/packages.php')));
+    echo "\n";
+
+    echo "app env: ";
+    var_dump(config('app.env'));
+
+} catch (\Throwable $e) {
+    echo get_class($e);
+    echo "\n\n";
+    echo $e->getMessage();
+    echo "\n\n";
+    echo $e->getFile();
+    echo ':';
+    echo $e->getLine();
+}
