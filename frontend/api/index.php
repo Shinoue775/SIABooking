@@ -6,33 +6,21 @@ $app = require __DIR__.'/../bootstrap/app.php';
 
 echo "<pre>";
 
-echo "config repository bound before bootstrap: ";
-var_dump($app->bound('config'));
+$configFile = __DIR__.'/../config/app.php';
+
+echo "config file exists: ";
+var_dump(file_exists($configFile));
 
 echo "\n";
 
-$kernel = $app->make(
-    Illuminate\Contracts\Http\Kernel::class
-);
+$config = require $configFile;
 
-echo "kernel resolved\n";
-
-echo "config repository bound after kernel: ";
-var_dump($app->bound('config'));
+echo "config loaded: ";
+var_dump(is_array($config));
 
 echo "\n";
 
-try {
-
-    $config = $app->make('config');
-
-    echo "CONFIG RESOLVED\n";
-
-} catch (Throwable $e) {
-
-    echo "CONFIG FAILED\n";
-    echo $e->getMessage();
-
-}
+echo "config keys:\n";
+print_r(array_keys($config));
 
 exit;
