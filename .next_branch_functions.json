@@ -1,0 +1,1529 @@
+{
+  "next_branch_count": 43,
+  "next_branches": [
+    "origin/branch",
+    "origin/copilot/add-email-field-users-table",
+    "origin/copilot/add-guest-type-selection-feature",
+    "origin/copilot/add-room-type-recording",
+    "origin/copilot/backend-overview-list",
+    "origin/copilot/connect-backend-siabookingmigrated",
+    "origin/copilot/duplicate-repo",
+    "origin/copilot/ensure-backend1-frontend-integration",
+    "origin/copilot/fix-api-404-errors",
+    "origin/copilot/fix-archived-bookings-column-error",
+    "origin/copilot/fix-availability-calendar-display",
+    "origin/copilot/fix-booking-api-payload",
+    "origin/copilot/fix-booking-page-availability",
+    "origin/copilot/fix-bookings-end-at-error",
+    "origin/copilot/fix-bookings-end-at-error-again",
+    "origin/copilot/fix-bookings-null-value-error",
+    "origin/copilot/fix-calendar-availability-display",
+    "origin/copilot/fix-cors-errors-and-404",
+    "origin/copilot/fix-cors-errors-webapp",
+    "origin/copilot/fix-deployment-error",
+    "origin/copilot/fix-deployment-error-again",
+    "origin/copilot/fix-deployment-error-nextjs",
+    "origin/copilot/fix-end-at-column-error",
+    "origin/copilot/fix-null-price-at-booking",
+    "origin/copilot/fix-null-value-start-at",
+    "origin/copilot/fix-vercel-deployment-error",
+    "origin/copilot/migrate-entire-project-laravel-mysql",
+    "origin/copilot/research-backend-explanation",
+    "origin/copilot/restrict-discount-options",
+    "origin/copilot/restrict-past-months-and-add-booking-features",
+    "origin/copilot/summarize-latest-merges",
+    "origin/copilot/update-booking-payment-mode",
+    "origin/copilot/update-booking-storage-logic",
+    "origin/copilot/update-bookings-handling",
+    "origin/copilot/update-footer-layout-home-page",
+    "origin/copilot/update-home-page-real-time-numbers",
+    "origin/copilot/update-payment-method-to-payment-mode",
+    "origin/copilot/update-pricing-logic-and-fix-checkin-errors",
+    "origin/copilot/update-room-id-depending-on-type",
+    "origin/copilot/update-sign-in-and-booking-features",
+    "origin/copilot/update-vercel-settings",
+    "origin/dev",
+    "origin/migrated"
+  ],
+  "group_count": 12,
+  "groups": [
+    {
+      "branches": [
+        "origin/branch",
+        "origin/copilot/fix-archived-bookings-column-error",
+        "origin/copilot/fix-bookings-end-at-error",
+        "origin/copilot/fix-bookings-end-at-error-again",
+        "origin/copilot/fix-bookings-null-value-error",
+        "origin/copilot/fix-end-at-column-error",
+        "origin/copilot/fix-null-price-at-booking",
+        "origin/copilot/fix-null-value-start-at",
+        "origin/copilot/update-booking-storage-logic",
+        "origin/copilot/update-bookings-handling",
+        "origin/migrated"
+      ],
+      "files_with_functions": 27,
+      "functions_total": 80,
+      "functions_by_file": {
+        "backend1/app/api/auth/user/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/bookings/[id]/route.ts": [
+          "authenticate",
+          "OPTIONS",
+          "PATCH",
+          "DELETE"
+        ],
+        "backend1/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "OPTIONS",
+          "POST",
+          "GET"
+        ],
+        "backend1/app/api/rooms/availability/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/rooms/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/schema/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "backend1/app/page.tsx": [
+          "Home"
+        ],
+        "backend1/lib/cors.ts": [
+          "corsHeaders",
+          "handleCors",
+          "jsonWithCors"
+        ],
+        "backend1/lib/schema.ts": [
+          "resolveBookingColumns",
+          "col",
+          "clearColumnCache"
+        ],
+        "backend1/lib/server.ts": [
+          "createServerSideClient"
+        ],
+        "frontend/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "POST",
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/month/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/schema/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/stats/route.ts": [
+          "GET"
+        ],
+        "frontend/app/auth/callback/page.tsx": [
+          "CallbackPage",
+          "handleCallback"
+        ],
+        "frontend/app/booking/page.tsx": [
+          "BookingPage",
+          "syncSession",
+          "fetchRooms",
+          "fetchAvailability",
+          "handleLogout",
+          "handleConfirmBooking",
+          "handleBookingClick",
+          "closeMenu",
+          "handleDateSelect",
+          "handlePreviousMonth",
+          "handleNextMonth",
+          "getDateButtonStyle"
+        ],
+        "frontend/app/calendar/page.tsx": [
+          "CalendarPage",
+          "getDayName",
+          "syncSession",
+          "handleLogout",
+          "handlePrevMonth",
+          "handleNextMonth",
+          "fetchAvailability"
+        ],
+        "frontend/app/home/page.tsx": [
+          "HomePage",
+          "syncSession",
+          "fetchStats",
+          "handleLogout",
+          "handleBookingClick",
+          "closeMenu",
+          "handleRoomAChange",
+          "handleRoomBChange",
+          "handleModalImageChange",
+          "openRoomModal",
+          "getAmenityIcon"
+        ],
+        "frontend/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "frontend/app/login/page.tsx": [
+          "LoginPage",
+          "handleGoogleLogin"
+        ],
+        "frontend/app/page.tsx": [
+          "LandingPage",
+          "syncSession",
+          "handleLogout",
+          "closeMenu",
+          "handleBookingClick"
+        ],
+        "frontend/app/register/page.tsx": [
+          "RegisterPage",
+          "handleChange",
+          "handleRegister"
+        ],
+        "frontend/lib/schema.ts": [
+          "resolveBookingColumns",
+          "col",
+          "clearColumnCache"
+        ],
+        "frontend/lib/server.ts": [
+          "createServerSideClient"
+        ]
+      }
+    },
+    {
+      "branches": [
+        "origin/copilot/connect-backend-siabookingmigrated",
+        "origin/copilot/fix-deployment-error",
+        "origin/copilot/fix-deployment-error-again",
+        "origin/copilot/fix-deployment-error-nextjs",
+        "origin/copilot/fix-vercel-deployment-error",
+        "origin/copilot/summarize-latest-merges",
+        "origin/copilot/update-sign-in-and-booking-features",
+        "origin/copilot/update-vercel-settings"
+      ],
+      "files_with_functions": 12,
+      "functions_total": 27,
+      "functions_by_file": {
+        "backend1/app/api/auth/register/route.ts": [
+          "OPTIONS",
+          "POST"
+        ],
+        "backend1/app/api/auth/user/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/bookings/[id]/route.ts": [
+          "authenticate",
+          "OPTIONS",
+          "PATCH",
+          "DELETE"
+        ],
+        "backend1/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "OPTIONS",
+          "POST",
+          "GET"
+        ],
+        "backend1/app/api/rooms/availability/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/rooms/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/schema/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "backend1/app/page.tsx": [
+          "Home"
+        ],
+        "backend1/lib/cors.ts": [
+          "corsHeaders",
+          "handleCors",
+          "jsonWithCors"
+        ],
+        "backend1/lib/schema.ts": [
+          "resolveBookingColumns",
+          "col",
+          "clearColumnCache"
+        ],
+        "backend1/lib/server.ts": [
+          "createServerSideClient"
+        ]
+      }
+    },
+    {
+      "branches": [
+        "origin/copilot/backend-overview-list",
+        "origin/copilot/duplicate-repo",
+        "origin/copilot/migrate-entire-project-laravel-mysql",
+        "origin/copilot/research-backend-explanation",
+        "origin/copilot/restrict-discount-options",
+        "origin/copilot/update-room-id-depending-on-type"
+      ],
+      "files_with_functions": 28,
+      "functions_total": 82,
+      "functions_by_file": {
+        "backend1/app/api/auth/register/route.ts": [
+          "OPTIONS",
+          "POST"
+        ],
+        "backend1/app/api/auth/user/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/bookings/[id]/route.ts": [
+          "authenticate",
+          "OPTIONS",
+          "PATCH",
+          "DELETE"
+        ],
+        "backend1/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "OPTIONS",
+          "POST",
+          "GET"
+        ],
+        "backend1/app/api/rooms/availability/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/rooms/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/schema/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "backend1/app/page.tsx": [
+          "Home"
+        ],
+        "backend1/lib/cors.ts": [
+          "corsHeaders",
+          "handleCors",
+          "jsonWithCors"
+        ],
+        "backend1/lib/schema.ts": [
+          "resolveBookingColumns",
+          "col",
+          "clearColumnCache"
+        ],
+        "backend1/lib/server.ts": [
+          "createServerSideClient"
+        ],
+        "frontend/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "POST",
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/month/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/schema/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/stats/route.ts": [
+          "GET"
+        ],
+        "frontend/app/auth/callback/page.tsx": [
+          "CallbackPage",
+          "handleCallback"
+        ],
+        "frontend/app/booking/page.tsx": [
+          "BookingPage",
+          "syncSession",
+          "fetchAvailability",
+          "handleLogout",
+          "handleConfirmBooking",
+          "handleBookingClick",
+          "closeMenu",
+          "handleDateSelect",
+          "handlePreviousMonth",
+          "handleNextMonth"
+        ],
+        "frontend/app/calendar/page.tsx": [
+          "CalendarPage",
+          "getDayName",
+          "syncSession",
+          "handleLogout",
+          "isPrevMonthDisabled",
+          "handlePrevMonth",
+          "handleNextMonth",
+          "fetchMonthAvailability",
+          "fetchAvailability"
+        ],
+        "frontend/app/home/page.tsx": [
+          "HomePage",
+          "syncSession",
+          "fetchStats",
+          "handleLogout",
+          "handleBookingClick",
+          "closeMenu",
+          "handleRoomAChange",
+          "handleRoomBChange",
+          "handleModalImageChange",
+          "openRoomModal",
+          "getAmenityIcon"
+        ],
+        "frontend/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "frontend/app/login/page.tsx": [
+          "LoginPage",
+          "handleGoogleLogin"
+        ],
+        "frontend/app/page.tsx": [
+          "LandingPage",
+          "syncSession",
+          "handleLogout",
+          "closeMenu",
+          "handleBookingClick"
+        ],
+        "frontend/app/register/page.tsx": [
+          "RegisterPage",
+          "handleChange",
+          "handleRegister"
+        ],
+        "frontend/lib/schema.ts": [
+          "resolveBookingColumns",
+          "col",
+          "clearColumnCache"
+        ],
+        "frontend/lib/server.ts": [
+          "createServerSideClient"
+        ]
+      }
+    },
+    {
+      "branches": [
+        "origin/copilot/add-room-type-recording",
+        "origin/copilot/fix-availability-calendar-display",
+        "origin/copilot/fix-calendar-availability-display",
+        "origin/copilot/update-pricing-logic-and-fix-checkin-errors"
+      ],
+      "files_with_functions": 28,
+      "functions_total": 83,
+      "functions_by_file": {
+        "backend1/app/api/auth/register/route.ts": [
+          "OPTIONS",
+          "POST"
+        ],
+        "backend1/app/api/auth/user/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/bookings/[id]/route.ts": [
+          "authenticate",
+          "OPTIONS",
+          "PATCH",
+          "DELETE"
+        ],
+        "backend1/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "OPTIONS",
+          "POST",
+          "GET"
+        ],
+        "backend1/app/api/rooms/availability/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/rooms/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/schema/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "backend1/app/page.tsx": [
+          "Home"
+        ],
+        "backend1/lib/cors.ts": [
+          "corsHeaders",
+          "handleCors",
+          "jsonWithCors"
+        ],
+        "backend1/lib/schema.ts": [
+          "resolveBookingColumns",
+          "col",
+          "clearColumnCache"
+        ],
+        "backend1/lib/server.ts": [
+          "createServerSideClient"
+        ],
+        "frontend/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "POST",
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/month/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/schema/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/stats/route.ts": [
+          "GET"
+        ],
+        "frontend/app/auth/callback/page.tsx": [
+          "CallbackPage",
+          "handleCallback"
+        ],
+        "frontend/app/booking/page.tsx": [
+          "BookingPage",
+          "syncSession",
+          "fetchRooms",
+          "fetchAvailability",
+          "handleLogout",
+          "handleConfirmBooking",
+          "handleBookingClick",
+          "closeMenu",
+          "handleDateSelect",
+          "handlePreviousMonth",
+          "handleNextMonth"
+        ],
+        "frontend/app/calendar/page.tsx": [
+          "CalendarPage",
+          "getDayName",
+          "syncSession",
+          "handleLogout",
+          "isPrevMonthDisabled",
+          "handlePrevMonth",
+          "handleNextMonth",
+          "fetchMonthAvailability",
+          "fetchAvailability"
+        ],
+        "frontend/app/home/page.tsx": [
+          "HomePage",
+          "syncSession",
+          "fetchStats",
+          "handleLogout",
+          "handleBookingClick",
+          "closeMenu",
+          "handleRoomAChange",
+          "handleRoomBChange",
+          "handleModalImageChange",
+          "openRoomModal",
+          "getAmenityIcon"
+        ],
+        "frontend/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "frontend/app/login/page.tsx": [
+          "LoginPage",
+          "handleGoogleLogin"
+        ],
+        "frontend/app/page.tsx": [
+          "LandingPage",
+          "syncSession",
+          "handleLogout",
+          "closeMenu",
+          "handleBookingClick"
+        ],
+        "frontend/app/register/page.tsx": [
+          "RegisterPage",
+          "handleChange",
+          "handleRegister"
+        ],
+        "frontend/lib/schema.ts": [
+          "resolveBookingColumns",
+          "col",
+          "clearColumnCache"
+        ],
+        "frontend/lib/server.ts": [
+          "createServerSideClient"
+        ]
+      }
+    },
+    {
+      "branches": [
+        "origin/copilot/fix-cors-errors-and-404",
+        "origin/copilot/fix-cors-errors-webapp",
+        "origin/dev"
+      ],
+      "files_with_functions": 16,
+      "functions_total": 44,
+      "functions_by_file": {
+        "backend1/app/api/auth/user/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "OPTIONS",
+          "POST",
+          "GET"
+        ],
+        "backend1/app/api/rooms/availability/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/rooms/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "backend1/app/page.tsx": [
+          "Home"
+        ],
+        "backend1/lib/cors.ts": [
+          "corsHeaders",
+          "handleCors",
+          "jsonWithCors"
+        ],
+        "backend1/lib/server.ts": [
+          "createServerSideClient"
+        ],
+        "frontend/app/auth/callback/page.tsx": [
+          "CallbackPage",
+          "handleCallback"
+        ],
+        "frontend/app/booking/page.tsx": [
+          "BookingPage",
+          "syncSession",
+          "fetchRooms",
+          "handleConfirmBooking",
+          "handleLogout",
+          "handlePreviousMonth",
+          "handleNextMonth"
+        ],
+        "frontend/app/calendar/page.tsx": [
+          "CalendarPage",
+          "getDayName",
+          "syncSession",
+          "handleLogout",
+          "fetchAvailability"
+        ],
+        "frontend/app/home/page.tsx": [
+          "HomePage",
+          "syncSession",
+          "handleLogout",
+          "handleRoomAChange",
+          "handleRoomBChange"
+        ],
+        "frontend/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "frontend/app/login/page.tsx": [
+          "LoginPage",
+          "handleGoogleLogin"
+        ],
+        "frontend/app/page.tsx": [
+          "LandingPage",
+          "syncSession",
+          "handleLogout"
+        ],
+        "frontend/app/register/page.tsx": [
+          "RegisterPage",
+          "handleChange",
+          "handleRegister"
+        ]
+      }
+    },
+    {
+      "branches": [
+        "origin/copilot/restrict-past-months-and-add-booking-features",
+        "origin/copilot/update-booking-payment-mode",
+        "origin/copilot/update-payment-method-to-payment-mode"
+      ],
+      "files_with_functions": 28,
+      "functions_total": 82,
+      "functions_by_file": {
+        "backend1/app/api/auth/register/route.ts": [
+          "OPTIONS",
+          "POST"
+        ],
+        "backend1/app/api/auth/user/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/bookings/[id]/route.ts": [
+          "authenticate",
+          "OPTIONS",
+          "PATCH",
+          "DELETE"
+        ],
+        "backend1/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "OPTIONS",
+          "POST",
+          "GET"
+        ],
+        "backend1/app/api/rooms/availability/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/rooms/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/schema/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "backend1/app/page.tsx": [
+          "Home"
+        ],
+        "backend1/lib/cors.ts": [
+          "corsHeaders",
+          "handleCors",
+          "jsonWithCors"
+        ],
+        "backend1/lib/schema.ts": [
+          "resolveBookingColumns",
+          "col",
+          "clearColumnCache"
+        ],
+        "backend1/lib/server.ts": [
+          "createServerSideClient"
+        ],
+        "frontend/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "POST",
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/month/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/schema/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/stats/route.ts": [
+          "GET"
+        ],
+        "frontend/app/auth/callback/page.tsx": [
+          "CallbackPage",
+          "handleCallback"
+        ],
+        "frontend/app/booking/page.tsx": [
+          "BookingPage",
+          "syncSession",
+          "fetchRooms",
+          "fetchAvailability",
+          "handleLogout",
+          "handleConfirmBooking",
+          "handleBookingClick",
+          "closeMenu",
+          "handleDateSelect",
+          "handlePreviousMonth",
+          "handleNextMonth"
+        ],
+        "frontend/app/calendar/page.tsx": [
+          "CalendarPage",
+          "getDayName",
+          "syncSession",
+          "handleLogout",
+          "isPrevMonthDisabled",
+          "handlePrevMonth",
+          "handleNextMonth",
+          "fetchAvailability"
+        ],
+        "frontend/app/home/page.tsx": [
+          "HomePage",
+          "syncSession",
+          "fetchStats",
+          "handleLogout",
+          "handleBookingClick",
+          "closeMenu",
+          "handleRoomAChange",
+          "handleRoomBChange",
+          "handleModalImageChange",
+          "openRoomModal",
+          "getAmenityIcon"
+        ],
+        "frontend/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "frontend/app/login/page.tsx": [
+          "LoginPage",
+          "handleGoogleLogin"
+        ],
+        "frontend/app/page.tsx": [
+          "LandingPage",
+          "syncSession",
+          "handleLogout",
+          "closeMenu",
+          "handleBookingClick"
+        ],
+        "frontend/app/register/page.tsx": [
+          "RegisterPage",
+          "handleChange",
+          "handleRegister"
+        ],
+        "frontend/lib/schema.ts": [
+          "resolveBookingColumns",
+          "col",
+          "clearColumnCache"
+        ],
+        "frontend/lib/server.ts": [
+          "createServerSideClient"
+        ]
+      }
+    },
+    {
+      "branches": [
+        "origin/copilot/add-guest-type-selection-feature",
+        "origin/copilot/update-home-page-real-time-numbers"
+      ],
+      "files_with_functions": 22,
+      "functions_total": 69,
+      "functions_by_file": {
+        "backend1/app/api/auth/user/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/bookings/[id]/route.ts": [
+          "authenticate",
+          "OPTIONS",
+          "PATCH",
+          "DELETE"
+        ],
+        "backend1/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "OPTIONS",
+          "POST",
+          "GET"
+        ],
+        "backend1/app/api/rooms/availability/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/rooms/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "backend1/app/page.tsx": [
+          "Home"
+        ],
+        "backend1/lib/cors.ts": [
+          "corsHeaders",
+          "handleCors",
+          "jsonWithCors"
+        ],
+        "backend1/lib/server.ts": [
+          "createServerSideClient"
+        ],
+        "frontend/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "POST",
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/stats/route.ts": [
+          "GET"
+        ],
+        "frontend/app/auth/callback/page.tsx": [
+          "CallbackPage",
+          "handleCallback"
+        ],
+        "frontend/app/booking/page.tsx": [
+          "BookingPage",
+          "syncSession",
+          "fetchRooms",
+          "handleLogout",
+          "handleConfirmBooking",
+          "handleBookingClick",
+          "closeMenu",
+          "handleDateSelect",
+          "handlePreviousMonth",
+          "handleNextMonth",
+          "getDateButtonStyle"
+        ],
+        "frontend/app/calendar/page.tsx": [
+          "CalendarPage",
+          "getDayName",
+          "syncSession",
+          "handleLogout",
+          "handlePrevMonth",
+          "handleNextMonth",
+          "fetchAvailability"
+        ],
+        "frontend/app/home/page.tsx": [
+          "HomePage",
+          "syncSession",
+          "fetchStats",
+          "handleLogout",
+          "handleBookingClick",
+          "closeMenu",
+          "handleRoomAChange",
+          "handleRoomBChange",
+          "handleModalImageChange",
+          "openRoomModal",
+          "getAmenityIcon"
+        ],
+        "frontend/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "frontend/app/login/page.tsx": [
+          "LoginPage",
+          "handleGoogleLogin"
+        ],
+        "frontend/app/page.tsx": [
+          "LandingPage",
+          "syncSession",
+          "handleLogout",
+          "closeMenu",
+          "handleBookingClick"
+        ],
+        "frontend/app/register/page.tsx": [
+          "RegisterPage",
+          "handleChange",
+          "handleRegister"
+        ],
+        "frontend/lib/server.ts": [
+          "createServerSideClient"
+        ]
+      }
+    },
+    {
+      "branches": [
+        "origin/copilot/fix-booking-api-payload",
+        "origin/copilot/fix-booking-page-availability"
+      ],
+      "files_with_functions": 23,
+      "functions_total": 71,
+      "functions_by_file": {
+        "backend1/app/api/auth/user/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/bookings/[id]/route.ts": [
+          "authenticate",
+          "OPTIONS",
+          "PATCH",
+          "DELETE"
+        ],
+        "backend1/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "OPTIONS",
+          "POST",
+          "GET"
+        ],
+        "backend1/app/api/rooms/availability/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/rooms/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "backend1/app/page.tsx": [
+          "Home"
+        ],
+        "backend1/lib/cors.ts": [
+          "corsHeaders",
+          "handleCors",
+          "jsonWithCors"
+        ],
+        "backend1/lib/server.ts": [
+          "createServerSideClient"
+        ],
+        "frontend/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "POST",
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/month/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/stats/route.ts": [
+          "GET"
+        ],
+        "frontend/app/auth/callback/page.tsx": [
+          "CallbackPage",
+          "handleCallback"
+        ],
+        "frontend/app/booking/page.tsx": [
+          "BookingPage",
+          "syncSession",
+          "fetchRooms",
+          "fetchAvailability",
+          "handleLogout",
+          "handleConfirmBooking",
+          "handleBookingClick",
+          "closeMenu",
+          "handleDateSelect",
+          "handlePreviousMonth",
+          "handleNextMonth",
+          "getDateButtonStyle"
+        ],
+        "frontend/app/calendar/page.tsx": [
+          "CalendarPage",
+          "getDayName",
+          "syncSession",
+          "handleLogout",
+          "handlePrevMonth",
+          "handleNextMonth",
+          "fetchAvailability"
+        ],
+        "frontend/app/home/page.tsx": [
+          "HomePage",
+          "syncSession",
+          "fetchStats",
+          "handleLogout",
+          "handleBookingClick",
+          "closeMenu",
+          "handleRoomAChange",
+          "handleRoomBChange",
+          "handleModalImageChange",
+          "openRoomModal",
+          "getAmenityIcon"
+        ],
+        "frontend/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "frontend/app/login/page.tsx": [
+          "LoginPage",
+          "handleGoogleLogin"
+        ],
+        "frontend/app/page.tsx": [
+          "LandingPage",
+          "syncSession",
+          "handleLogout",
+          "closeMenu",
+          "handleBookingClick"
+        ],
+        "frontend/app/register/page.tsx": [
+          "RegisterPage",
+          "handleChange",
+          "handleRegister"
+        ],
+        "frontend/lib/server.ts": [
+          "createServerSideClient"
+        ]
+      }
+    },
+    {
+      "branches": [
+        "origin/copilot/add-email-field-users-table"
+      ],
+      "files_with_functions": 28,
+      "functions_total": 82,
+      "functions_by_file": {
+        "backend1/app/api/auth/register/route.ts": [
+          "OPTIONS",
+          "POST"
+        ],
+        "backend1/app/api/auth/user/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/bookings/[id]/route.ts": [
+          "authenticate",
+          "OPTIONS",
+          "PATCH",
+          "DELETE"
+        ],
+        "backend1/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "OPTIONS",
+          "POST",
+          "GET"
+        ],
+        "backend1/app/api/rooms/availability/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/rooms/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/schema/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "backend1/app/page.tsx": [
+          "Home"
+        ],
+        "backend1/lib/cors.ts": [
+          "corsHeaders",
+          "handleCors",
+          "jsonWithCors"
+        ],
+        "backend1/lib/schema.ts": [
+          "resolveBookingColumns",
+          "col",
+          "clearColumnCache"
+        ],
+        "backend1/lib/server.ts": [
+          "createServerSideClient"
+        ],
+        "frontend/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "POST",
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/month/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/schema/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/stats/route.ts": [
+          "GET"
+        ],
+        "frontend/app/auth/callback/page.tsx": [
+          "CallbackPage",
+          "handleCallback"
+        ],
+        "frontend/app/booking/page.tsx": [
+          "BookingPage",
+          "syncSession",
+          "fetchRooms",
+          "fetchAvailability",
+          "handleLogout",
+          "handleConfirmBooking",
+          "handleBookingClick",
+          "closeMenu",
+          "handleDateSelect",
+          "handlePreviousMonth",
+          "handleNextMonth",
+          "getDateButtonStyle"
+        ],
+        "frontend/app/calendar/page.tsx": [
+          "CalendarPage",
+          "getDayName",
+          "syncSession",
+          "handleLogout",
+          "handlePrevMonth",
+          "handleNextMonth",
+          "fetchAvailability"
+        ],
+        "frontend/app/home/page.tsx": [
+          "HomePage",
+          "syncSession",
+          "fetchStats",
+          "handleLogout",
+          "handleBookingClick",
+          "closeMenu",
+          "handleRoomAChange",
+          "handleRoomBChange",
+          "handleModalImageChange",
+          "openRoomModal",
+          "getAmenityIcon"
+        ],
+        "frontend/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "frontend/app/login/page.tsx": [
+          "LoginPage",
+          "handleGoogleLogin"
+        ],
+        "frontend/app/page.tsx": [
+          "LandingPage",
+          "syncSession",
+          "handleLogout",
+          "closeMenu",
+          "handleBookingClick"
+        ],
+        "frontend/app/register/page.tsx": [
+          "RegisterPage",
+          "handleChange",
+          "handleRegister"
+        ],
+        "frontend/lib/schema.ts": [
+          "resolveBookingColumns",
+          "col",
+          "clearColumnCache"
+        ],
+        "frontend/lib/server.ts": [
+          "createServerSideClient"
+        ]
+      }
+    },
+    {
+      "branches": [
+        "origin/copilot/ensure-backend1-frontend-integration"
+      ],
+      "files_with_functions": 21,
+      "functions_total": 67,
+      "functions_by_file": {
+        "backend1/app/api/auth/user/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/bookings/[id]/route.ts": [
+          "authenticate",
+          "OPTIONS",
+          "PATCH",
+          "DELETE"
+        ],
+        "backend1/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "OPTIONS",
+          "POST",
+          "GET"
+        ],
+        "backend1/app/api/rooms/availability/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/rooms/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "backend1/app/page.tsx": [
+          "Home"
+        ],
+        "backend1/lib/cors.ts": [
+          "corsHeaders",
+          "handleCors",
+          "jsonWithCors"
+        ],
+        "backend1/lib/server.ts": [
+          "createServerSideClient"
+        ],
+        "frontend/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "POST",
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/route.ts": [
+          "GET"
+        ],
+        "frontend/app/auth/callback/page.tsx": [
+          "CallbackPage",
+          "handleCallback"
+        ],
+        "frontend/app/booking/page.tsx": [
+          "BookingPage",
+          "syncSession",
+          "fetchRooms",
+          "handleLogout",
+          "handleConfirmBooking",
+          "handleBookingClick",
+          "closeMenu",
+          "handleDateSelect",
+          "handlePreviousMonth",
+          "handleNextMonth",
+          "getDateButtonStyle"
+        ],
+        "frontend/app/calendar/page.tsx": [
+          "CalendarPage",
+          "getDayName",
+          "syncSession",
+          "handleLogout",
+          "handlePrevMonth",
+          "handleNextMonth",
+          "fetchAvailability"
+        ],
+        "frontend/app/home/page.tsx": [
+          "HomePage",
+          "syncSession",
+          "handleLogout",
+          "handleBookingClick",
+          "closeMenu",
+          "handleRoomAChange",
+          "handleRoomBChange",
+          "handleModalImageChange",
+          "openRoomModal",
+          "getAmenityIcon"
+        ],
+        "frontend/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "frontend/app/login/page.tsx": [
+          "LoginPage",
+          "handleGoogleLogin"
+        ],
+        "frontend/app/page.tsx": [
+          "LandingPage",
+          "syncSession",
+          "handleLogout",
+          "closeMenu",
+          "handleBookingClick"
+        ],
+        "frontend/app/register/page.tsx": [
+          "RegisterPage",
+          "handleChange",
+          "handleRegister"
+        ],
+        "frontend/lib/server.ts": [
+          "createServerSideClient"
+        ]
+      }
+    },
+    {
+      "branches": [
+        "origin/copilot/fix-api-404-errors"
+      ],
+      "files_with_functions": 20,
+      "functions_total": 50,
+      "functions_by_file": {
+        "backend1/app/api/auth/user/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "OPTIONS",
+          "POST",
+          "GET"
+        ],
+        "backend1/app/api/rooms/availability/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/rooms/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "backend1/app/page.tsx": [
+          "Home"
+        ],
+        "backend1/lib/cors.ts": [
+          "corsHeaders",
+          "handleCors",
+          "jsonWithCors"
+        ],
+        "backend1/lib/server.ts": [
+          "createServerSideClient"
+        ],
+        "frontend/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "POST",
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/route.ts": [
+          "GET"
+        ],
+        "frontend/app/auth/callback/page.tsx": [
+          "CallbackPage",
+          "handleCallback"
+        ],
+        "frontend/app/booking/page.tsx": [
+          "BookingPage",
+          "syncSession",
+          "fetchRooms",
+          "handleConfirmBooking",
+          "handleLogout",
+          "handlePreviousMonth",
+          "handleNextMonth"
+        ],
+        "frontend/app/calendar/page.tsx": [
+          "CalendarPage",
+          "getDayName",
+          "syncSession",
+          "handleLogout",
+          "fetchAvailability"
+        ],
+        "frontend/app/home/page.tsx": [
+          "HomePage",
+          "syncSession",
+          "handleLogout",
+          "handleRoomAChange",
+          "handleRoomBChange"
+        ],
+        "frontend/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "frontend/app/login/page.tsx": [
+          "LoginPage",
+          "handleGoogleLogin"
+        ],
+        "frontend/app/page.tsx": [
+          "LandingPage",
+          "syncSession",
+          "handleLogout"
+        ],
+        "frontend/app/register/page.tsx": [
+          "RegisterPage",
+          "handleChange",
+          "handleRegister"
+        ],
+        "frontend/lib/server.ts": [
+          "createServerSideClient"
+        ]
+      }
+    },
+    {
+      "branches": [
+        "origin/copilot/update-footer-layout-home-page"
+      ],
+      "files_with_functions": 20,
+      "functions_total": 56,
+      "functions_by_file": {
+        "backend1/app/api/auth/user/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "OPTIONS",
+          "POST",
+          "GET"
+        ],
+        "backend1/app/api/rooms/availability/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/api/rooms/route.ts": [
+          "OPTIONS",
+          "GET"
+        ],
+        "backend1/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "backend1/app/page.tsx": [
+          "Home"
+        ],
+        "backend1/lib/cors.ts": [
+          "corsHeaders",
+          "handleCors",
+          "jsonWithCors"
+        ],
+        "backend1/lib/server.ts": [
+          "createServerSideClient"
+        ],
+        "frontend/app/api/bookings/route.ts": [
+          "normalizeBookingPayload",
+          "POST",
+          "GET"
+        ],
+        "frontend/app/api/rooms/availability/route.ts": [
+          "GET"
+        ],
+        "frontend/app/api/rooms/route.ts": [
+          "GET"
+        ],
+        "frontend/app/auth/callback/page.tsx": [
+          "CallbackPage",
+          "handleCallback"
+        ],
+        "frontend/app/booking/page.tsx": [
+          "BookingPage",
+          "syncSession",
+          "fetchRooms",
+          "handleConfirmBooking",
+          "handleLogout",
+          "closeMenu",
+          "handlePreviousMonth",
+          "handleNextMonth"
+        ],
+        "frontend/app/calendar/page.tsx": [
+          "CalendarPage",
+          "getDayName",
+          "syncSession",
+          "handleLogout",
+          "fetchAvailability"
+        ],
+        "frontend/app/home/page.tsx": [
+          "HomePage",
+          "syncSession",
+          "handleLogout",
+          "handleBookingClick",
+          "closeMenu",
+          "handleRoomAChange",
+          "handleRoomBChange",
+          "openRoomModal"
+        ],
+        "frontend/app/layout.tsx": [
+          "RootLayout"
+        ],
+        "frontend/app/login/page.tsx": [
+          "LoginPage",
+          "handleGoogleLogin"
+        ],
+        "frontend/app/page.tsx": [
+          "LandingPage",
+          "syncSession",
+          "handleLogout",
+          "closeMenu",
+          "handleBookingClick"
+        ],
+        "frontend/app/register/page.tsx": [
+          "RegisterPage",
+          "handleChange",
+          "handleRegister"
+        ],
+        "frontend/lib/server.ts": [
+          "createServerSideClient"
+        ]
+      }
+    }
+  ]
+}
