@@ -1,659 +1,4 @@
-@extends('layouts.app')
 
-@section('content')
-<div class="min-h-screen" style="background: linear-gradient(135deg, #FFFAF5 0%, #FFF5F5 50%, #FFFAF5 100%);">
-    <div class="px-4 sm:px-6 lg:px-12 py-8 sm:py-12 md:py-16">
-        <!-- Header -->
-        <div class="text-center mb-8 sm:mb-12 md:mb-16">
-            <div class="inline-block mb-4">
-                <span style="font-size: 13px; font-weight: 700; color: #FFB5C5; font-family: 'Inter', sans-serif; letter-spacing: 3px; background: rgba(255, 181, 197, 0.1); padding: 8px 24px; border-radius: 20px; border: 1px solid rgba(255, 181, 197, 0.3);">
-                    RESERVATION
-                </span>
-            </div>
-            <h1 class="font-cormorant relative" style="font-size: clamp(36px, 8vw, 56px); font-weight: 400; color: #3D5A4C; text-shadow: 0px 2px 4px rgba(61, 90, 76, 0.05);">
-                Secure Your Stay
-                <div style="width: 80px; height: 2px; background: linear-gradient(90deg, #FFB5C5, #C9A962); margin: 16px auto 0; border-radius: 2px;"></div>
-            </h1>
-            <p class="text-gray-500 mt-4 text-sm">Fill out the form below to complete your reservation</p>
-        </div>
-
-        <div class="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto relative">
-            <!-- LEFT COLUMN - Booking Form (Scrolls normally) -->
-            <div class="flex-1 space-y-6">
-                <!-- 1. Personal Information -->
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                    <div class="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                            <span class="text-green-700 font-bold text-sm">1</span>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-800">Personal Information</h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                            <input type="text" id="fullName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition" placeholder="MarkJoheun Kim">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                            <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition" placeholder="Mkim@example.com">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number *</label>
-                            <input type="tel" id="contact" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition" placeholder="+63 912 345 6789">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                            <input type="text" id="address" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition" placeholder="Your address">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. Room Selection -->
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                    <div class="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                            <span class="text-green-700 font-bold text-sm">2</span>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-800">Select Your Room</h3>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="roomTypeSearch" class="block text-sm font-medium text-gray-700 mb-1">Search Room Type</label>
-                        <input type="search" id="roomTypeSearch" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition" placeholder="Search room by name or type">
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="roomTypeContainer">
-                        <label class="relative cursor-pointer room-option" id="roomOptionStandard">
-                            <input type="radio" name="roomType" value="standard" class="peer sr-only" checked>
-                            <div class="border-2 rounded-xl p-4 peer-checked:border-green-600 peer-checked:bg-green-50 transition-all">
-                                <h4 class="font-bold text-gray-800" id="roomLabelStandard">Standard Room B</h4>
-                                <p class="text-2xl font-bold text-green-700 mt-2" id="roomPriceStandard">₱2,500</p>
-                                <p class="text-xs text-gray-500 mt-1">per night</p>
-                                <div class="flex flex-wrap gap-1 mt-3" id="roomTagsStandard">
-                                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">Standard</span>
-                                </div>
-                            </div>
-                        </label>
-                        <label class="relative cursor-pointer room-option" id="roomOptionDeluxe">
-                            <input type="radio" name="roomType" value="deluxe" class="peer sr-only">
-                            <div class="border-2 rounded-xl p-4 peer-checked:border-green-600 peer-checked:bg-green-50 transition-all">
-                                <h4 class="font-bold text-gray-800" id="roomLabelDeluxe">Deluxe Room A</h4>
-                                <p class="text-2xl font-bold text-green-700 mt-2" id="roomPriceDeluxe">₱4,500</p>
-                                <p class="text-xs text-gray-500 mt-1">per night</p>
-                                <div class="flex flex-wrap gap-1 mt-3" id="roomTagsDeluxe">
-                                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">Deluxe</span>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-                    <p id="roomTypeEmpty" class="text-sm text-gray-500 mt-3 hidden">No room type matched your search.</p>
-                    <p id="roomTypeDataNotice" class="text-sm text-amber-700 mt-3 hidden" data-loading-text="Loading real room data..." data-error-text="Real room data is currently unavailable. Please try again later.">Loading real room data...</p>
-                </div>
-
-                <!-- 3. Guest Categories -->
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                    <div class="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                            <span class="text-green-700 font-bold text-sm">3</span>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-800">Guest Details</h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        <div class="text-center p-4 bg-gray-50 rounded-xl">
-                            <div class="text-3xl mb-2">👨</div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Adults (13+)</label>
-                            <div class="flex items-center justify-center gap-4">
-                                <button type="button" onclick="updateGuestCount('adults', -1)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition text-lg font-bold">−</button>
-                                <span id="adultsCount" class="text-xl font-bold w-8 text-center">2</span>
-                                <button type="button" onclick="updateGuestCount('adults', 1)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition text-lg font-bold">+</button>
-                            </div>
-                        </div>
-                        <div class="text-center p-4 bg-gray-50 rounded-xl">
-                            <div class="text-3xl mb-2">🧒</div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Kids (3-12)</label>
-                            <div class="flex items-center justify-center gap-4">
-                                <button type="button" onclick="updateGuestCount('kids', -1)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition text-lg font-bold">−</button>
-                                <span id="kidsCount" class="text-xl font-bold w-8 text-center">0</span>
-                                <button type="button" onclick="updateGuestCount('kids', 1)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition text-lg font-bold">+</button>
-                            </div>
-                        </div>
-                        <div class="text-center p-4 bg-gray-50 rounded-xl">
-                            <div class="text-3xl mb-2">👶</div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Infants (0-2)</label>
-                            <div class="flex items-center justify-center gap-4">
-                                <button type="button" onclick="updateGuestCount('infants', -1)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition text-lg font-bold">−</button>
-                                <span id="infantsCount" class="text-xl font-bold w-8 text-center">0</span>
-                                <button type="button" onclick="updateGuestCount('infants', 1)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition text-lg font-bold">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-xs text-gray-500 text-center mt-4">Maximum 4 persons per room (Adults + Kids)</p>
-                </div>
-
-                <!-- 4. Date Selection with Calendar -->
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                    <div class="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                            <span class="text-green-700 font-bold text-sm">4</span>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-800">Select Dates</h3>
-                    </div>
-                    
-                    <!-- Calendar Navigation -->
-                    <div class="flex items-center justify-between mb-6">
-                        <button type="button" id="prevMonth" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center">
-                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                        </button>
-                        <div class="text-center">
-                            <span id="currentMonthYear" class="text-xl font-semibold text-gray-800">May 2026</span>
-                        </div>
-                        <button type="button" id="nextMonth" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center">
-                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                        </button>
-                    </div>
-                    
-                    <!-- Calendar Grid -->
-                    <div class="border rounded-xl overflow-hidden">
-                        <!-- Weekday Headers -->
-                        <div class="grid grid-cols-7 bg-gray-50 border-b">
-                            <div class="py-3 text-center text-sm font-semibold text-gray-600">Sun</div>
-                            <div class="py-3 text-center text-sm font-semibold text-gray-600">Mon</div>
-                            <div class="py-3 text-center text-sm font-semibold text-gray-600">Tue</div>
-                            <div class="py-3 text-center text-sm font-semibold text-gray-600">Wed</div>
-                            <div class="py-3 text-center text-sm font-semibold text-gray-600">Thu</div>
-                            <div class="py-3 text-center text-sm font-semibold text-gray-600">Fri</div>
-                            <div class="py-3 text-center text-sm font-semibold text-gray-600">Sat</div>
-                        </div>
-                        
-                        <!-- Calendar Days -->
-                        <div id="calendarDays" class="grid grid-cols-7 bg-white">
-                            <!-- Days will be populated by JavaScript -->
-                        </div>
-                    </div>
-                    
-                    <!-- Selected Dates Display -->
-                     <div class="mt-6 pt-4 border-t border-gray-100">
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="p-3 rounded-lg" id="checkInDisplay" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%); border: 1px solid rgba(34, 197, 94, 0.2);">
-                                <p class="text-xs text-gray-500 mb-1">CHECK-IN DATE</p>
-                                <p class="text-lg font-semibold text-green-700" id="selectedCheckIn">Not selected</p>
-                                <p class="text-xs text-gray-400 mt-1">Check-in time: 3:00 PM</p>
-                            </div>
-                            <div class="p-3 rounded-lg" id="checkOutDisplay" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%); border: 1px solid rgba(34, 197, 94, 0.2);">
-                                <p class="text-xs text-gray-500 mb-1">CHECK-OUT DATE</p>
-                                <p class="text-lg font-semibold text-green-700" id="selectedCheckOut">Not selected</p>
-                                <p class="text-xs text-gray-400 mt-1">Check-out time: 11:00 AM</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label class="block text-xs text-gray-500 mb-1">Check-in Time</label>
-                                <input type="time" id="checkInTime" value="15:00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition">
-                            </div>
-                            <div>
-                                <label class="block text-xs text-gray-500 mb-1">Check-out Time</label>
-                                <input type="time" id="checkOutTime" value="11:00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition">
-                            </div>
-                        </div>
-                        <input type="hidden" id="checkInDate">
-                        <input type="hidden" id="checkOutDate">
-                        
-                        <!-- Nights Summary -->
-                        <div id="nightsSummary" class="mt-4 p-3 bg-green-50 rounded-lg text-center hidden">
-                            <p class="text-sm text-green-700">
-                                <span id="totalNights">0</span> night(s) selected
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <!-- Available Dates Preview -->
-                    <div class="mt-4 pt-3">
-                        <p class="text-xs text-gray-500 mb-2 flex items-center gap-1">
-                            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                            Available dates
-                            <span class="w-2 h-2 bg-gray-300 rounded-full ml-2"></span>
-                            Unavailable
-                            <span class="w-2 h-2 bg-green-700 rounded-full ml-2"></span>
-                            Selected
-                        </p>
-                    </div>
-                </div>
-
-                <!-- 5. Extras & Discounts -->
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                    <div class="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                            <span class="text-green-700 font-bold text-sm">5</span>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-800">Extras & Discounts</h3>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <button type="button" id="amenitiesToggle" class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition" aria-expanded="false" aria-controls="amenitiesPanel">
-                                <span class="font-semibold text-gray-800">Amenities</span>
-                                <span class="flex items-center gap-2">
-                                    <span class="text-xs text-gray-500" id="amenitiesSummaryText">Select amenities</span>
-                                    <svg id="amenitiesToggleIcon" class="w-4 h-4 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                                </span>
-                            </button>
-                            <div id="amenitiesPanel" class="hidden mt-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="amenitiesList">
-                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Air Conditioning" data-price="300"> Air Conditioning (+₱300/night)</label>
-                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Smart TV" data-price="0"> Smart TV</label>
-                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="WiFi" data-price="0"> WiFi</label>
-                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Breakfast" data-price="150"> Breakfast (+₱150/night)</label>
-                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Bathtub" data-price="0"> Bathtub</label>
-                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Mini Sala" data-price="0"> Mini Sala</label>
-                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Cabinet" data-price="0"> Cabinet</label>
-                                    <label class="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" class="amenityOption" value="Shower" data-price="0"> Shower</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                            <div>
-                                <span class="font-semibold text-gray-800">🛏️ Extra Bed</span>
-                                <p class="text-xs text-gray-500">₱700 per night</p>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <button type="button" onclick="updateExtraBeds(-1)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition text-lg font-bold">−</button>
-                                <span id="extraBedsCount" class="text-xl font-bold w-8 text-center">0</span>
-                                <button type="button" onclick="updateExtraBeds(1)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 transition text-lg font-bold">+</button>
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <!-- PWD Discount -->
-                            <label class="flex flex-col gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-green-50 transition-all duration-300" id="pwdLabel">
-                                <div class="flex items-start gap-3">
-                                    <input type="checkbox" id="pwdDiscount" onchange="updateDiscounts('pwd')" class="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 mt-1">
-                                    <div>
-                                        <span class="font-semibold text-gray-800">♿ PWD Discount</span>
-                                        <p class="text-xs text-gray-500">20% off - Valid ID required</p>
-                                    </div>
-                                </div>
-                                <div id="pwdDiscountControls" class="hidden p-3 bg-green-50 border border-green-200 rounded-xl">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-xs font-semibold text-green-800">PWD Guests</span>
-                                        <span id="pwdDiscountCount" class="text-sm font-semibold text-green-800">0</span>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <button type="button" onclick="updateDiscountGuestCount('pwd', -1)" class="w-9 h-9 rounded-full bg-green-100 hover:bg-green-200 transition text-lg font-bold text-green-800">−</button>
-                                        <button type="button" onclick="updateDiscountGuestCount('pwd', 1)" class="w-9 h-9 rounded-full bg-green-100 hover:bg-green-200 transition text-lg font-bold text-green-800">+</button>
-                                        <span class="text-xs text-green-700" id="pwdDiscountLimitText">Max: 0</span>
-                                    </div>
-                                </div>
-                            </label>
-                            
-                            <!-- Senior Citizen Discount -->
-                            <label class="flex flex-col gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-green-50 transition-all duration-300" id="seniorLabel">
-                                <div class="flex items-start gap-3">
-                                    <input type="checkbox" id="seniorDiscount" onchange="updateDiscounts('senior')" class="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 mt-1">
-                                    <div>
-                                        <span class="font-semibold text-gray-800">👴 Senior Citizen Discount</span>
-                                        <p class="text-xs text-gray-500">20% off - Valid ID required</p>
-                                    </div>
-                                </div>
-                                <div id="seniorDiscountControls" class="hidden p-3 bg-green-50 border border-green-200 rounded-xl">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-xs font-semibold text-green-800">Senior Guests</span>
-                                        <span id="seniorDiscountCount" class="text-sm font-semibold text-green-800">0</span>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <button type="button" onclick="updateDiscountGuestCount('senior', -1)" class="w-9 h-9 rounded-full bg-green-100 hover:bg-green-200 transition text-lg font-bold text-green-800">−</button>
-                                        <button type="button" onclick="updateDiscountGuestCount('senior', 1)" class="w-9 h-9 rounded-full bg-green-100 hover:bg-green-200 transition text-lg font-bold text-green-800">+</button>
-                                        <span class="text-xs text-green-700" id="seniorDiscountLimitText">Max: 0</span>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-                        
-                        <!-- Clear Selection Button (shows only when a discount is selected) -->
-                        <div id="clearDiscountBtn" class="hidden">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 6. Payment & Receipt Upload -->
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                    <div class="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                            <span class="text-green-700 font-bold text-sm">6</span>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-800">Payment Method</h3>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <label class="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer has-[:checked]:border-green-600 has-[:checked]:bg-green-50 transition">
-                                <input type="radio" name="paymentMethod" value="gcash" class="w-4 h-4 text-green-600" checked>
-                                <span class="text-xl">📱</span>
-                                <div>
-                                    <span class="font-semibold text-gray-800">GCash</span>
-                                    <p class="text-xs text-gray-500">Online payment</p>
-                                </div>
-                            </label>
-                        </div>
-                        
-                    </div>
-                </div>
-
-                        <!-- Booking Confirmation Modal -->
-                        <div id="bookingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-auto">
-                            <div class="bg-white rounded-xl p-6 w-full max-w-xl mx-4 shadow-lg max-h-[85vh] overflow-hidden">
-                                <h3 id="bookingModalTitle" class="text-lg font-semibold mb-4">Booking Status</h3>
-                                <div id="bookingModalContent" class="text-sm text-gray-700 space-y-2 overflow-y-auto overflow-x-hidden max-h-[65vh]">
-                                    <!-- populated by JS -->
-                                </div>
-                                <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-                                    <button id="bookingModalClose" class="px-4 py-2 bg-gray-200 rounded-lg">Close</button>
-                                    <button id="bookingModalDownload" class="hidden px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-800 hover:border-green-600 hover:text-green-700 transition inline-flex items-center gap-2">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-700">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                            <polyline points="7 10 12 15 17 10"/>
-                                            <line x1="12" y1="15" x2="12" y2="3"/>
-                                        </svg>
-                                        Download Receipt
-                                    </button>
-                                    <button id="bookingModalContinue" class="px-4 py-2 bg-green-600 text-white rounded-lg">Continue</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-auto">
-                            <div class="relative bg-white rounded-xl p-6 w-full max-w-lg mx-4 shadow-lg max-h-[90vh] overflow-hidden">
-                                <div id="paymentLoadingOverlay" class="hidden absolute inset-0 z-20 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center px-6">
-                                    <div class="flex items-center gap-3">
-                                        <div class="h-10 w-10 rounded-full border-4 border-green-600 border-t-transparent animate-spin"></div>
-                                        <div class="text-gray-800 text-sm font-semibold">Processing payment and confirming booking...</div>
-                                    </div>
-                                </div>
-                                <h3 class="text-lg font-semibold mb-4">Confirm Payment</h3>
-                                <div id="paymentModalBody" class="space-y-4 text-sm text-gray-700 overflow-y-auto max-h-[70vh] pr-2">
-                                    <p>Please select a payment option and upload your GCash receipt. Booking cannot continue until payment proof is provided.</p>
-                                    <div id="paymentBookingDetails" class="rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-700"></div>
-                                    <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                                        <div class="font-semibold mb-2">Select payment choice</div>
-                                        <div class="grid grid-cols-1 gap-3">
-                                            <button type="button" id="paymentOptionPartial" class="payment-option-button rounded-xl border border-gray-300 p-4 text-left">
-                                                <div class="font-semibold">Partial payment 50%</div>
-                                                <div class="text-xs text-gray-500">Pay now and settle the rest on arrival. Non-refundable.</div>
-                                                <div class="mt-2 text-lg font-bold text-green-700" id="paymentPartialAmount"></div>
-                                            </button>
-                                            <button type="button" id="paymentOptionFull" class="payment-option-button rounded-xl border border-gray-300 p-4 text-left">
-                                                <div class="font-semibold">Full payment</div>
-                                                <div class="text-xs text-gray-500">Pay the full amount now.</div>
-                                                <div class="mt-2 text-lg font-bold text-green-700" id="paymentFullAmount"></div>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                                        <div class="font-semibold mb-2">Payment Method</div>
-                                        <label class="flex items-center gap-2 mb-2">
-                                            <input type="radio" name="receiptPaymentMethod" value="gcash" checked disabled class="w-4 h-4 text-green-600">
-                                            <span>GCash</span>
-                                        </label>
-                                        <label class="flex items-center gap-2 text-gray-400">
-                                            <input type="radio" name="receiptPaymentMethod" value="card" disabled class="w-4 h-4 text-gray-400">
-                                            <span>Card (Unavailable)</span>
-                                        </label>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Amount paid with GCash</label>
-                                        <input type="number" min="0" step="1" id="paymentAmountInput" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800" placeholder="Enter amount paid now">
-                                        <p id="paymentAmountHint" class="text-xs text-gray-500 mt-2">Enter the amount you are paying now. For partial payment, minimum is 50% of the total.</p>
-                                        <div id="paymentBalanceText" class="mt-2 text-sm font-semibold text-gray-700"></div>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Upload GCash Receipt</label>
-                                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition cursor-pointer" id="paymentUploadArea">
-                                            <input type="file" id="paymentReceiptFile" accept="image/*,.pdf" class="hidden">
-                                            <svg class="w-10 h-10 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                            <p class="text-sm text-gray-600">Click or drag to upload receipt</p>
-                                            <p class="text-xs text-gray-400 mt-1">PNG, JPG, PDF up to 5MB</p>
-                                        </div>
-                                        <div id="paymentReceiptName" class="text-xs text-green-600 mt-2 hidden"></div>
-                                    </div>
-                                    <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                                        <p class="font-semibold">Important</p>
-                                        <p>Please save or screenshot this receipt and show it to the front desk upon arrival.</p>
-                                    </div>
-                                </div>
-                                <div class="mt-4 sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 pt-4">
-                                    <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-                                        <button type="button" onclick="closePaymentModal()" class="w-full sm:w-auto px-4 py-2 bg-gray-200 rounded-lg">Cancel</button>
-                                        <button type="button" id="paymentConfirmButton" class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg">Paid</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-            <!-- RIGHT COLUMN - Sticky Summary Sidebar -->
-            <div class="lg:w-96">
-                <div class="booking-summary-sticky" style="background: linear-gradient(135deg, #3D5A4C 0%, #2D4A3C 100%); padding: 24px; border-radius: 16px; box-shadow: 0px 16px 48px rgba(61, 90, 76, 0.25);">
-                    <div class="mb-6">
-                        <h2 class="font-cormorant text-2xl text-white mb-2">Booking Summary</h2>
-                        <div class="w-12 h-0.5 bg-gradient-to-r from-pink-400 to-amber-400 rounded"></div>
-                    </div>
-
-                    <div class="pb-4 mb-4 border-b border-white/20">
-                        <p class="text-white/60 text-xs uppercase tracking-wide mb-1">Selected Room</p>
-                        <p class="text-white font-semibold" id="summaryRoom">Standard Room B</p>
-                        <p class="text-green-300 text-sm" id="summaryRoomPrice">₱2,500 / night</p>
-                    </div>
-
-                    <div class="pb-4 mb-4 border-b border-white/20">
-                        <p class="text-white/60 text-xs uppercase tracking-wide mb-1">Dates</p>
-                        <p class="text-white text-sm" id="summaryCheckIn">Check-in: Not selected</p>
-                        <p class="text-white text-sm" id="summaryCheckOut">Check-out: Not selected</p>
-                        <p class="text-green-300 text-sm mt-1" id="summaryNights">0 nights</p>
-                    </div>
-
-                    <div class="pb-4 mb-4 border-b border-white/20">
-                        <p class="text-white/60 text-xs uppercase tracking-wide mb-1">Guests</p>
-                        <p class="text-white text-sm" id="summaryAdults">Adults: 2</p>
-                        <p class="text-white text-sm" id="summaryKids">Kids (3-12): 0</p>
-                        <p class="text-white/60 text-sm" id="summaryInfants">Infants (0-2): 0 (free)</p>
-                        <p class="text-white text-sm" id="summaryExtraBeds">Extra Beds: 0</p>
-                        <p class="text-white/80 text-xs mt-2" id="summaryAmenitiesList">Amenities: None</p>
-                    </div>
-
-                    <div class="pb-4 mb-4 border-b border-white/20">
-                        <p class="text-white/60 text-xs uppercase tracking-wide mb-2">Cost Breakdown</p>
-                        <div class="space-y-2">
-                            <div class="flex justify-between">
-                                <span class="text-white/70 text-sm">Room Rate</span>
-                                <span class="text-white text-sm" id="costRoomRate">₱0</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-white/70 text-sm">Extra Beds</span>
-                                <span class="text-white text-sm" id="costExtraBeds">₱0</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-white/70 text-sm">Amenities</span>
-                                <span class="text-white text-sm" id="costAmenities">₱0</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-white/70 text-sm">Subtotal</span>
-                                <span class="text-white text-sm" id="costSubtotal">₱0</span>
-                            </div>
-                            <div class="flex justify-between" id="discountRow" style="display: none;">
-                                <span class="text-green-300 text-sm">Discount (20%)</span>
-                                <span class="text-green-300 text-sm" id="costDiscount">-₱0</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-white/70 text-sm">Service Charge</span>
-                                <span class="text-white text-sm" id="costServiceCharge">₱85</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-6 p-4 bg-white/10 rounded-xl">
-                        <div class="flex justify-between items-center">
-                            <span class="text-white font-semibold">Total Amount</span>
-                            <span class="text-2xl font-bold text-pink-300" id="totalAmount">₱0</span>
-                        </div>
-                        <p class="text-white/50 text-xs mt-2">*Service charge already included</p>
-                    </div>
-
-                    <button onclick="submitBooking()" class="w-full bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white py-3 rounded-xl font-semibold transition-all transform hover:scale-[1.02] shadow-lg">
-                        Confirm Booking
-                    </button>
-
-                    <p class="text-white/40 text-xs text-center mt-4">⚠️ Reservations not checked in by 9:00 PM are forfeited</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-    /* Fixed Sticky Sidebar */
-    .booking-summary-sticky {
-        position: sticky;
-        top: 100px;
-        transition: all 0.3s ease;
-    }
-
-    /* Calendar Styles */
-    .calendar-day {
-        aspect-ratio: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        position: relative;
-        font-size: 14px;
-        font-weight: 500;
-        border-radius: 8px;
-        margin: 2px;
-        min-height: 54px;
-        border: 1px solid #e5e7eb;
-        background-color: #ffffff;
-    }
-
-    .calendar-day.empty {
-        background-color: #f8fafc;
-        border-color: #e5e7eb;
-        cursor: default;
-    }
-
-    .calendar-day:hover:not(.disabled):not(.selected-start):not(.selected-end) {
-        background-color: #f0fdf4;
-        transform: scale(1.05);
-    }
-
-    .calendar-day.disabled {
-        color: #d1d5db;
-        cursor: not-allowed;
-        background-color: #f9fafb;
-        text-decoration: line-through;
-    }
-
-    .calendar-day.unavailable {
-        color: #991b1b;
-        cursor: not-allowed;
-        background-color: #fee2e2;
-        border-color: #fca5a5;
-        text-decoration: line-through;
-    }
-
-    .calendar-day.selected-start {
-        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-        color: white;
-        font-weight: bold;
-    }
-
-    .calendar-day.selected-end {
-        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-        color: white;
-        font-weight: bold;
-    }
-
-    .calendar-day.in-range {
-        background-color: #dcfce7;
-        color: #166534;
-    }
-
-    .calendar-day.today {
-        border: 2px solid #22c55e;
-        font-weight: bold;
-    }
-
-    .calendar-day .price-badge {
-        font-size: 8px;
-        margin-top: 2px;
-        font-weight: normal;
-    }
-
-    .selected-start .price-badge,
-    .selected-end .price-badge {
-        color: rgba(255, 255, 255, 0.8);
-    }
-
-    /* Range selection indicator */
-    .range-indicator {
-        position: absolute;
-        bottom: 2px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background-color: #22c55e;
-    }
-
-    /* Selected date displays */
-    #checkInDisplay, #checkOutDisplay {
-        transition: all 0.3s ease;
-    }
-
-    /* Responsive calendar */
-    @media (max-width: 640px) {
-        .calendar-day {
-            font-size: 12px;
-        }
-        .calendar-day .price-badge {
-            font-size: 7px;
-        }
-    }
-    
-    input[type="date"]::-webkit-calendar-picker-indicator {
-        cursor: pointer;
-        padding: 5px;
-    }
-    
-    /* Ensure the sidebar doesn't overflow */
-    @media (min-width: 1024px) {
-        .booking-summary-sticky {
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
-        }
-        
-        /* Custom scrollbar for sidebar */
-        .booking-summary-sticky::-webkit-scrollbar {
-            width: 4px;
-        }
-        
-        .booking-summary-sticky::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-        
-        .booking-summary-sticky::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-        }
-    }
-</style>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-YcsIPn+CxQrjXKQ228oczr7VfMifoQf+sG+ECthkyMFS0QXOklxFAQ0OsB56nX8fN9nM5pkPp9RiiPqXoT2elg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-<script>
     // Guest counters
     let adults = 2;
     let kids = 0;
@@ -665,7 +10,6 @@
     let pwdDiscountCount = 0;
     let seniorDiscountCount = 0;
     let hasRealRoomData = false;
-    let isLoadingRoomData = true;
 
     // Calendar Variables
     let currentDate = new Date();
@@ -674,7 +18,7 @@
     let selectedCheckIn = null;
     let selectedCheckOut = null;
 
-    const BOOKING_API_BASE = @json(config('services.booking_api.base_url')) || window.location.origin;
+    const BOOKING_API_BASE = "http://127.0.0.1:3001";
     let unavailableDates = [];
     const dailyRates = {
         standard: 2500,
@@ -697,7 +41,6 @@
     let pendingPaymentBalance = 0;
     let pendingPaymentOption = 'partial';
     let pendingReceiptFile = null;
-    let confirmedReceiptData = null;
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const BASELINE_MONTH = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     let availabilityRequestToken = 0;
@@ -707,29 +50,6 @@
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
-    }
-
-    function combineDateAndTime(dateValue, timeValue) {
-        const date = String(dateValue || '').trim();
-        const time = String(timeValue || '').trim() || '00:00';
-        return date ? `${date}T${time}:00` : '';
-    }
-
-    function hasUnavailableDateInRange(startDate, endDate) {
-        if (!startDate || !endDate) return false;
-
-        const current = new Date(startDate);
-        const end = new Date(endDate);
-        current.setDate(current.getDate() + 1);
-
-        while (current < end) {
-            if (unavailableDates.includes(formatLocalDate(current))) {
-                return true;
-            }
-            current.setDate(current.getDate() + 1);
-        }
-
-        return false;
     }
 
     function getTodayAtMidnight() {
@@ -744,9 +64,6 @@
     function updateRoomDataNotice() {
         const notice = document.getElementById('roomTypeDataNotice');
         if (!notice) return;
-        notice.textContent = isLoadingRoomData
-            ? (notice.dataset.loadingText || 'Loading real room data...')
-            : (notice.dataset.errorText || 'Real room data is currently unavailable. Please try again later.');
         notice.classList.toggle('hidden', hasRealRoomData);
     }
 
@@ -810,12 +127,9 @@
     }
 
     async function loadRoomsFromBackend() {
-        isLoadingRoomData = true;
-        updateRoomDataNotice();
         try {
             const response = await fetch(`${BOOKING_API_BASE}/api/rooms`);
             if (!response.ok) {
-                isLoadingRoomData = false;
                 hasRealRoomData = false;
                 applyRoomAvailabilityState();
                 return;
@@ -824,12 +138,7 @@
             const sorted = Array.isArray(rooms) ? rooms : [];
             const roomAssignments = { standard: null, deluxe: null };
             sorted.forEach((room) => {
-                if (String(room.status || 'available').toLowerCase() !== 'available') {
-                    return;
-                }
-                const nestedType = Array.isArray(room.room_types) ? room.room_types[0] : room.room_types;
-                const typeLabel = nestedType?.name || room.type_name || room.type || room.category || room.room_type || room.name || room.room_name || '';
-                const normalizedType = String(typeLabel).toLowerCase();
+                const normalizedType = String(room.type || room.category || room.name || room.room_name || '').toLowerCase();
                 const preferredKey = normalizedType.includes('deluxe') ? 'deluxe' : 'standard';
                 if (!roomAssignments[preferredKey]) {
                     roomAssignments[preferredKey] = room;
@@ -844,24 +153,20 @@
                     return;
                 }
                 roomCatalog[key].id = room.id ?? null;
-                const nestedType = Array.isArray(room.room_types) ? room.room_types[0] : room.room_types;
-                const typeName = room.type_name || nestedType?.name || room.type || room.category || key;
-                roomCatalog[key].name = room.name || room.room_name || `${typeName} ${room.room_number || ''}`.trim() || roomCatalog[key].name;
+                roomCatalog[key].name = room.name || room.room_name || room.room_number || roomCatalog[key].name;
                 roomCatalog[key].raw = room;
-                roomCatalog[key].tags = [typeName, room.capacity ? `Up to ${room.capacity} guests` : null].filter(Boolean);
-                const roomPrice = Number(room.price_per_night ?? room.rate ?? room.price ?? room.base_price ?? nestedType?.base_price);
+                roomCatalog[key].tags = [room.type || room.category || key];
+                const roomPrice = Number(room.price_per_night ?? room.rate ?? room.price ?? room.base_price);
                 if (!Number.isNaN(roomPrice) && roomPrice > 0) {
                     roomRates[key] = roomPrice;
                 }
                 renderRoomCard(key);
             });
-            isLoadingRoomData = false;
             applyRoomAvailabilityState();
             syncRoomSummary();
             updateSummary();
             await refreshAvailabilityForMonth();
         } catch (_error) {
-            isLoadingRoomData = false;
             hasRealRoomData = false;
             applyRoomAvailabilityState();
             renderCalendar();
@@ -1150,7 +455,7 @@
 
             if (isCurrentMonth && !isPast && !isUnavailable && Math.abs(dayNumber) <= daysInMonth) {
                 const priceBadge = document.createElement('span');
-                const rate = roomRates[roomType] || dailyRates[roomType] || 2500;
+                const rate = dailyRates[roomType] || 2500;
                 priceBadge.className = 'price-badge';
                 priceBadge.innerText = `₱${rate}`;
                 dayDiv.appendChild(priceBadge);
@@ -1194,10 +499,6 @@
             const checkInDate = new Date(selectedCheckIn);
 
             if (date > checkInDate) {
-                if (hasUnavailableDateInRange(selectedCheckIn, dateStr)) {
-                    alert('Your selected date range includes an occupied date. Please choose another check-out date.');
-                    return;
-                }
                 selectedCheckOut = dateStr;
             } else if (date < checkInDate) {
                 selectedCheckIn = dateStr;
@@ -1611,40 +912,14 @@
             'Content-Type': 'application/json',
         };
 
-        const client = window.supabaseClient;
-        let session = null;
-
-        if (client) {
+        if (typeof supabaseClient !== 'undefined' && supabaseClient) {
             try {
-                const { data } = await client.auth.getSession();
-                session = data?.session ?? null;
+                const { data: { session } } = await supabaseClient.auth.getSession();
                 if (session?.access_token) {
                     authHeaders.Authorization = `Bearer ${session.access_token}`;
                 }
             } catch (error) {
                 console.warn('Unable to read auth session:', error);
-            }
-        }
-
-        if (session?.user && session?.access_token) {
-            try {
-                const user = session.user;
-                const profilePayload = {
-                    id: user.id,
-                    email: user.email,
-                    full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
-                };
-                await fetch(`${BOOKING_API_BASE}/api/auth/register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${session.access_token}`,
-                    },
-                    body: JSON.stringify(profilePayload),
-                });
-                // Errors here are non-blocking — the backend uses upsert so duplicate calls are safe.
-            } catch (e) {
-                console.warn('User upsert before booking failed (non-blocking):', e);
             }
         }
 
@@ -1655,29 +930,17 @@
                 body: JSON.stringify(pendingBookingPayload),
             });
 
-            const result = await response.json().catch(() => ({}));
+            const result = await response.json();
             console.log('Booking response status:', response.status, result);
 
             if (!response.ok) {
                 console.error('Booking request failed:', result);
                 setPaymentLoading(false);
-                closePaymentModal();
-
-                if (response.status === 409) {
-                    await refreshAvailabilityForMonth();
-                    showBookingStatusModal(
-                        false,
-                        'Room No Longer Available',
-                        '<p class="text-sm text-gray-700">Sorry, this room has already been booked for your selected dates by another guest. The calendar has been updated to show the latest availability — please choose different dates or a different room.</p>'
-                    );
-                } else {
-                    showBookingStatusModal(false, 'Booking Failed', result.error || 'Unable to complete booking. Please try again.');
-                }
+                showBookingStatusModal(false, 'Booking Failed', result.error || 'Unable to complete booking. Please try again.');
                 return;
             }
 
-            confirmedReceiptData = {
-                bookingId: result.id || null,
+            const receiptHtml = buildBookingReceiptHtml({
                 fullName: pendingBookingPayload.guest_email ? document.getElementById('fullName').value : '',
                 email: pendingBookingPayload.guest_email,
                 contact: document.getElementById('contact').value,
@@ -1696,9 +959,7 @@
                 amountPaid: pendingBookingPayload.amount_paid,
                 balanceDue: pendingBookingPayload.balance_due,
                 total: pendingBookingPayload.total_price,
-            };
-
-            const receiptHtml = buildBookingReceiptHtml(confirmedReceiptData);
+            });
 
             closePaymentModal();
             addUnavailableDatesRange(pendingBookingPayload.start_at, pendingBookingPayload.end_at);
@@ -1726,10 +987,6 @@
             alert('Please select check-in and check-out dates');
             return;
         }
-        if (hasUnavailableDateInRange(selectedCheckIn, selectedCheckOut)) {
-            alert('Your selected date range includes an occupied date. Please choose available dates only.');
-            return;
-        }
         if (!hasRealRoomData || !roomCatalog[roomType]?.id) {
             alert('Room data is unavailable. Please refresh and try again.');
             return;
@@ -1755,14 +1012,12 @@
 
         const checkInFallback = document.getElementById('checkInDate')?.value || selectedCheckIn;
         const checkOutFallback = document.getElementById('checkOutDate')?.value || selectedCheckOut;
-        const startAt = combineDateAndTime(checkInFallback, checkInTime || '15:00');
-        const endAt = combineDateAndTime(checkOutFallback, checkOutTime || '11:00');
 
         const bookingPayload = {
             room_id: roomCatalog[roomType]?.id,
             room_type: roomType,
-            start_at: startAt,
-            end_at: endAt,
+            start_at: checkInFallback,
+            end_at: checkOutFallback,
             guests: adults + kids + infants,
             has_pwd: pwdDiscount,
             has_senior: seniorDiscount,
@@ -1891,64 +1146,48 @@
 
     function downloadBookingReceipt() {
         const payload = pendingBookingPayload;
-        if (!payload || !confirmedReceiptData) {
+        if (!payload) {
             alert('Booking data is not available for download yet.');
             return;
         }
 
-        try {
-            const receiptData = {
-                ...confirmedReceiptData,
-                propertyName: 'CHTM Booking',
-                issueDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                amenities: Array.isArray(confirmedReceiptData.amenities) && confirmedReceiptData.amenities.length
-                    ? confirmedReceiptData.amenities.map((item) => item.name || item).join(', ')
-                    : 'None',
-            };
+        const receiptData = {
+            propertyName: 'Your Hotel Name',
+            issueDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+            roomName: roomCatalog[payload.room_type]?.name || payload.room_type,
+            roomType: payload.room_type,
+            checkIn: payload.start_at,
+            checkOut: payload.end_at,
+            nights: calculateNights(payload.start_at, payload.end_at),
+            adults: adults,
+            kids: kids,
+            infants: infants,
+            extraBeds: payload.extra_beds,
+            amenities: selectedAmenities.length ? selectedAmenities.map((item) => item.name || item).join(', ') : 'None',
+            paymentMethod: payload.payment_method || 'GCash',
+            amountPaid: payload.amount_paid ?? 0,
+            balanceDue: payload.balance_due ?? 0,
+            total: payload.total_price ?? 0,
+        };
 
-            const receiptHtml = generateBookingPdfHtml(receiptData);
-            const filenameBase = `booking-confirmation-${payload.room_type}-${receiptData.bookingId || Date.now()}`;
+        const receiptHtml = generateBookingPdfHtml(receiptData);
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.left = '-9999px';
+        container.innerHTML = receiptHtml;
+        document.body.appendChild(container);
 
-            const element = document.createElement('div');
-            element.innerHTML = receiptHtml;
-            element.style.padding = '20px';
-            element.style.backgroundColor = '#ffffff';
+        const options = {
+            margin: [10, 10, 10, 10],
+            filename: `booking-confirmation-${payload.room_type}-${Date.now()}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'pt', format: 'letter', orientation: 'portrait' },
+        };
 
-            if (typeof html2pdf === 'undefined') {
-                const blob = new Blob([`<!doctype html><html><head><meta charset="utf-8"><title>Booking Receipt</title></head><body>${receiptHtml}</body></html>`], { type: 'text/html' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `${filenameBase}.html`;
-                document.body.appendChild(link);
-                link.click();
-                URL.revokeObjectURL(link.href);
-                link.remove();
-                return;
-            }
-
-            const options = {
-                margin: 10,
-                filename: `${filenameBase}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-                jsPDF: { unit: 'pt', format: 'letter', orientation: 'portrait', compress: true },
-            };
-
-            html2pdf()
-                .set(options)
-                .from(element)
-                .save()
-                .then(() => {
-                    console.log('PDF downloaded successfully');
-                })
-                .catch((error) => {
-                    console.error('PDF generation error:', error);
-                    alert('Failed to generate PDF. Please try again.');
-                });
-        } catch (error) {
-            console.error('Download receipt error:', error);
-            alert('An error occurred while generating the receipt. Please try again.');
-        }
+        html2pdf().set(options).from(container).save().finally(() => {
+            document.body.removeChild(container);
+        });
     }
 
     function generateBookingPdfHtml(data) {
@@ -1957,7 +1196,7 @@
             <div style="font-family: 'Inter', sans-serif; color: #1f2937; background: #ffffff; width: 820px; padding: 32px; box-sizing: border-box;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
                     <div>
-                        <div style="font-size: 24px; font-weight: 700; color: #0f5132; letter-spacing: 0.02em;">${data.propertyName || 'CHTM Booking'}</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #0f5132; letter-spacing: 0.02em;">PROPERTY NAME</div>
                         <div style="margin-top: 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.16em; color: #4b5563;">BOOKING CONFIRMATION VOUCHER</div>
                     </div>
                     <div style="text-align: right;">
@@ -2106,4 +1345,4 @@
         initializeBookingPage();
     }
 </script>
-@endsection
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-YcsIPn+CxQrjXKQ228oczr7VfMifoQf+sG+ECthkyMFS0QXOklxFAQ0OsB56nX8fN9nM5pkPp9RiiPqXoT2elg==" crossorigin="anonymous" referrerpolicy="no-referrer">
