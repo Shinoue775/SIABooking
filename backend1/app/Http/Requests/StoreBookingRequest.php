@@ -35,6 +35,7 @@ class StoreBookingRequest extends FormRequest
             'extra_beds' => $this->toInt($this->input('extra_beds', $this->input('extraBeds'))),
             'total_price' => $this->toFloat($this->input('total_price', $this->input('totalPrice'))),
             'payment_method' => $this->input('payment_method', $this->input('paymentMethod')),
+            'guest_email' => $this->input('guest_email', $this->input('email')),
         ]);
     }
 
@@ -55,6 +56,7 @@ class StoreBookingRequest extends FormRequest
             'extra_beds' => ['nullable', 'integer', 'min:0', 'max:2'],
             'total_price' => ['required', 'numeric', 'gt:0'],
             'payment_method' => ['nullable', Rule::in(['cash', 'gcash'])],
+            'guest_email' => ['nullable', 'email'],
         ];
     }
 

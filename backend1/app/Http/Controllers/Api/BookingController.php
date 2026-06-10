@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingStatusRequest;
 use App\Services\SupabaseService;
+use App\Mail\BookingConfirmation;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
@@ -54,7 +56,7 @@ class BookingController extends Controller
             }
 
             $bookingPayload = array_filter([
-                'user_id' => $user['id'],
+                    'user_id' => $user['id'] ?? null,
                 'room_id' => $payload['room_id'],
                 'room_type' => $payload['room_type'] ?? null,
                 'start_at' => $payload['start_at'],
@@ -86,6 +88,22 @@ class BookingController extends Controller
                     $amenities,
                 ));
             }
+
+                // Attempt to send confirmation email to guest or linked user
+                try {
+                    $email = $payload['guest_email'] ?? null;
+
+                    if (! $email && isset($user['id'])) {
+                        $profile = $supabase->findUserProfile($user['id']);
+                        $email = $profile['email'] ?? null;
+                    }
+
+                    if ($email) {
+                        Mail::to($email)->send(new BookingConfirmation($booking));
+                    }
+                } catch (\Throwable $e) {
+                    // do not block booking creation if email fails
+                }
 
             return response()->json($booking, 201);
         } catch (Throwable $throwable) {

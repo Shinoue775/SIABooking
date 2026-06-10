@@ -55,7 +55,7 @@
                 </div>
 
                 <div class="space-y-4">
-                    <button class="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 px-4 rounded-md transition font-medium bg-white hover:bg-gray-50 shadow-sm">
+                    <button id="googleSignInBtn" class="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 px-4 rounded-md transition font-medium bg-white hover:bg-gray-50 shadow-sm">
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
                         <span class="text-sm">Sign in only</span>
                     </button>
@@ -126,6 +126,94 @@
         });
         
         termsModal.addEventListener('click', (e) => { if (e.target === termsModal) closeModal(); });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script>
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+        const checkboxInput = document.querySelector('input[type="checkbox"]');
+        const supabaseUrl = {!! json_encode(env('SUPABASE_URL') ?? '') !!};
+        const supabaseAnonKey = {!! json_encode(env('SUPABASE_ANON_KEY') ?? '') !!};
+        let supabaseClient = null;
+        if (typeof supabase !== 'undefined' && supabaseUrl) {
+            try {
+                supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+            } catch (e) {
+                console.warn('Supabase client init failed', e);
+                supabaseClient = null;
+            }
+        }
+
+        // Check for existing session on page load
+        async function checkExistingSession() {
+            if (!supabaseClient) return;
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session) {
+                    console.log('Existing session found, redirecting to /home');
+                    window.location.href = '/home';
+                }
+            } catch (e) {
+                console.warn('Session check failed', e);
+            }
+        }
+
+        // Check session on page load
+        checkExistingSession();
+
+        // Listen for auth state changes
+        if (supabaseClient) {
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                console.log('Auth state changed:', event, session);
+                if (session) {
+                    console.log('User logged in, redirecting to /home');
+                    window.location.href = '/home';
+                }
+            });
+        }
+
+        if (googleSignInBtn) {
+            googleSignInBtn.addEventListener('click', async () => {
+                // Debug: print values so we can confirm env injection
+                try {
+                    console.log('DEBUG supabaseUrl ->', supabaseUrl);
+                    console.log('DEBUG supabaseAnonKey ->', supabaseAnonKey ? (String(supabaseAnonKey).slice(0, 20) + '...') : supabaseAnonKey);
+                } catch (e) {
+                    console.warn('DEBUG: unable to read supabase globals', e);
+                }
+
+                if (!checkboxInput || !checkboxInput.checked) {
+                    alert('Please agree to the Terms and Conditions before signing in.');
+                    return;
+                }
+
+                if (!supabaseClient) {
+                    alert('Google sign-in is not configured or unavailable. Please set SUPABASE_URL and SUPABASE_ANON_KEY in frontend/.env and ensure the Supabase script loaded.');
+                    return;
+                }
+
+                if (!supabaseUrl || supabaseUrl.includes('your-project-ref') || !supabaseAnonKey || supabaseAnonKey.includes('your-anon-key')) {
+                    alert('Google sign-in is not configured. Please set SUPABASE_URL and SUPABASE_ANON_KEY in frontend/.env.');
+                    return;
+                }
+
+                try {
+                    const { error } = await supabaseClient.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: {
+                            redirectTo: window.location.origin + '/home',
+                        },
+                    });
+
+                    if (error) {
+                        console.error('Supabase OAuth error:', error);
+                        alert(`Google sign-in failed: ${error.message}`);
+                    }
+                } catch (err) {
+                    console.error('OAuth initiation failed', err);
+                    alert('Google sign-in failed to start. Check console for details.');
+                }
+            });
+        }
     </script>
 </body>
 </html>

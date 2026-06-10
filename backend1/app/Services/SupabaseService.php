@@ -17,7 +17,6 @@ class SupabaseService
     ];
 
     private const BOOKING_ENCRYPTED_FIELDS = [
-        'room_type',
         'guests',
         'has_child',
         'child_age_group',
@@ -26,7 +25,6 @@ class SupabaseService
         'extra_beds',
         'price_at_booking',
         'total_amount',
-        'payment_method',
     ];
 
     public function __construct(
