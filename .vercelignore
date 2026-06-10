@@ -1,3 +1,4 @@
 # Exclude the Next.js backend from the frontend Vercel build.
 # The backend (backend1/) is deployed as a separate Vercel project.
-backend1
+# Commented out to prevent Vercel from ignoring this directory when deploying the backend project.
+# #backend1
