@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "rm -f bootstrap/cache/packages.php bootstrap/cache/services.php && vite build",
+        "build": "rm -f bootstrap/cache/*.php && vite build",
         "dev": "vite"
     },
     "devDependencies": {
