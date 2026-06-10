@@ -15,17 +15,7 @@ class SupabaseService
         'phone',
         'address',
     ];
-
-    private const BOOKING_ENCRYPTED_FIELDS = [
-        'guests',
-        'has_child',
-        'child_age_group',
-        'has_pwd',
-        'has_senior',
-        'extra_beds',
-        'price_at_booking',
-        'total_amount',
-    ];
+    private const BOOKING_ENCRYPTED_FIELDS = [];
 
     public function __construct(
         private readonly HttpFactory $http,
@@ -57,6 +47,13 @@ class SupabaseService
 
     public function upsertUser(array $payload): void
     {
+        if (isset($payload['full_name']) || isset($payload['fname']) || isset($payload['lname'])) {
+            $nameParts = preg_split('/\s+/', trim((string) ($payload['full_name'] ?? '')), 2) ?: [];
+            $payload['fname'] = $payload['fname'] ?? ($nameParts[0] ?? 'Guest');
+            $payload['lname'] = $payload['lname'] ?? ($nameParts[1] ?? 'User');
+            unset($payload['full_name'], $payload['phone'], $payload['address']);
+        }
+
         $payload = $this->encryptFields($payload, self::USER_ENCRYPTED_FIELDS);
 
         $response = $this->rest('POST', 'users', [
@@ -70,7 +67,9 @@ class SupabaseService
 
     public function listRooms(): array
     {
-        $response = $this->rest('GET', 'rooms', [], null, [
+        $response = $this->rest('GET', 'rooms', [
+            'select' => '*,room_types(id,name,description,capacity,base_price)',
+        ], null, [
             'Accept' => 'application/json',
         ]);
 
@@ -92,22 +91,19 @@ class SupabaseService
         $response = $this->rest('GET', 'bookings', $query);
         $this->ensureSuccess($response, 'Unable to load bookings.');
 
-        return array_map(
-            fn (array $booking) => $this->decryptFields($booking, self::BOOKING_ENCRYPTED_FIELDS),
-            $response->json() ?? [],
-        );
+        return $response->json() ?? [];
     }
 
     public function createBooking(array $payload): array
     {
-        $payload = $this->encryptFields($payload, self::BOOKING_ENCRYPTED_FIELDS);
+        // No encryption for booking fields — plain values for readability and consistency
         $response = $this->rest('POST', 'bookings', [], [$payload], [
             'Prefer' => 'return=representation',
         ]);
 
         $this->ensureSuccess($response, 'Unable to create booking.');
 
-        return $this->decryptFields(Arr::first($response->json() ?? []) ?? [], self::BOOKING_ENCRYPTED_FIELDS);
+        return Arr::first($response->json() ?? []) ?? [];
     }
 
     public function createBookingAmenities(array $payload): void

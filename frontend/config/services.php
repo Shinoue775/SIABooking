@@ -39,4 +39,9 @@ return [
         'base_url' => rtrim(env('BOOKING_API_BASE_URL', 'http://127.0.0.1:3001'), '/'),
     ],
 
+    'supabase' => [
+        'url' => env('SUPABASE_URL'),
+        'anon_key' => env('SUPABASE_ANON_KEY'),
+    ],
+
 ];

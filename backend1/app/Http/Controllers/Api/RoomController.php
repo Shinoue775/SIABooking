@@ -16,7 +16,7 @@ class RoomController extends Controller
             $rooms = $supabase->listRooms();
             usort($rooms, [$this, 'sortRooms']);
 
-            return response()->json($rooms);
+            return response()->json(array_map([$this, 'normalizeRoom'], $rooms));
         } catch (Throwable $throwable) {
             return response()->json([
                 'error' => $throwable->getMessage(),
@@ -37,6 +37,7 @@ class RoomController extends Controller
         try {
             $rooms = $supabase->listRooms();
             usort($rooms, [$this, 'sortRooms']);
+            $rooms = array_map([$this, 'normalizeRoom'], $rooms);
 
             $dayStart = "{$date}T00:00:00";
             $dayEnd = "{$date}T23:59:59";
@@ -81,5 +82,29 @@ class RoomController extends Controller
         $rightLabel = (string) ($right['room_number'] ?? $right['number'] ?? $right['name'] ?? $right['id'] ?? '');
 
         return strnatcasecmp($leftLabel, $rightLabel);
+    }
+
+    private function normalizeRoom(array $room): array
+    {
+        $roomType = $room['room_types'] ?? $room['room_type'] ?? null;
+        if (is_array($roomType) && array_is_list($roomType)) {
+            $roomType = $roomType[0] ?? null;
+        }
+        $roomType = is_array($roomType) ? $roomType : [];
+
+        $typeName = (string) ($roomType['name'] ?? $room['type'] ?? $room['category'] ?? $room['room_type'] ?? '');
+        $normalizedType = str_contains(strtolower($typeName), 'deluxe') ? 'deluxe' : 'standard';
+        $roomNumber = (string) ($room['room_number'] ?? $room['number'] ?? '');
+        $price = $room['price_override'] ?? $roomType['base_price'] ?? $room['price_per_night'] ?? $room['rate'] ?? $room['price'] ?? null;
+
+        return [
+            ...$room,
+            'type' => $normalizedType,
+            'type_name' => $typeName !== '' ? $typeName : ucfirst($normalizedType),
+            'name' => trim(($typeName !== '' ? $typeName : ucfirst($normalizedType).' Room').' '.$roomNumber),
+            'price_per_night' => is_numeric($price) ? (float) $price : null,
+            'capacity' => $roomType['capacity'] ?? $room['capacity'] ?? null,
+            'description' => $roomType['description'] ?? $room['description'] ?? null,
+        ];
     }
 }

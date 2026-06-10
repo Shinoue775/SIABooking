@@ -91,15 +91,16 @@
 <script>
     const supabaseUrl = {!! json_encode(env('SUPABASE_URL') ?? '') !!};
     const supabaseAnonKey = {!! json_encode(env('SUPABASE_ANON_KEY') ?? '') !!};
-    let supabaseClient = null;
+    window.supabaseClient = null;
     
     if (typeof supabase !== 'undefined' && supabaseUrl) {
         try {
-            supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+            window.supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
         } catch (e) {
             console.warn('Supabase client init failed', e);
         }
     }
+    var supabaseClient = window.supabaseClient;
 
     // Function to update navbar based on auth state
     function updateAuthUI(user) {
@@ -164,6 +165,36 @@
         }
     }
 
+    const BOOKING_API_BASE_URL = @json(config('services.booking_api.base_url'));
+    async function ensureUserProfile(session) {
+        if (!session?.user || !session?.access_token) return;
+        const user = session.user;
+        const meta = user.user_metadata || {};
+        const googleFullName = meta.full_name || meta.name || '';
+        const parts = googleFullName.trim().split(/\s+/);
+        const fname = meta.given_name || parts[0] || user.email.split('@')[0];
+        const lname = meta.family_name || (parts.length > 1 ? parts.slice(1).join(' ') : '');
+
+        try {
+            await fetch(`${BOOKING_API_BASE_URL}/api/auth/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({
+                    id: user.id,
+                    email: user.email,
+                    full_name: googleFullName || user.email,
+                    fname: fname,
+                    lname: lname || 'User',
+                }),
+            });
+        } catch (e) {
+            console.warn('ensureUserProfile failed:', e);
+        }
+    }
+
     // Check auth state on page load
     document.addEventListener('DOMContentLoaded', async function() {
         if (!supabaseClient) return;
@@ -173,6 +204,7 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session?.user) {
                 updateAuthUI(session.user);
+                ensureUserProfile(session);
             } else {
                 updateAuthUI(null);
             }
@@ -182,6 +214,9 @@
                 console.log('Auth event:', event);
                 if (session?.user) {
                     updateAuthUI(session.user);
+                    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                        ensureUserProfile(session);
+                    }
                 } else {
                     updateAuthUI(null);
                 }

@@ -87,7 +87,7 @@
                         </label>
                     </div>
                     <p id="roomTypeEmpty" class="text-sm text-gray-500 mt-3 hidden">No room type matched your search.</p>
-                    <p id="roomTypeDataNotice" class="text-sm text-amber-700 mt-3 hidden">Real room data is currently unavailable. Please try again later.</p>
+                    <p id="roomTypeDataNotice" class="text-sm text-amber-700 mt-3 hidden" data-loading-text="Loading real room data..." data-error-text="Real room data is currently unavailable. Please try again later.">Loading real room data...</p>
                 </div>
 
                 <!-- 3. Guest Categories -->
@@ -554,6 +554,14 @@
         text-decoration: line-through;
     }
 
+    .calendar-day.unavailable {
+        color: #991b1b;
+        cursor: not-allowed;
+        background-color: #fee2e2;
+        border-color: #fca5a5;
+        text-decoration: line-through;
+    }
+
     .calendar-day.selected-start {
         background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
         color: white;
@@ -657,6 +665,7 @@
     let pwdDiscountCount = 0;
     let seniorDiscountCount = 0;
     let hasRealRoomData = false;
+    let isLoadingRoomData = true;
 
     // Calendar Variables
     let currentDate = new Date();
@@ -688,6 +697,7 @@
     let pendingPaymentBalance = 0;
     let pendingPaymentOption = 'partial';
     let pendingReceiptFile = null;
+    let confirmedReceiptData = null;
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const BASELINE_MONTH = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     let availabilityRequestToken = 0;
@@ -697,6 +707,29 @@
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
+    }
+
+    function combineDateAndTime(dateValue, timeValue) {
+        const date = String(dateValue || '').trim();
+        const time = String(timeValue || '').trim() || '00:00';
+        return date ? `${date}T${time}:00` : '';
+    }
+
+    function hasUnavailableDateInRange(startDate, endDate) {
+        if (!startDate || !endDate) return false;
+
+        const current = new Date(startDate);
+        const end = new Date(endDate);
+        current.setDate(current.getDate() + 1);
+
+        while (current < end) {
+            if (unavailableDates.includes(formatLocalDate(current))) {
+                return true;
+            }
+            current.setDate(current.getDate() + 1);
+        }
+
+        return false;
     }
 
     function getTodayAtMidnight() {
@@ -711,6 +744,9 @@
     function updateRoomDataNotice() {
         const notice = document.getElementById('roomTypeDataNotice');
         if (!notice) return;
+        notice.textContent = isLoadingRoomData
+            ? (notice.dataset.loadingText || 'Loading real room data...')
+            : (notice.dataset.errorText || 'Real room data is currently unavailable. Please try again later.');
         notice.classList.toggle('hidden', hasRealRoomData);
     }
 
@@ -774,9 +810,12 @@
     }
 
     async function loadRoomsFromBackend() {
+        isLoadingRoomData = true;
+        updateRoomDataNotice();
         try {
             const response = await fetch(`${BOOKING_API_BASE}/api/rooms`);
             if (!response.ok) {
+                isLoadingRoomData = false;
                 hasRealRoomData = false;
                 applyRoomAvailabilityState();
                 return;
@@ -785,7 +824,12 @@
             const sorted = Array.isArray(rooms) ? rooms : [];
             const roomAssignments = { standard: null, deluxe: null };
             sorted.forEach((room) => {
-                const normalizedType = String(room.type || room.category || room.name || room.room_name || '').toLowerCase();
+                if (String(room.status || 'available').toLowerCase() !== 'available') {
+                    return;
+                }
+                const nestedType = Array.isArray(room.room_types) ? room.room_types[0] : room.room_types;
+                const typeLabel = nestedType?.name || room.type_name || room.type || room.category || room.room_type || room.name || room.room_name || '';
+                const normalizedType = String(typeLabel).toLowerCase();
                 const preferredKey = normalizedType.includes('deluxe') ? 'deluxe' : 'standard';
                 if (!roomAssignments[preferredKey]) {
                     roomAssignments[preferredKey] = room;
@@ -800,20 +844,24 @@
                     return;
                 }
                 roomCatalog[key].id = room.id ?? null;
-                roomCatalog[key].name = room.name || room.room_name || room.room_number || roomCatalog[key].name;
+                const nestedType = Array.isArray(room.room_types) ? room.room_types[0] : room.room_types;
+                const typeName = room.type_name || nestedType?.name || room.type || room.category || key;
+                roomCatalog[key].name = room.name || room.room_name || `${typeName} ${room.room_number || ''}`.trim() || roomCatalog[key].name;
                 roomCatalog[key].raw = room;
-                roomCatalog[key].tags = [room.type || room.category || key];
-                const roomPrice = Number(room.price_per_night ?? room.rate ?? room.price ?? room.base_price);
+                roomCatalog[key].tags = [typeName, room.capacity ? `Up to ${room.capacity} guests` : null].filter(Boolean);
+                const roomPrice = Number(room.price_per_night ?? room.rate ?? room.price ?? room.base_price ?? nestedType?.base_price);
                 if (!Number.isNaN(roomPrice) && roomPrice > 0) {
                     roomRates[key] = roomPrice;
                 }
                 renderRoomCard(key);
             });
+            isLoadingRoomData = false;
             applyRoomAvailabilityState();
             syncRoomSummary();
             updateSummary();
             await refreshAvailabilityForMonth();
         } catch (_error) {
+            isLoadingRoomData = false;
             hasRealRoomData = false;
             applyRoomAvailabilityState();
             renderCalendar();
@@ -1102,7 +1150,7 @@
 
             if (isCurrentMonth && !isPast && !isUnavailable && Math.abs(dayNumber) <= daysInMonth) {
                 const priceBadge = document.createElement('span');
-                const rate = dailyRates[roomType] || 2500;
+                const rate = roomRates[roomType] || dailyRates[roomType] || 2500;
                 priceBadge.className = 'price-badge';
                 priceBadge.innerText = `₱${rate}`;
                 dayDiv.appendChild(priceBadge);
@@ -1146,6 +1194,10 @@
             const checkInDate = new Date(selectedCheckIn);
 
             if (date > checkInDate) {
+                if (hasUnavailableDateInRange(selectedCheckIn, dateStr)) {
+                    alert('Your selected date range includes an occupied date. Please choose another check-out date.');
+                    return;
+                }
                 selectedCheckOut = dateStr;
             } else if (date < checkInDate) {
                 selectedCheckIn = dateStr;
@@ -1559,14 +1611,40 @@
             'Content-Type': 'application/json',
         };
 
-        if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+        const client = window.supabaseClient;
+        let session = null;
+
+        if (client) {
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
+                const { data } = await client.auth.getSession();
+                session = data?.session ?? null;
                 if (session?.access_token) {
                     authHeaders.Authorization = `Bearer ${session.access_token}`;
                 }
             } catch (error) {
                 console.warn('Unable to read auth session:', error);
+            }
+        }
+
+        if (session?.user && session?.access_token) {
+            try {
+                const user = session.user;
+                const profilePayload = {
+                    id: user.id,
+                    email: user.email,
+                    full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+                };
+                await fetch(`${BOOKING_API_BASE}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify(profilePayload),
+                });
+                // Errors here are non-blocking — the backend uses upsert so duplicate calls are safe.
+            } catch (e) {
+                console.warn('User upsert before booking failed (non-blocking):', e);
             }
         }
 
@@ -1577,17 +1655,29 @@
                 body: JSON.stringify(pendingBookingPayload),
             });
 
-            const result = await response.json();
+            const result = await response.json().catch(() => ({}));
             console.log('Booking response status:', response.status, result);
 
             if (!response.ok) {
                 console.error('Booking request failed:', result);
                 setPaymentLoading(false);
-                showBookingStatusModal(false, 'Booking Failed', result.error || 'Unable to complete booking. Please try again.');
+                closePaymentModal();
+
+                if (response.status === 409) {
+                    await refreshAvailabilityForMonth();
+                    showBookingStatusModal(
+                        false,
+                        'Room No Longer Available',
+                        '<p class="text-sm text-gray-700">Sorry, this room has already been booked for your selected dates by another guest. The calendar has been updated to show the latest availability — please choose different dates or a different room.</p>'
+                    );
+                } else {
+                    showBookingStatusModal(false, 'Booking Failed', result.error || 'Unable to complete booking. Please try again.');
+                }
                 return;
             }
 
-            const receiptHtml = buildBookingReceiptHtml({
+            confirmedReceiptData = {
+                bookingId: result.id || null,
                 fullName: pendingBookingPayload.guest_email ? document.getElementById('fullName').value : '',
                 email: pendingBookingPayload.guest_email,
                 contact: document.getElementById('contact').value,
@@ -1606,7 +1696,9 @@
                 amountPaid: pendingBookingPayload.amount_paid,
                 balanceDue: pendingBookingPayload.balance_due,
                 total: pendingBookingPayload.total_price,
-            });
+            };
+
+            const receiptHtml = buildBookingReceiptHtml(confirmedReceiptData);
 
             closePaymentModal();
             addUnavailableDatesRange(pendingBookingPayload.start_at, pendingBookingPayload.end_at);
@@ -1634,6 +1726,10 @@
             alert('Please select check-in and check-out dates');
             return;
         }
+        if (hasUnavailableDateInRange(selectedCheckIn, selectedCheckOut)) {
+            alert('Your selected date range includes an occupied date. Please choose available dates only.');
+            return;
+        }
         if (!hasRealRoomData || !roomCatalog[roomType]?.id) {
             alert('Room data is unavailable. Please refresh and try again.');
             return;
@@ -1659,12 +1755,14 @@
 
         const checkInFallback = document.getElementById('checkInDate')?.value || selectedCheckIn;
         const checkOutFallback = document.getElementById('checkOutDate')?.value || selectedCheckOut;
+        const startAt = combineDateAndTime(checkInFallback, checkInTime || '15:00');
+        const endAt = combineDateAndTime(checkOutFallback, checkOutTime || '11:00');
 
         const bookingPayload = {
             room_id: roomCatalog[roomType]?.id,
             room_type: roomType,
-            start_at: checkInFallback,
-            end_at: checkOutFallback,
+            start_at: startAt,
+            end_at: endAt,
             guests: adults + kids + infants,
             has_pwd: pwdDiscount,
             has_senior: seniorDiscount,
@@ -1793,47 +1891,44 @@
 
     function downloadBookingReceipt() {
         const payload = pendingBookingPayload;
-        if (!payload) {
+        if (!payload || !confirmedReceiptData) {
             alert('Booking data is not available for download yet.');
-            return;
-        }
-
-        if (typeof html2pdf === 'undefined') {
-            alert('PDF library is still loading. Please wait a moment and try again.');
             return;
         }
 
         try {
             const receiptData = {
-                propertyName: 'Your Hotel Name',
+                ...confirmedReceiptData,
+                propertyName: 'CHTM Booking',
                 issueDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                roomName: roomCatalog[payload.room_type]?.name || payload.room_type,
-                roomType: payload.room_type,
-                checkIn: payload.start_at,
-                checkOut: payload.end_at,
-                nights: calculateNights(payload.start_at, payload.end_at),
-                adults: adults,
-                kids: kids,
-                infants: infants,
-                extraBeds: payload.extra_beds,
-                amenities: selectedAmenities.length ? selectedAmenities.map((item) => item.name || item).join(', ') : 'None',
-                paymentMethod: payload.payment_method || 'GCash',
-                amountPaid: payload.amount_paid ?? 0,
-                balanceDue: payload.balance_due ?? 0,
-                total: payload.total_price ?? 0,
+                amenities: Array.isArray(confirmedReceiptData.amenities) && confirmedReceiptData.amenities.length
+                    ? confirmedReceiptData.amenities.map((item) => item.name || item).join(', ')
+                    : 'None',
             };
 
             const receiptHtml = generateBookingPdfHtml(receiptData);
-            const filename = `booking-confirmation-${payload.room_type}-${Date.now()}.pdf`;
+            const filenameBase = `booking-confirmation-${payload.room_type}-${receiptData.bookingId || Date.now()}`;
 
             const element = document.createElement('div');
             element.innerHTML = receiptHtml;
             element.style.padding = '20px';
             element.style.backgroundColor = '#ffffff';
 
+            if (typeof html2pdf === 'undefined') {
+                const blob = new Blob([`<!doctype html><html><head><meta charset="utf-8"><title>Booking Receipt</title></head><body>${receiptHtml}</body></html>`], { type: 'text/html' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${filenameBase}.html`;
+                document.body.appendChild(link);
+                link.click();
+                URL.revokeObjectURL(link.href);
+                link.remove();
+                return;
+            }
+
             const options = {
                 margin: 10,
-                filename: filename,
+                filename: `${filenameBase}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
                 jsPDF: { unit: 'pt', format: 'letter', orientation: 'portrait', compress: true },
@@ -1862,7 +1957,7 @@
             <div style="font-family: 'Inter', sans-serif; color: #1f2937; background: #ffffff; width: 820px; padding: 32px; box-sizing: border-box;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
                     <div>
-                        <div style="font-size: 24px; font-weight: 700; color: #0f5132; letter-spacing: 0.02em;">PROPERTY NAME</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #0f5132; letter-spacing: 0.02em;">${data.propertyName || 'CHTM Booking'}</div>
                         <div style="margin-top: 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.16em; color: #4b5563;">BOOKING CONFIRMATION VOUCHER</div>
                     </div>
                     <div style="text-align: right;">

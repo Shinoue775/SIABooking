@@ -22,19 +22,21 @@ class RegisterUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => ['required', 'uuid'],
-            'email' => ['required', 'email'],
+            'id'        => ['required', 'uuid'],
+            'email'     => ['required', 'email'],
             'full_name' => ['required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
-            'address' => ['nullable', 'string', 'max:1000'],
-            'role' => ['nullable', Rule::in(['guest', 'staff', 'admin'])],
+            'fname'     => ['nullable', 'string', 'max:100'],
+            'lname'     => ['nullable', 'string', 'max:100'],
+            'phone'     => ['nullable', 'string', 'max:50'],
+            'address'   => ['nullable', 'string', 'max:1000'],
+            'role'      => ['nullable', Rule::in(['user', 'staff', 'admin'])],
         ];
     }
 
     public function validated($key = null, $default = null): array
     {
         $validated = parent::validated($key, $default);
-        $validated['role'] ??= 'guest';
+        $validated['role'] ??= 'user';
 
         return $validated;
     }
