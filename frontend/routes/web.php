@@ -18,6 +18,23 @@ Route::get('/health-check', function () {
     ]);
 });
 
+Route::get('/debug-files', function () {
+    $cachePath = base_path('bootstrap/cache');
+    $files = [];
+    if (is_dir($cachePath)) {
+        foreach (scandir($cachePath) as $file) {
+            if ($file !== '.' && $file !== '..') {
+                $filePath = $cachePath . '/' . $file;
+                $files[$file] = [
+                    'size' => filesize($filePath),
+                    'content_preview' => str_ends_with($file, '.php') ? substr(file_get_contents($filePath), 0, 1000) : null
+                ];
+            }
+        }
+    }
+    return 'Files in bootstrap/cache: ' . json_encode($files);
+});
+
 // Temporary debug route — remove after troubleshooting
 Route::get('/env-debug', function () {
     $envPath = base_path('.env');
