@@ -1,11 +1,14 @@
 {
   "version": 2,
-  "functions": {
-    "handler/index.php": {
-      "runtime": "vercel-php@0.9.0",
-      "maxDuration": 30
+  "builds": [
+    {
+      "src": "handler/index.php",
+      "use": "vercel-php@0.9.0",
+      "config": {
+        "maxDuration": 30
+      }
     }
-  },
+  ],
   "routes": [
     {
       "src": "/build/(.*)",
