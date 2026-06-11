@@ -27,9 +27,9 @@ class SupabaseService
     {
         $response = $this->http->withHeaders([
             'apikey' => $this->serviceRoleKey(),
-            'Authorization' => 'Bearer '.$token,
+            'Authorization' => 'Bearer ' . $token,
             'Accept' => 'application/json',
-        ])->get($this->baseUrl().'/auth/v1/user');
+        ])->get($this->baseUrl() . '/auth/v1/user');
 
         if ($response->failed()) {
             throw new RuntimeException('Unable to authenticate token.');
@@ -170,7 +170,7 @@ class SupabaseService
     private function encryptFields(array $payload, array $fields): array
     {
         foreach ($fields as $field) {
-            if (! array_key_exists($field, $payload) || $payload[$field] === null) {
+            if (!array_key_exists($field, $payload) || $payload[$field] === null) {
                 continue;
             }
 
@@ -187,7 +187,7 @@ class SupabaseService
         }
 
         foreach ($fields as $field) {
-            if (! array_key_exists($field, $payload) || ! is_string($payload[$field])) {
+            if (!array_key_exists($field, $payload) || !is_string($payload[$field])) {
                 continue;
             }
 
@@ -210,12 +210,12 @@ class SupabaseService
     ): Response {
         $request = $this->http->withHeaders(array_merge([
             'apikey' => $this->serviceRoleKey(),
-            'Authorization' => 'Bearer '.$this->serviceRoleKey(),
+            'Authorization' => 'Bearer ' . $this->serviceRoleKey(),
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
         ], $headers));
 
-        return $request->send($method, $this->baseUrl().'/rest/v1/'.$table, [
+        return $request->send($method, $this->baseUrl() . '/rest/v1/' . $table, [
             'query' => $query,
             'json' => $body,
         ]);

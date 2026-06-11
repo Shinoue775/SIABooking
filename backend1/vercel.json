@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "api/index.php": {
+    "handler/index.php": {
       "runtime": "vercel-php@0.9.0",
       "maxDuration": 30
     }
@@ -21,7 +21,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/api/index.php"
+      "dest": "/handler/index.php"
     }
   ]
 }
