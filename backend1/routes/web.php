@@ -13,3 +13,9 @@ Route::get('/debug', function () {
         'debug' => 'working',
     ]);
 });
+
+Route::get('/rooms-test', function () {
+    return response()->json([
+        'success' => true
+    ]);
+});
