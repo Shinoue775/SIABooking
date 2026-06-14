@@ -1,0 +1,5 @@
+/.env
+/node_modules
+/public/hot
+/storage/logs/*.log
+/vendor
