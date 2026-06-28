@@ -675,9 +675,21 @@
     let selectedCheckOut = null;
 
     const BOOKING_API_BASE = @json(config('services.booking_api.base_url')) || window.location.origin;
-    console.log('BOOKING_API_BASE_INIT', BOOKING_API_BASE);
+    let unavailableDates = []; // active month+roomType unavailable dates (for current UI)
 
-    let unavailableDates = [];
+    // Cache booked/unavailable dates by room type AND by (year, month)
+    // Key: `${roomType}:${year}-${monthIndex}`
+    const unavailableDatesCache = {
+        standard: new Map(),
+        deluxe: new Map(),
+    };
+
+    // Cache in-flight promises to prevent duplicate refetches
+    const unavailableDatesPromises = {
+        standard: new Map(),
+        deluxe: new Map(),
+    };
+
     const dailyRates = {
         standard: 2500,
         deluxe: 4500,
@@ -902,81 +914,111 @@
         unavailableDates = Array.from(addedDates).sort();
     }
 
-    async function refreshAvailabilityForMonth() {
-        // Keep unavailable dates strictly scoped to the currently selected room.
-        // Also avoid cross-room races by ignoring stale responses.
-        const selectedRoomId = roomCatalog[roomType]?.id;
-        const selectedRoomTypeForMatch = roomType;
+    function getAvailabilityCacheKey(year, monthIndex) {
+        return `${year}-${monthIndex}`;
+    }
 
-        // If we don't have a backend room id for this toggle, show nothing unavailable.
-        if (!selectedRoomId) {
-            unavailableDates = [];
-            renderCalendar();
+    function getActiveRoomTypeUnavailableDates() {
+        const cacheKey = getAvailabilityCacheKey(currentYear, currentMonth);
+        const roomTypeKey = roomType;
+        return unavailableDatesCache?.[roomTypeKey]?.get(cacheKey) || null;
+    }
+
+
+    async function refreshAvailabilityForMonth() {
+        const selectedRoomId = roomCatalog[roomType]?.id;
+        const selectedRoomType = roomType;
+
+        if (!selectedRoomId && !selectedRoomType) {
             return;
         }
 
-        const monthKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${roomType}`;
-        const requestToken = ++availabilityRequestToken;
+        const cacheKey = getAvailabilityCacheKey(currentYear, currentMonth);
 
-        // Render immediately using cached results (if any) for speed.
-        if (window.__availabilityCache?.[monthKey]) {
-            unavailableDates = window.__availabilityCache[monthKey];
+        // Always take the correct room type data from cache first
+        const cached = unavailableDatesCache?.[selectedRoomType]?.get(cacheKey);
+        if (cached && Array.isArray(cached)) {
+            unavailableDates = cached;
             renderCalendar();
         }
 
-        // Preserve currently visible dates while we fetch fresh results.
-        renderCalendar();
+        // If a fetch is already running for this roomType+month, reuse it
+        const roomPromises = unavailableDatesPromises?.[selectedRoomType] || null;
+        if (roomPromises?.has(cacheKey)) {
+            try {
+                const latest = await roomPromises.get(cacheKey);
+                unavailableDates = latest;
+                renderCalendar();
+            } catch (_e) {
+                // ignore
+            }
+            return;
+        }
+
+        const requestToken = ++availabilityRequestToken;
+
+        // IMPORTANT: never rely on a mutated `unavailableDates` while async is in-flight.
+        // Keep current unavailableDates until this token finishes, so booked days don't “disappear over time”.
+        const prevUnavailableDates = unavailableDates.slice();
 
         const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-        const today = getTodayAtMidnight();
-        const todayStr = formatLocalDate(today);
+        // PERFORMANCE: request ALL days in parallel, but update UI only once.
+        // Backend currently only supports single-day availability via ?date=YYYY-MM-DD,
+        // so we keep per-day calls but avoid repeated DOM churn.
+        const checks = Array.from({ length: daysInMonth }, (_, index) => {
 
-        // Fetch in parallel but with a hard cap to avoid spamming the backend.
-        const maxConcurrent = 6;
-        const datesToCheck = [];
-        for (let index = 0; index < daysInMonth; index++) {
             const dateValue = formatLocalDate(new Date(currentYear, currentMonth, index + 1));
-            if (dateValue < todayStr) continue;
-            datesToCheck.push(dateValue);
-        }
+            return fetch(`${BOOKING_API_BASE}/api/rooms/availability?date=${dateValue}`)
 
-        let cursor = 0;
-        const results = [];
-
-        const worker = async () => {
-            while (cursor < datesToCheck.length) {
-                const dateValue = datesToCheck[cursor++];
-                try {
-                    const response = await fetch(`${BOOKING_API_BASE}/api/rooms/availability?date=${dateValue}`);
-                    const payload = response.ok ? await response.json() : null;
-                    if (requestToken !== availabilityRequestToken) return;
-
+                .then((response) => (response.ok ? response.json() : null))
+                .then((payload) => {
                     const rooms = Array.isArray(payload?.rooms) ? payload.rooms : [];
-                    const matchingRooms = rooms.filter((candidate) => {
-                        return roomMatchesSelection(candidate, selectedRoomId, selectedRoomTypeForMatch);
-                    });
+                    const matchingRooms = rooms.filter((candidate) => roomMatchesSelection(candidate, selectedRoomId, selectedRoomType));
+                    return matchingRooms.some((room) => room.available === false) ? dateValue : null;
+                })
+                .catch(() => null);
+        });
 
-                    if (matchingRooms.some((room) => room.available === false)) {
-                        results.push(dateValue);
-                    }
-                } catch (_e) {
-                    // ignore
-                }
+        // Avoid rendering until we have results; this prevents the UI from looking like it "hangs".
+        // Promise resolves only once, then we render.
+        const promise = Promise.all(checks).then((results) => results.filter(Boolean));
+        unavailableDatesPromises[selectedRoomType].set(cacheKey, promise);
+
+
+        try {
+            const results = await promise;
+            if (requestToken !== availabilityRequestToken) return;
+
+            unavailableDatesCache[selectedRoomType].set(cacheKey, results);
+
+            // IMPORTANT: prevent overlap visibility.
+            // When showing Standard, never show Deluxe unavailable dates for same month.
+            // (And vice versa.)
+            // Start from fetched results, then remove overlap against other room type cached dates
+            // but only for the room currently being displayed.
+            if (selectedRoomType === 'standard') {
+                const deluxeDates = unavailableDatesCache?.deluxe?.get(cacheKey) || [];
+                const deluxeSet = new Set(deluxeDates);
+                unavailableDates = results.filter((d) => !deluxeSet.has(d));
+            } else if (selectedRoomType === 'deluxe') {
+                const standardDates = unavailableDatesCache?.standard?.get(cacheKey) || [];
+                const standardSet = new Set(standardDates);
+                unavailableDates = results.filter((d) => !standardSet.has(d));
+            } else {
+                unavailableDates = results;
             }
-        };
 
-        await Promise.all(Array.from({ length: Math.min(maxConcurrent, Math.max(1, datesToCheck.length)) }, worker));
-        if (requestToken !== availabilityRequestToken) return;
+            // Safety net: if anything goes wrong or token is stale, keep previous UI state.
+            if (requestToken !== availabilityRequestToken) {
+                unavailableDates = prevUnavailableDates;
+            }
 
-        // Normalize + update cache
-        const nextDates = Array.from(new Set(results)).sort();
-        unavailableDates = nextDates;
+            renderCalendar();
 
-        window.__availabilityCache = window.__availabilityCache || {};
-        window.__availabilityCache[monthKey] = unavailableDates;
-
-        renderCalendar();
+        } finally {
+            unavailableDatesPromises[selectedRoomType].delete(cacheKey);
+        }
     }
 
 
@@ -1122,32 +1164,41 @@
         updateSummary();
     }
 
-    document.querySelectorAll('input[name="roomType"]').forEach(radio => {
-        radio.addEventListener('change', function() {
+    document.querySelectorAll('input[name="roomType"]').forEach((radio) => {
+        radio.addEventListener('change', function () {
             roomType = this.value;
+
+            // Critical: prevent old room's unavailable list from showing during toggle.
+            // renderCalendar() is driven by `unavailableDates`, which we now rebuild from the selected room's cache.
+            const cacheKey = getAvailabilityCacheKey(currentYear, currentMonth);
+            const cached = unavailableDatesCache?.[roomType]?.get(cacheKey);
+            unavailableDates = (cached && Array.isArray(cached)) ? cached : [];
+
             syncRoomSummary();
+            renderCalendar();
             refreshAvailabilityForMonth();
             updateSummary();
         });
     });
 
     function renderCalendar() {
-    const calendarDays = document.getElementById('calendarDays');
+        const calendarDays = document.getElementById('calendarDays');
         if (!calendarDays) return;
-
-        // When availability API is enabled, block selection strictly by room type.
-        // For the UI, we re-render booked/unavailable dates based on the selected room.
-
 
         const currentMonthYear = document.getElementById('currentMonthYear');
         if (currentMonthYear) {
             currentMonthYear.innerHTML = `${monthNames[currentMonth]} ${currentYear}`;
         }
 
+        // Ensure month variables are valid to avoid weird jumps
+        if (!Number.isFinite(currentMonth) || currentMonth < 0 || currentMonth > 11) return;
+        if (!Number.isFinite(currentYear) || currentYear < 1970) return;
+
         const firstDay = new Date(currentYear, currentMonth, 1).getDay();
         const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
         calendarDays.innerHTML = '';
+
 
         const totalCells = 42;
 
@@ -1167,11 +1218,14 @@
             const todayStr = formatLocalDate(today);
             const isToday = isCurrentMonth && dateStr === todayStr;
             const isPast = isCurrentMonth && displayDate < today;
-            // Mark unavailable based on currently selected room type.
             const isUnavailable = isCurrentMonth && unavailableDates.includes(dateStr);
-
             const isCheckIn = isCurrentMonth && selectedCheckIn === dateStr;
             const isCheckOut = isCurrentMonth && selectedCheckOut === dateStr;
+
+            // Requirement: do NOT show booked/red styling for dates before today.
+            // (Past dates may be disabled/grey, but not marked as unavailable/red.)
+            const isPastBookedVisible = !isPast && isUnavailable;
+
 
             let isInRange = false;
             if (selectedCheckIn && selectedCheckOut && !isCheckIn && !isCheckOut) {
@@ -1191,8 +1245,8 @@
                 continue;
             }
 
-            if (isUnavailable) dayDiv.classList.add('unavailable');
-            if (isDisabled && !isUnavailable) dayDiv.classList.add('disabled');
+            if (isPastBookedVisible) dayDiv.classList.add('unavailable');
+            if (isDisabled && !isPastBookedVisible) dayDiv.classList.add('disabled');
             if (isCheckIn) dayDiv.classList.add('selected-start');
             if (isCheckOut) dayDiv.classList.add('selected-end');
             if (isInRange) dayDiv.classList.add('in-range');
@@ -1217,7 +1271,7 @@
                 dayDiv.appendChild(indicator);
             }
 
-            if (isUnavailable) {
+            if (isPastBookedVisible) {
                 dayDiv.title = 'Booked / Unavailable';
             } else if (isPast) {
                 dayDiv.title = 'Past date';
@@ -1369,25 +1423,38 @@
     }
 
     document.getElementById('prevMonth')?.addEventListener('click', () => {
-        const prevMonthDate = new Date(currentYear, currentMonth - 1, 1);
-        if (prevMonthDate < BASELINE_MONTH) {
-            return;
+        try {
+            const prevMonthDate = new Date(currentYear, currentMonth - 1, 1);
+            if (prevMonthDate < BASELINE_MONTH) {
+                console.log('[calendar] prevMonth blocked by baseline', { currentYear, currentMonth });
+                return;
+            }
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            console.log('[calendar] prevMonth click =>', { currentYear, currentMonth });
+            renderCalendar();
+            refreshAvailabilityForMonth();
+        } catch (e) {
+            console.error('[calendar] prevMonth click error', e);
         }
-        currentMonth--;
-        if (currentMonth < 0) {
-            currentMonth = 11;
-            currentYear--;
-        }
-        refreshAvailabilityForMonth();
     });
 
     document.getElementById('nextMonth')?.addEventListener('click', () => {
-        currentMonth++;
-        if (currentMonth > 11) {
-            currentMonth = 0;
-            currentYear++;
+        try {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            console.log('[calendar] nextMonth click =>', { currentYear, currentMonth });
+            renderCalendar();
+            refreshAvailabilityForMonth();
+        } catch (e) {
+            console.error('[calendar] nextMonth click error', e);
         }
-        refreshAvailabilityForMonth();
     });
 
     function updateSummary() {
@@ -1669,8 +1736,6 @@
         }
 
         const bookingUrl = `${BOOKING_API_BASE}/api/bookings`;
-        console.log('BOOKING_API_BASE', BOOKING_API_BASE, 'bookingUrl', bookingUrl);
-
         let authHeaders = {
             'Content-Type': 'application/json',
         };
@@ -1738,7 +1803,7 @@
             console.log('Booking response status:', response.status, result);
 
             if (!response.ok) {
-                console.error('Booking request failed:', response.status, result);
+                console.error('Booking request failed:', result);
                 isProcessingBooking = false;
                 setPaymentLoading(false);
                 closePaymentModal();
@@ -1751,16 +1816,9 @@
                         '<p class="text-sm text-gray-700">Sorry, this room has already been booked for your selected dates by another guest. The calendar has been updated to show the latest availability — please choose different dates or a different room.</p>'
                     );
                 } else {
-                    const debugDetails = [result?.error, result?.message, result?.errors].filter(Boolean).join(' ');
-                    const debugPayload = result?.payload ? `<pre class="text-xs text-gray-800 mt-2 p-2 bg-gray-100 rounded">${JSON.stringify(result.payload, null, 2)}</pre>` : '';
-                    showBookingStatusModal(
-                        false,
-                        'Booking Failed',
-                        (debugDetails || 'Unable to complete booking. Please try again.') + debugPayload
-                    );
+                    showBookingStatusModal(false, 'Booking Failed', result.error || 'Unable to complete booking. Please try again.');
                 }
                 return;
-
             }
 
             confirmedReceiptData = {
@@ -1796,18 +1854,11 @@
             setPaymentLoading(false);
             showBookingStatusModal(true, 'Booking Confirmed', receiptHtml);
         } catch (error) {
-            console.error('Booking submission failed (exception):', error);
+            console.error('Booking submission failed:', error);
             isProcessingBooking = false;
             setPaymentLoading(false);
-
-            // Preserve the prior generic message, but include exception text.
-            const fallback = 'Unable to complete booking. Please check your internet connection and try again.';
-            const extra = error?.message ? `\n\nDetails: ${error.message}` : '';
-            const details = fallback + extra;
-
-            showBookingStatusModal(false, 'Booking Failed', details);
+            showBookingStatusModal(false, 'Booking Failed', 'Unable to complete booking. Please check your internet connection and try again.');
         }
-
     }
 
     async function submitBooking() {
@@ -1856,15 +1907,8 @@
         const startAt = combineDateAndTime(checkInFallback, checkInTime || '15:00');
         const endAt = combineDateAndTime(checkOutFallback, checkOutTime || '11:00');
 
-        // Hardening: ensure the payload room_id matches the currently selected room.
-        const currentRoomId = roomCatalog[roomType]?.id;
-        if (!currentRoomId) {
-            alert('Room data is unavailable. Please refresh and try again.');
-            return;
-        }
-
         const bookingPayload = {
-            room_id: currentRoomId,
+            room_id: roomCatalog[roomType]?.id,
             room_type: roomType,
             start_at: startAt,
             end_at: endAt,
